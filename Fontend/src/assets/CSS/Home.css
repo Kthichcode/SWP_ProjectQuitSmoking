@@ -1,0 +1,149 @@
+.home-container {
+  min-height: 100vh;
+  width: 100vw;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border-radius: 0;
+  box-shadow: none;
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-theme {
+  font-size: 1.2rem;
+  color: #2d3748;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.home-auth-buttons {
+  position: static;
+  padding: 0 24px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex: 0 0 auto;
+  
+}
+
+.home-auth-buttons button {
+  background: #fff;
+  color: #4CAF50;
+  border: 2px solid #4CAF50;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+
+.home-auth-buttons button:hover {
+  background: #4CAF50;
+  color: #fff;
+  border: 2px solid #4CAF50;
+}
+
+.home-container h1 {
+  color: #4CAF50;
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  letter-spacing: 2px;
+}
+
+.home-container p {
+  color: #4a5568;
+  margin-bottom: 10px;
+}
+
+.home-container button {
+  background:  #4CAF50;
+  color:#fff ;
+  border: 2px solid #4CAF50;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+
+ .home-container button:hover {
+  background: #fff;
+  color: #4CAF50; 
+  border: 2px solid #4CAF50;
+} 
+
+.home-logo {
+  position: static;
+  padding: 0 24px;
+  height: 60px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  width: 28px;
+  height: 28px;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.logo-text {
+  color: #4CAF50;
+  font-size: 1.5rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  line-height: 28px;
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+}
+
+.home-header-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 60px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 1200;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.home-nav {
+  display: flex;
+  gap: 48px; /* khoảng cách mặc định */
+  align-items: center;
+  flex: 1 1 0;
+  justify-content: center;
+}
+ 
+
+.nav-btn {
+  background: none;
+  border: none;
+  color: #222;
+  font-size: 1.08rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: color 0.2s;
+}
+
+.nav-btn:hover {
+  color: #4CAF50;
+}
+
+
