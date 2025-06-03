@@ -1,0 +1,178 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f2f8ff;
+  color: #333;
+}
+
+.login-section {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to top, #a8edea, #fed6e3); /* nền bầu trời pastel */
+  overflow: hidden;
+  position: relative;
+  padding: 2rem;
+}
+
+/* Mây động */
+.login-section::before,
+.login-section::after {
+  content: "";
+  position: absolute;
+  top: 10%;
+  width: 300px;
+  height: 120px;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: cloudMove 60s linear infinite;
+  filter: blur(20px);
+}
+
+.login-section::after {
+  top: 30%;
+  left: -400px;
+  width: 500px;
+  height: 200px;
+  animation-duration: 90s;
+}
+
+@keyframes cloudMove {
+  0% {
+    transform: translateX(-500px);
+  }
+  100% {
+    transform: translateX(1500px);
+  }
+}
+
+
+.login-container {
+  background-color: #ffffff;
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.logo {
+  width: 60px;
+  margin-bottom: 20px;
+}
+
+h2 {
+  margin-bottom: 10px;
+  font-size: 24px;
+  color: #222;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 30px;
+}
+
+.login-form h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.form-subtitle {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 20px;
+  display: block;
+  text-align: left;
+}
+
+label {
+  display: block;
+  text-align: left;
+  margin: 10px 0 5px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+input {
+  background-color: #fff;
+  color: #000;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 8px;
+  width: 100%;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+input::placeholder {
+  color: #aaa;
+}
+
+.forgot-password {
+  text-align: right;
+  margin-top: -10px;
+  margin-bottom: 20px;
+}
+
+.forgot-password a {
+  font-size: 13px;
+  color: #2a7cf6;
+  text-decoration: none;
+}
+
+.forgot-password a:hover {
+  text-decoration: underline;
+}
+
+.btn-login {
+  width: 100%;
+  padding: 12px;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-login:hover {
+  background-color: #27ae60;
+}
+
+.register-link {
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.register-link a {
+  color: #2a7cf6;
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+@media screen and (max-width: 480px) {
+  .login-container {
+    padding: 30px 20px;
+  }
+
+  .logo {
+    width: 50px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  .btn-login {
+    font-size: 15px;
+  }
+}

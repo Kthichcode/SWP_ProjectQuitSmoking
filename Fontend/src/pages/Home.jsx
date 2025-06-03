@@ -1,9 +1,10 @@
 import React from 'react';
 import '../assets/CSS/Home.css';
-
+import { Link } from 'react-router-dom';
 function Home() {
+
   return (
-   <div>
+    <div>
       <div className="home-header-bar">
         <div className="home-logo">
           <img src="/src/assets/img1/android-chrome-192x192.png" alt="NoSmoke Logo" className="logo-img" />
@@ -16,9 +17,14 @@ function Home() {
           <button className="nav-btn">Giới thiệu</button>
         </div>
         <div className="home-auth-buttons">
-          <button style={{ marginRight: '10px' }}>Đăng Nhập</button>
-          <button>Đăng Ký</button>
+          <Link to="/login">
+            <button className="nav-btn">Đăng Nhập</button>
+          </Link>
+          <Link to="/register">
+            <button className="nav-btn">Đăng Ký</button>
+          </Link>
         </div>
+
       </div>
 
       <div className="home-main-section">
@@ -66,62 +72,62 @@ function Home() {
         </div>
       </div>
       <div className="ranking-section">
-  <h2>Bảng xếp hạng thành tích</h2>
-  <p>Hãy xem những người xuất sắc trong việc cai thuốc và số ngày không hút thuốc họ đã đạt được.</p>
-  <div className="ranking-list">
-    <div className="rank-card top">
-      <div className="rank-avatar"></div>
-      <h4>Nguyễn Văn A</h4>
-      <p>120 ngày</p>
-      <strong>2,400,000₫</strong>
-    </div>
-    <div className="rank-card">
-      <div className="rank-avatar"></div>
-      <h4>Trần Thị B</h4>
-      <p>95 ngày</p>
-      <strong>1,900,000₫</strong>
-    </div>
-    <div className="rank-card">
-      <div className="rank-avatar"></div>
-      <h4>Phạm Văn C</h4>
-      <p>70 ngày</p>
-      <strong>1,400,000₫</strong>
-    </div>
-    <div className="rank-card">
-      <div className="rank-avatar"></div>
-      <h4>Lê Thị D</h4>
-      <p>60 ngày</p>
-      <strong>1,200,000₫</strong>
-    </div>
-  </div>
-  <button className="white-btn">Xem bảng xếp hạng đầy đủ</button>
-</div>
+        <h2>Bảng xếp hạng thành tích</h2>
+        <p>Hãy xem những người xuất sắc trong việc cai thuốc và số ngày không hút thuốc họ đã đạt được.</p>
+        <div className="ranking-list">
+          <div className="rank-card top">
+            <div className="rank-avatar"></div>
+            <h4>Nguyễn Văn A</h4>
+            <p>120 ngày</p>
+            <strong>2,400,000₫</strong>
+          </div>
+          <div className="rank-card">
+            <div className="rank-avatar"></div>
+            <h4>Trần Thị B</h4>
+            <p>95 ngày</p>
+            <strong>1,900,000₫</strong>
+          </div>
+          <div className="rank-card">
+            <div className="rank-avatar"></div>
+            <h4>Phạm Văn C</h4>
+            <p>70 ngày</p>
+            <strong>1,400,000₫</strong>
+          </div>
+          <div className="rank-card">
+            <div className="rank-avatar"></div>
+            <h4>Lê Thị D</h4>
+            <p>60 ngày</p>
+            <strong>1,200,000₫</strong>
+          </div>
+        </div>
+        <button className="white-btn">Xem bảng xếp hạng đầy đủ</button>
+      </div>
 
-<div className="blog-section">
-  <h2>Blog chia sẻ kinh nghiệm</h2>
-  <p>Cùng lắng nghe những câu chuyện, lời khuyên chân thực từ cộng đồng và chuyên gia trong hành trình bỏ thuốc lá.</p>
-  <div className="blog-list">
-    <div className="blog-card">
-      <img src="/src/assets/img/blog1.jpg" alt="Blog 1" />
-      <h4>10 lợi ích sức khỏe khi bạn bỏ thuốc lá trong 30 ngày đầu tiên</h4>
-      <p>Khám phá những thay đổi kỳ diệu trong cơ thể bạn chỉ sau 1 tháng không hút thuốc.</p>
-      <span>Đọc tiếp →</span>
-    </div>
-    <div className="blog-card">
-      <img src="/src/assets/img/blog2.jpg" alt="Blog 2" />
-      <h4>Phương pháp giữ vững cam kết bỏ thuốc hiệu quả nhất</h4>
-      <p>Các mẹo thực tế giúp bạn kiên trì và vượt qua cám dỗ.</p>
-      <span>Đọc tiếp →</span>
-    </div>
-    <div className="blog-card">
-      <img src="/src/assets/img/blog3.jpg" alt="Blog 3" />
-      <h4>Câu chuyện thành công: Thử 2-3 lần rồi cũng bỏ được thuốc</h4>
-      <p>Một câu chuyện truyền cảm hứng từ người từng thất bại nhiều lần.</p>
-      <span>Đọc tiếp →</span>
-    </div>
-  </div>
-  <button className="white-btn">Xem tất cả bài viết</button>
-</div>
+      <div className="blog-section">
+        <h2>Blog chia sẻ kinh nghiệm</h2>
+        <p>Cùng lắng nghe những câu chuyện, lời khuyên chân thực từ cộng đồng và chuyên gia trong hành trình bỏ thuốc lá.</p>
+        <div className="blog-list">
+          <div className="blog-card">
+            <img src="/src/assets/img/blog1.jpg" alt="Blog 1" />
+            <h4>10 lợi ích sức khỏe khi bạn bỏ thuốc lá trong 30 ngày đầu tiên</h4>
+            <p>Khám phá những thay đổi kỳ diệu trong cơ thể bạn chỉ sau 1 tháng không hút thuốc.</p>
+            <span>Đọc tiếp →</span>
+          </div>
+          <div className="blog-card">
+            <img src="/src/assets/img/blog2.jpg" alt="Blog 2" />
+            <h4>Phương pháp giữ vững cam kết bỏ thuốc hiệu quả nhất</h4>
+            <p>Các mẹo thực tế giúp bạn kiên trì và vượt qua cám dỗ.</p>
+            <span>Đọc tiếp →</span>
+          </div>
+          <div className="blog-card">
+            <img src="/src/assets/img/blog3.jpg" alt="Blog 3" />
+            <h4>Câu chuyện thành công: Thử 2-3 lần rồi cũng bỏ được thuốc</h4>
+            <p>Một câu chuyện truyền cảm hứng từ người từng thất bại nhiều lần.</p>
+            <span>Đọc tiếp →</span>
+          </div>
+        </div>
+        <button className="white-btn">Xem tất cả bài viết</button>
+      </div>
     </div>
   );
 }
