@@ -20,9 +20,8 @@ function Home() {
           <button>Đăng Ký</button>
         </div>
       </div>
-      <div className="home-container">
-        <div className="home-theme">Chủ đề: Hành trình cai nghiện thuốc lá - Sống khỏe mạnh, không khói thuốc</div>
-        <h1>NoSmoking</h1>
+      <div className="home-container">        
+        <h1 className="title">Bắt đầu cuộc sống không khói thuốc ngay hôm nay</h1>
         <p>Chào mừng bạn đến với trang hỗ trợ cai nghiện thuốc lá!</p>
         <p>Hãy cùng nhau xây dựng một cuộc sống khỏe mạnh, không khói thuốc.</p>
       </div>

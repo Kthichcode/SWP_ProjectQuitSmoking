@@ -49,12 +49,6 @@
   border: 2px solid #4CAF50;
 }
 
-.home-container h1 {
-  color: #4CAF50;
-  font-size: 2.5rem;
-  margin-bottom: 12px;
-  letter-spacing: 2px;
-}
 
 .home-container p {
   color: #4a5568;
@@ -124,7 +118,7 @@
 
 .home-nav {
   display: flex;
-  gap: 48px; /* khoảng cách mặc định */
+  gap: 48px;
   align-items: center;
   flex: 1 1 0;
   justify-content: center;
@@ -144,6 +138,20 @@
 
 .nav-btn:hover {
   color: #4CAF50;
+}
+.title  {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: #222;
+  text-align: left;
+  margin: 32px 0 18px 0;
+  line-height: 1.15;
+  max-width: 520px;
+  width: 100%;
+  position: absolute;
+  top: 90px;
+  left: 40px;
+  z-index: 10;
 }
 
 
