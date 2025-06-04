@@ -16,7 +16,9 @@ const Header = () => {
         <Link to="/blog">
           <button className="nav-btn">Blog</button>
         </Link>
-        <button className="nav-btn">Bảng xếp hạng</button>
+        <Link to="/ranking">
+          <button className="nav-btn">Bảng xếp hạng</button>
+        </Link>
         <Link to="/about">
           <button className="nav-btn">Giới thiệu</button>
         </Link>

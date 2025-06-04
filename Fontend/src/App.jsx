@@ -7,6 +7,7 @@ import Footer from './pages/Footer';
 import Register from './pages/Register';
 import About from './pages/About';
 import Blog from './pages/Blog';
+import Ranking from './pages/Ranking';
 function App() {
   return (
     <>
@@ -16,6 +17,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/blog" element={<Blog />} />
+        <Route path="/ranking" element={<Ranking />} />
         <Route path="/about" element={<About />} />
         <Route path="/login/oauth2/code/google" element={<Navigate to="/login" />} />
       </Routes>
