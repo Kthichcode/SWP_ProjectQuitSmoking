@@ -1,8 +1,24 @@
-import React from 'react';
-
+import React, { useState } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 import '../assets/CSS/Login.css';
 import { Link } from 'react-router-dom';
+
 function Login() {
+  const [accessToken, setAccessToken] = useState('');
+
+  const handleGoogleLoginSuccess = (credentialResponse) => {
+    console.log('Google login success:', credentialResponse);
+    if (credentialResponse.credential) {
+      // For demonstration purposes, we're showing the credential
+      // In a real app, you would send this to your backend
+      setAccessToken(credentialResponse.credential);
+    }
+  };
+
+  const handleGoogleLoginError = () => {
+    console.error('Google login failed');
+  };
+
   return (
     <>
       <section className="login-section">
@@ -27,13 +43,32 @@ function Login() {
 
             <button type="submit" className="btn-login">→ Đăng nhập</button>
 
+            <div className="google-login-container">
+              <p className="or-divider">Hoặc</p>
+              <div className="google-login-button">
+                <GoogleLogin
+                  onSuccess={handleGoogleLoginSuccess}
+                  onError={handleGoogleLoginError}
+                  useOneTap
+                />
+              </div>
+            </div>
+
+            {accessToken && (
+              <div className="token-display">
+                <h4>Google Access Token:</h4>
+                <div className="token-text">
+                  {accessToken.substring(0, 500000)}
+                </div>
+              </div>
+            )}
+
             <p className="register-link">
               Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
             </p>
           </form>
         </div>
       </section>
-     
     </>
   );
 }
