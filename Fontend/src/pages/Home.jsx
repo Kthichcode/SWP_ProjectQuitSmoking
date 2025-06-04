@@ -12,8 +12,12 @@ function Home() {
         </Link>
         <div className="home-nav">
           <button className="nav-btn">Trang chủ</button>
+          <Link to="/blog">
           <button className="nav-btn">Blog</button>
-          <button className="nav-btn">Bảng xếp hạng</button>
+          </Link>
+          <Link to="/ranking">
+            <button className="nav-btn">Bảng xếp hạng</button>
+          </Link>
           <Link to="/about">
             <button className="nav-btn">Giới thiệu</button>
           </Link>
