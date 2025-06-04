@@ -14,7 +14,9 @@ function Home() {
           <button className="nav-btn">Trang chủ</button>
           <button className="nav-btn">Blog</button>
           <button className="nav-btn">Bảng xếp hạng</button>
-          <button className="nav-btn">Giới thiệu</button>
+          <Link to="/about">
+            <button className="nav-btn">Giới thiệu</button>
+          </Link>
           <button className="nav-btn">Tiến Trình Cai Thuốc</button>
         </div>
         <div className="home-auth-buttons">

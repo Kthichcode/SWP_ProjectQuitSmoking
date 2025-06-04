@@ -7,7 +7,10 @@ const Footer = () => {
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-column">
-          <h3 img src="/src/assets/img1/android-chrome-192x192.png" >  NoSmoke</h3>
+          <div className="footer-logo-row">
+            <img src="/src/assets/img1/favicon-32x32.png" alt="NoSmoke Logo" className="footer-logo-img" />
+            <h3 className="footer-logo-text">NoSmoke</h3>
+          </div>
           <p className="footer-desc">
             Nền tảng hỗ trợ cai nghiện thuốc lá hiệu quả và an toàn điện, giúp mọi người tìm lại cuộc sống khỏe mạnh không khói thuốc.
           </p>
