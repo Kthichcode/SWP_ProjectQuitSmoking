@@ -6,15 +6,16 @@ function Home() {
   return (
     <div>
       <div className="home-header-bar">
-        <div className="home-logo">
+        <Link to="/" className="home-logo">
           <img src="/src/assets/img1/android-chrome-192x192.png" alt="NoSmoke Logo" className="logo-img" />
           <span className="logo-text">NoSmoke</span>
-        </div>
+        </Link>
         <div className="home-nav">
           <button className="nav-btn">Trang chủ</button>
           <button className="nav-btn">Blog</button>
           <button className="nav-btn">Bảng xếp hạng</button>
           <button className="nav-btn">Giới thiệu</button>
+          <button className="nav-btn">Tiến Trình Cai Thuốc</button>
         </div>
         <div className="home-auth-buttons">
           <Link to="/login">

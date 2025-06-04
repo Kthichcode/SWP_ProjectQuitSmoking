@@ -9,8 +9,6 @@ function Login() {
   const handleGoogleLoginSuccess = (credentialResponse) => {
     console.log('Google login success:', credentialResponse);
     if (credentialResponse.credential) {
-      // For demonstration purposes, we're showing the credential
-      // In a real app, you would send this to your backend
       setAccessToken(credentialResponse.credential);
     }
   };
