@@ -11,18 +11,20 @@ const About = () => {
         </p>
       </section>
 
-      <section className="mission-vision">
-        <div className="card">
-          <h3>🌱 Sứ mệnh</h3>
-          <p>
-            Sứ mệnh của chúng tôi là giúp 1 triệu người Việt Nam cai nghiện thuốc lá thành công vào năm 2030, giúp giảm thiểu số ca tử vong và hỗ trợ hệ thống y tế trong việc giảm chi phí điều trị liên quan đến thuốc lá.
-          </p>
-        </div>
-        <div className="card">
-          <h3>🎯 Tầm nhìn</h3>
-          <p>
-            Tầm nhìn là trở thành 1 tổ chức hàng đầu tại Đông Nam Á trong lĩnh vực hỗ trợ cai nghiện thuốc lá, áp dụng công nghệ hiện đại và dữ liệu số để giúp người nghiện thuốc vượt qua cám dỗ và tìm lại cuộc sống lành mạnh.
-          </p>
+      <section className="mission-bg">
+        <div className="mission-vision">
+          <div className="card">
+            <h3>🌱 Sứ mệnh</h3>
+            <p>
+              Sứ mệnh của chúng tôi là giúp 1 triệu người Việt Nam cai nghiện thuốc lá thành công vào năm 2030, giúp giảm thiểu số ca tử vong và hỗ trợ hệ thống y tế trong việc giảm chi phí điều trị liên quan đến thuốc lá.
+            </p>
+          </div>
+          <div className="card">
+            <h3>🎯 Tầm nhìn</h3>
+            <p>
+              Tầm nhìn là trở thành 1 tổ chức hàng đầu tại Đông Nam Á trong lĩnh vực hỗ trợ cai nghiện thuốc lá, áp dụng công nghệ hiện đại và dữ liệu số để giúp người nghiện thuốc vượt qua cám dỗ và tìm lại cuộc sống lành mạnh.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -39,11 +41,13 @@ const About = () => {
         </p>
       </section>
 
-      <section className="stats">
-        <div className="stat-card"><h4>10,000+</h4><p>Người dùng</p></div>
-        <div className="stat-card"><h4>5,000+</h4><p>Người cai thuốc thành công</p></div>
-        <div className="stat-card"><h4>1,000,000+</h4><p>Ngày không hút thuốc</p></div>
-        <div className="stat-card"><h4>20+</h4><p>Chuyên gia y tế</p></div>
+      <section className="stats-bg">
+        <div className="stats">
+          <div className="stat-card"><h4>10,000+</h4><p>Người dùng</p></div>
+          <div className="stat-card"><h4>5,000+</h4><p>Người cai thuốc thành công</p></div>
+          <div className="stat-card"><h4>1,000,000+</h4><p>Ngày không hút thuốc</p></div>
+          <div className="stat-card"><h4>20+</h4><p>Chuyên gia y tế</p></div>
+        </div>
       </section>
 
       <section className="team">

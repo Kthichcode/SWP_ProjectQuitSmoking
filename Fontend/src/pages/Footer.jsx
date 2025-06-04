@@ -34,7 +34,7 @@ const Footer = () => {
 
         <div className="footer-column">
           <h4>Hỗ trợ</h4>
-          <ul>
+          <ul>  
             <li><a href="#contact">Liên hệ</a></li>
             <li><a href="#privacy">Chính sách bảo mật</a></li>
             <li><a href="#terms">Điều khoản sử dụng</a></li>
