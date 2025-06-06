@@ -55,10 +55,10 @@ function Login() {
             <p className="form-subtitle">Nhập thông tin đăng nhập của bạn bên dưới</p>
 
             <label htmlFor="email">Email</label>
-            <input type="email" id="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input type="email" id="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
 
             <label htmlFor="password">Mật khẩu</label>
-            <input type="password" id="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <input type="password" id="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
 
             <div className="forgot-password">
               <Link to="#">Quên mật khẩu?</Link>
@@ -81,7 +81,7 @@ function Login() {
               <div className="token-display">
                 <h4>Google Access Token:</h4>
                 <div className="token-text">
-                  {accessToken.substring(0, 500000)}
+                  {accessToken.substring(0, 50000)}
                 </div>
               </div>
             )}
