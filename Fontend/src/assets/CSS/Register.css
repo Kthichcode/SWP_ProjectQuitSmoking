@@ -8,9 +8,9 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 20px 80px;
-    background-color: #f5f9ff;
+    padding: 40px 20px 0; 
     min-height: 100vh;
+   
 }
 
 .register-wrapper {
@@ -211,4 +211,46 @@ select {
     font-weight: 500;
     font-size: 14px;
     color: #333;
+}
+
+.register-section {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to top, #a8edea, #fed6e3);
+  overflow: hidden;
+  position: relative;
+  padding: 2rem;
+}
+
+.register-section::before,
+.register-section::after {
+  content: "";
+  position: absolute;
+  top: 10%;
+  width: 300px;
+  height: 120px;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: cloudMove 60s linear infinite;
+  filter: blur(20px);
+}
+
+.register-section::after {
+  top: 30%;
+  left: -400px;
+  width: 500px;
+  height: 200px;
+  animation-duration: 90s;
+}
+
+@keyframes cloudMove {
+  0% {
+    transform: translateX(-500px);
+  }
+  100% {
+    transform: translateX(1500px);
+  }
 }

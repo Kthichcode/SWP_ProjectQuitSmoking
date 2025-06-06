@@ -10,13 +10,13 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(to top, #a8edea, #fed6e3); /* nền bầu trời pastel */
+  background: linear-gradient(to top, #a8edea, #fed6e3); 
   overflow: hidden;
   position: relative;
   padding: 2rem;
 }
 
-/* Mây động */
+
 .login-section::before,
 .login-section::after {
   content: "";
@@ -112,7 +112,6 @@ input::placeholder {
   color: #aaa;
 }
 
-/* Fix for autofill background color and text color in browsers */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -169,7 +168,6 @@ input:-webkit-autofill:active {
   text-decoration: underline;
 }
 
-/* Google Login Styles */
 .google-login-container {
   margin-top: 20px;
   width: 100%;
@@ -207,7 +205,6 @@ input:-webkit-autofill:active {
   margin: 15px 0;
 }
 
-/* Token Display Styles */
 .token-display {
   margin-top: 20px;
   padding: 15px;
@@ -235,20 +232,4 @@ input:-webkit-autofill:active {
   overflow-y: auto;
 }
 
-@media screen and (max-width: 480px) {
-  .login-container {
-    padding: 30px 20px;
-  }
 
-  .logo {
-    width: 50px;
-  }
-
-  h2 {
-    font-size: 20px;
-  }
-
-  .btn-login {
-    font-size: 15px;
-  }
-}
