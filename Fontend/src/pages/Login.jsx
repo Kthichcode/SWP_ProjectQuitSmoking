@@ -79,7 +79,7 @@ function Login() {
 
             {accessToken && (
               <div className="token-display">
-                <h4>Google Access Token:</h4>
+                <h4>JWT Token:</h4>
                 <div className="token-text">
                   {accessToken.substring(0, 50000)}
                 </div>
@@ -88,7 +88,7 @@ function Login() {
 
             <p className="register-link">
               Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
-            </p>
+            </p>  
           </form>
         </div>
       </section>
