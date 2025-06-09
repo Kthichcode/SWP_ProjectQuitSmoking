@@ -231,5 +231,32 @@ input:-webkit-autofill:active {
   max-height: 60px;
   overflow-y: auto;
 }
+.btn-google-custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  color: #444;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.btn-google-custom:hover {
+  background-color: #f7f7f7;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+.google-logo {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+}
 
 
