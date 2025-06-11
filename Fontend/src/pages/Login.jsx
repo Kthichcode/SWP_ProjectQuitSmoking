@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import '../assets/CSS/Login.css';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 
 function Login() {
   const [accessToken, setAccessToken] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const navigate = useNavigate();
 
-  const login = useGoogleLogin({
+  const googleLogin = useGoogleLogin({
     scope: 'openid profile email https://www.googleapis.com/auth/userinfo.profile',
     onSuccess: async (tokenResponse) => {
       console.log('Google login success:', tokenResponse);
@@ -31,25 +33,22 @@ function Login() {
       console.error('Google login failed');
     },
   });
+  const { login } = useAuth();
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:8080/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: email, password }),
+    // Fake login
+    if (email === 'test@gmail.com' && password === '1') {
+      login({
+        email,
+        name: 'Người dùng thử',
+        avatar: '/src/assets/img1/android-chrome-192x192.png'
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Login success:', data);
-        localStorage.setItem('token', data.token);
-      } else {
-        setErrorMessage('Sai tài khoản hoặc mật khẩu');
-      }
-    } catch (error) {
-      setErrorMessage('Lỗi khi gọi API');
+      setErrorMessage('');
+      // Có thể chuyển hướng về trang chủ nếu muốn
+      navigate('/');
+    } else {
+      setErrorMessage('Sai tài khoản hoặc mật khẩu');
     }
   };
 
@@ -81,7 +80,7 @@ function Login() {
             <div className="google-login-button">
               <button
                 type="button"
-                onClick={() => login()}
+                onClick={() => googleLogin()}
                 className="btn-google-custom"
               >
                 <img

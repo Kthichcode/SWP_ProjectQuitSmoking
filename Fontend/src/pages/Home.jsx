@@ -5,13 +5,16 @@ function Home() {
 
   return (
     <div>
-      <div className="home-header-bar">
+      {/* XÓA TOÀN BỘ ĐOẠN NÀY */}
+      {/* <div className="home-header-bar">
         <Link to="/" className="home-logo">
           <img src="/src/assets/img1/android-chrome-192x192.png" alt="NoSmoke Logo" className="logo-img" />
           <span className="logo-text">NoSmoke</span>
         </Link>
         <div className="home-nav">
+          <Link to="/">
           <button className="nav-btn">Trang chủ</button>
+          </Link>
           <Link to="/blog">
           <button className="nav-btn">Blog</button>
           </Link>
@@ -31,8 +34,8 @@ function Home() {
             <button className="nav-btn">Đăng Ký</button>
           </Link>
         </div>
-
-      </div>
+      </div> */}
+      {/* KẾT THÚC ĐOẠN XÓA */}
 
       <div className="home-main-section">
         <div className="main-left">
