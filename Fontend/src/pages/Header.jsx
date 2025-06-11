@@ -29,30 +29,37 @@ const Header = () => {
             <Link to="/register"><button className="nav-btn">Đăng Ký</button></Link>
           </>
         ) : (
-          <div className="user-dropdown" style={{ position: 'relative' }}>
-            <button
-              className="nav-btn"
-              style={{ fontWeight: 600, background: 'none', border: 'none', color: '#222', cursor: 'pointer' }}
-              onClick={() => setShowDropdown(!showDropdown)}
-            >
-              {user.name || user.email}
-              <span style={{ marginLeft: 6 }}>&#9662;</span>
-            </button>
-            {showDropdown && (
-              <div className="dropdown-menu">
-                <div className="dropdown-header">
-                  <div>{user.name || 'No name'}</div>
-                  <div>{user.email}</div>
+          <>
+            <button className="nav-btn" style={{background:'#ffe082',color:'#222',fontWeight:600,marginRight:8}} onClick={()=>{
+              setShowDropdown(false);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.location.href = '/payment';
+            }}>Nâng Cấp</button>
+            <div className="user-dropdown" style={{ position: 'relative', display: 'inline-block' }}>
+              <button
+                className="nav-btn"
+                style={{ fontWeight: 600, background: 'none', border: 'none', color: '#222', cursor: 'pointer' }}
+                onClick={() => setShowDropdown(!showDropdown)}
+              >
+                {user.name || user.email}
+                <span style={{ marginLeft: 6 }}>&#9662;</span>
+              </button>
+              {showDropdown && (
+                <div className="dropdown-menu">
+                  <div className="dropdown-header">
+                    <div>{user.name || 'No name'}</div>
+                    <div>{user.email}</div>
+                  </div>
+                  <Link to="/profile" className="dropdown-item" onClick={() => setShowDropdown(false)}>
+                    Thông tin cá nhân
+                  </Link>
+                  <button className="dropdown-item logout-btn" onClick={() => { logout(); setShowDropdown(false); }}>
+                    Đăng xuất
+                  </button>
                 </div>
-                <Link to="/profile" className="dropdown-item" onClick={() => setShowDropdown(false)}>
-                  Thông tin cá nhân
-                </Link>
-                <button className="dropdown-item logout-btn" onClick={() => { logout(); setShowDropdown(false); }}>
-                  Đăng xuất
-                </button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>

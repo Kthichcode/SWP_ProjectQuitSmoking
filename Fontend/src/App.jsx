@@ -8,6 +8,8 @@ import Register from './pages/Register';
 import About from './pages/About';
 import Blog from './pages/Blog';
 import Ranking from './pages/Ranking';
+import Payment from './pages/Payment';
+
 function App() {
   return (
     <>
@@ -19,6 +21,7 @@ function App() {
         <Route path="/blog" element={<Blog />} />
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/about" element={<About />} />
+        <Route path="/payment" element={<Payment />} />
         <Route path="/login/oauth2/code/google" element={<Navigate to="/login" />} />
       </Routes>
       <Footer />
