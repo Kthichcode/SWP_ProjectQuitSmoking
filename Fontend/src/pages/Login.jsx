@@ -41,8 +41,7 @@ function Login() {
     if (email === 'test@gmail.com' && password === '1') {
       login({
         email,
-        name: 'Người dùng thử',
-        avatar: '/src/assets/img1/android-chrome-192x192.png'
+        name: 'Người dùng thử'
       });
       setErrorMessage('');
       // Có thể chuyển hướng về trang chủ nếu muốn
