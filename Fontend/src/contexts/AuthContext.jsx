@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
     const token = data.token || data;
 
     try {
-      const decoded = jwtDecode(token); // 👈 dòng bạn hỏi đây
+      const decoded = jwtDecode(token); 
 
       const userObj = {
         ...decoded,

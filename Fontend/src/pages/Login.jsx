@@ -36,17 +36,19 @@ function Login() {
   const { login } = useAuth();
 
   const handleLoginSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post("http://localhost:5175/api/auth/login", {
-        username,
-        password,
-      }, {
-        withCredentials: true, 
-      });
+  e.preventDefault();
+  try {
+    const response = await axios.post("http://localhost:5175/api/auth/login", {
+      username,
+      password,
+    });
 
+    const token = response.data.data.token;
 
-    login(response.data); 
+   
+    localStorage.setItem('token', token);
+
+    login(response.data.data); 
 
     setErrorMessage('');
     navigate('/');
@@ -55,11 +57,11 @@ function Login() {
     if (error.response && error.response.status === 401) {
       setErrorMessage("Sai tài khoản hoặc mật khẩu");
     } else {
-      
       setErrorMessage("Đã có lỗi xảy ra. Vui lòng thử lại.");
     }
   }
 };
+
 
 
   return (
