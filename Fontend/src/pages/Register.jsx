@@ -23,6 +23,11 @@ function Register() {
                             </div>
 
                             <div className="form-group">
+                                <label>Username</label>
+                                <input type="text" placeholder="Nhập tên đăng nhập" />
+                            </div>
+
+                            <div className="form-group">
                                 <label>Email</label>
                                 <input type="email" placeholder="your@email.com" />
                             </div>
