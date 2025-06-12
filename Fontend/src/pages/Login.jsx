@@ -15,20 +15,26 @@ function Login() {
   const googleLogin = useGoogleLogin({
     scope: 'openid profile email https://www.googleapis.com/auth/userinfo.profile',
     onSuccess: async (tokenResponse) => {
-      console.log('Google login success:', tokenResponse);
-      setAccessToken(tokenResponse.access_token);
+  console.log('Google login success:', tokenResponse);
+  const googleToken = tokenResponse.access_token;
+  setAccessToken(googleToken);
 
-      try {
-        const res = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: {
-            Authorization: `Bearer ${tokenResponse.access_token}`,
-          },
-        });
-        console.log('Google User Info:', res.data);
-      } catch (err) {
-        console.error('Failed to fetch user info:', err);
-      }
-    },
+  try {
+    const res = await axios.post("http://localhost:5175/api/auth/google-login", {
+      access_token: googleToken,
+    });
+
+    const token = res.data.data.token;
+    localStorage.setItem('token', token);
+    login(res.data.data); 
+
+    navigate('/');
+  } catch (err) {
+    console.error('Gửi access_token về backend thất bại:', err);
+    setErrorMessage('Đăng nhập Google thất bại. Vui lòng thử lại.');
+  }
+},
+
     onError: () => {
       console.error('Google login failed');
     },
@@ -54,7 +60,7 @@ function Login() {
     navigate('/');
   } catch (error) {
 
-    
+
     console.error("Login failed", error);
     if (error.response && error.response.status === 401) {
       setErrorMessage("Sai tài khoản hoặc mật khẩu");
@@ -106,16 +112,6 @@ function Login() {
               </button>
             </div>
           </div>
-
-          {accessToken && (
-            <div className="token-display">
-              <h4>Google Access Token:</h4>
-              <div className="token-text">
-                {accessToken}
-              </div>
-            </div>
-          )}
-
           <p className="register-link">
             Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
           </p>
