@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 function Login() {
   const [accessToken, setAccessToken] = useState('');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
@@ -37,19 +37,30 @@ function Login() {
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    // Fake login
-    if (email === 'test@gmail.com' && password === '1') {
-      login({
-        email,
-        name: 'Người dùng thử'
+    try {
+      const response = await axios.post("http://localhost:5175/api/auth/login", {
+        username,
+        password,
+      }, {
+        withCredentials: true, 
       });
-      setErrorMessage('');
-      // Có thể chuyển hướng về trang chủ nếu muốn
-      navigate('/');
+
+
+    login(response.data); 
+
+    setErrorMessage('');
+    navigate('/');
+  } catch (error) {
+    console.error("Login failed", error);
+    if (error.response && error.response.status === 401) {
+      setErrorMessage("Sai tài khoản hoặc mật khẩu");
     } else {
-      setErrorMessage('Sai tài khoản hoặc mật khẩu');
+      
+      setErrorMessage("Đã có lỗi xảy ra. Vui lòng thử lại.");
     }
-  };
+  }
+};
+
 
   return (
     <section className="login-section">
@@ -62,8 +73,8 @@ function Login() {
           <h3>Đăng nhập tài khoản</h3>
           <p className="form-subtitle">Nhập thông tin đăng nhập của bạn bên dưới</p>
 
-          <label htmlFor="email">Email</label>
-          <input type="email" id="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <label htmlFor="username">Tên đăng nhập</label>
+          <input type="text" id="username" placeholder="Tên đăng nhập" value={username} onChange={(e) => setUsername(e.target.value)} required />
 
           <label htmlFor="password">Mật khẩu</label>
           <input type="password" id="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
