@@ -37,15 +37,6 @@ function Login() {
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    if (username === "test" && password === "1") {
-  login({
-    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QiLCJuYW1lIjoiVGVzdCBVc2VyIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIn0.sQw8kQw8kQw8kQw8kQw8kQw8kQw8kQw8kQw8kQw8kQw8" // JWT giả, payload chứa đủ trường
-  });
-  setErrorMessage('');
-  navigate('/');
-  return;
-
-  }
     try {
       const response = await axios.post("http://localhost:5175/api/auth/login", {
         username,
