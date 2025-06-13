@@ -46,7 +46,7 @@ function Register() {
             });
 
             const data = await res.json();
-            if (data.token) {
+            if (res.ok) {
                 alert("🎉 Đăng ký thành công!");
                 navigate('/login');
             } else {
