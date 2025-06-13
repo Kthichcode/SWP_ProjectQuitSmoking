@@ -4,8 +4,9 @@ import '../assets/CSS/Login.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import { jwtDecode } from 'jwt-decode';
 
-function Login() {
+function Login() {  
   const { login } = useAuth(); // Đặt lên đầu
   const [accessToken, setAccessToken] = useState('');
   const [username, setUsername] = useState('');
@@ -45,28 +46,37 @@ function Login() {
 
   // Login bằng username + password
   const handleLoginSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post("http://localhost:5175/api/auth/login", {
-        username,
-        password,
-      });
+  e.preventDefault();
+  try {
+    const response = await axios.post("http://localhost:5175/api/auth/login", {
+      username,
+      password,
+    });
 
-      const token = response.data.data.token;
-      localStorage.setItem('token', token);
-      login(response.data.data); // Cập nhật context
+    const token = response.data.data.token;
+    localStorage.setItem('token', token);
+    login(response.data.data);
+    const decoded = jwtDecode(token);
+    const role = decoded.scope?.toUpperCase();
 
-      setErrorMessage('');
+    if (role === 'ADMIN') {
+      navigate('/admin/dashboard');
+    } else if (role === 'COACH') {
+      navigate('/coach/dashboard');
+    } else {
       navigate('/');
-    } catch (error) {
-      console.error("Login failed", error);
-      if (error.response && error.response.status === 401) {
-        setErrorMessage("Sai tài khoản hoặc mật khẩu");
-      } else {
-        setErrorMessage("Đã có lỗi xảy ra. Vui lòng thử lại.");
-      }
     }
-  };
+
+    setErrorMessage('');
+  } catch (error) {
+    console.error("Login failed", error);
+    if (error.response && error.response.status === 401) {
+      setErrorMessage("Sai tài khoản hoặc mật khẩu");
+    } else {
+      setErrorMessage("Đã có lỗi xảy ra. Vui lòng thử lại.");
+    }
+  }
+};
 
   return (
     <section className="login-section">

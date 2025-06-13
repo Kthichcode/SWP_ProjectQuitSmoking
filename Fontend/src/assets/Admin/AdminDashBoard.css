@@ -1,0 +1,168 @@
+/* AdminDashboard.css */
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f0fdf4;
+}
+
+.dashboard {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  background-color: #ecfdf5;
+  width: 230px;
+  padding: 1rem;
+  border-right: 1px solid #d1fae5;
+}
+
+.sidebar-header {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #10b981;
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu li {
+  padding: 0.6rem;
+  margin: 0.3rem 0;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #047857;
+}
+
+.menu li:hover {
+  background-color: #a7f3d0;
+}
+
+/* Main content */
+.main {
+  flex-grow: 1;
+  padding: 1rem 2rem;
+  background-color: #f9fdfb;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.admin-button {
+  background-color: #10b981;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.card {
+  background-color: #d1fae5;
+  padding: 1rem;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: bold;
+  color: #064e3b;
+}
+
+.progress-section {
+  background-color: #ffffff;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.progress-bar {
+  margin-bottom: 1rem;
+}
+
+.progress-bar span {
+  display: inline-block;
+  width: 100px;
+}
+
+.bar {
+  display: inline-block;
+  width: 60%;
+  height: 12px;
+  background-color: #d1fae5;
+  border-radius: 6px;
+  margin: 0 10px;
+  vertical-align: middle;
+}
+
+.fill {
+  height: 100%;
+  background-color: #10b981;
+  border-radius: 6px;
+}
+
+/* User & Feedback */
+.user-feedback {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.users, .feedback {
+  background-color: #ffffff;
+  padding: 1rem;
+  border-radius: 10px;
+  flex: 1;
+  min-width: 300px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.users table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users th, .users td {
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.active {
+  color: green;
+  font-weight: bold;
+}
+
+.pending {
+  color: orange;
+  font-weight: bold;
+}
+
+.inactive {
+  color: red;
+  font-weight: bold;
+}
+
+.feedback ul {
+  list-style: none;
+  padding-left: 1rem;
+}
+
+.feedback li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}

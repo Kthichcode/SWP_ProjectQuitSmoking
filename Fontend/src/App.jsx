@@ -9,24 +9,38 @@ import About from './pages/About';
 import Blog from './pages/Blog';
 import Ranking from './pages/Ranking';
 import Payment from './pages/Payment';
-import CoachDashBoard from './pages/CoachDashboard';
+import CoachDashBoard from './pages/CoachDashBoard';
+import AdminDashboard from './assets/Admin/AdminDashBoard';
 
 function App() {
   return (
     <>
-      <Header />
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/ranking" element={<Ranking />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/payment" element={<Payment />} />
-        <Route path="/coach-dashboard" element={<CoachDashBoard />} />
-        <Route path="/login/oauth2/code/google" element={<Navigate to="/login" />} />
+        <Route
+          path="/admin/dashboard"
+          element={<AdminDashboard />}
+        />
+        <Route
+          path="*"
+          element={
+            <>
+              <Header />
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/ranking" element={<Ranking />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/payment" element={<Payment />} />
+                <Route path="/coach-dashboard" element={<CoachDashBoard />} />
+                <Route path="/login/oauth2/code/google" element={<Navigate to="/login" />} />
+              </Routes>
+              <Footer />
+            </>
+          }
+        />
       </Routes>
-      <Footer />
     </>
   );
 }

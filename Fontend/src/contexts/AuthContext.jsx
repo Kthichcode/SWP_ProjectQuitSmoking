@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
- 
+
+
 
 const AuthContext = createContext();
 
@@ -9,6 +10,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+
 
   useEffect(() => {
     try {
@@ -33,7 +35,7 @@ export const AuthProvider = ({ children }) => {
     const token = data.token || data;
 
     try {
-      const decoded = jwtDecode(token); 
+      const decoded = jwtDecode(token);
 
       const userObj = {
         ...decoded,
@@ -45,6 +47,7 @@ export const AuthProvider = ({ children }) => {
 
       localStorage.setItem('user', JSON.stringify(userObj));
       localStorage.setItem('token', token);
+      
     } catch (error) {
       console.error('Lỗi khi decode token:', error);
     }
