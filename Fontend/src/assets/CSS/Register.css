@@ -8,18 +8,18 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 20px 0; 
+    padding: 40px 10px 0; 
     min-height: 100vh;
-   
+    background: none;
 }
 
 .register-wrapper {
-    background-color: white;
-    max-width: 500px;
+    background-color: #fff;
+    max-width: 420px;
     width: 100%;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    padding: 30px 30px 40px;
+    border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+    padding: 28px 18px 32px;
 }
 
 .register-header {
@@ -33,26 +33,26 @@ body {
 }
 
 .register-header h2 {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: bold;
-    margin: 10px 0 4px;
+    margin: 12px 0 6px;
 }
 
 .register-header p {
-    color: #666;
-    font-size: 14px;
+    color: #888;
+    font-size: 15px;
 }
 
 .register-box h3 {
-    font-size: 18px;
+    font-size: 19px;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 7px;
 }
 
 .register-box p {
     font-size: 14px;
     color: #888;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .register-form {
@@ -63,28 +63,28 @@ body {
 .register-form input,
 .register-form select {
     padding: 10px 12px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 14px;
+    margin-bottom: 13px;
+    border: 1px solid #b5b5b5;
+    border-radius: 7px;
+    font-size: 15px;
     box-sizing: border-box;
     width: 100%;
+    background: #f8fafc;
+    transition: border 0.2s;
 }
 
 
-.register-form input:-webkit-autofill,
-.register-form input:-webkit-autofill:hover,
-.register-form input:-webkit-autofill:focus,
-.register-form input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px white inset !important;
-    -webkit-text-fill-color: black !important;
-    transition: background-color 5000s ease-in-out 0s;
+.register-form input:focus,
+.register-form select:focus {
+    border: 1.5px solid #4CAF50;
+    outline: none;
+    background: #fff;
 }
 
 .register-input-group {
     display: flex;
-    gap: 20px;
-    margin-bottom: 15px;
+    gap: 14px;
+    margin-bottom: 13px;
     width: 100%;
     justify-content: space-between;
 }
@@ -92,24 +92,21 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    width: calc(50% - 10px);
+    width: calc(50% - 7px);
     min-width: 0;
-}
-.register-input-group input {
-    width: 100%;
-    box-sizing: border-box;
 }
 
 .register-form-subheading {
-    font-weight: 500;
+    font-weight: 600;
     font-size: 15px;
-    margin: 15px 0 10px;
+    margin: 18px 0 10px;
+    color: #222;
 }
 
 .register-checkbox {
     font-size: 14px;
     color: #333;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .register-checkbox label {
@@ -124,32 +121,38 @@ body {
 
 
 .register-checkbox input[type="checkbox"] {
-    position: absolute;
+    position: relative;
     opacity: 0;
-    width: 0;
-    height: 0;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    z-index: 2;
+    cursor: pointer;
 }
 
 
 .register-checkbox .custom-box {
     width: 18px;
     height: 18px;
-    border: 2px solid #0df863;
+    border: 2px solid #4CAF50;
     border-radius: 4px;
     background-color: white;
     flex-shrink: 0;
-    position: relative;
+    position: absolute;
+    left: 0;
+    top: 0;
+    pointer-events: none;
 }
 
 
-.register-checkbox input[type="checkbox"]:checked+.custom-box::after {
+.register-checkbox input[type="checkbox"]:checked + .custom-box::after {
     content: "";
     position: absolute;
     left: 4px;
     top: 0px;
     width: 6px;
     height: 12px;
-    border: solid #04aa6d;
+    border: solid #4CAF50;
     border-width: 0 2.5px 2.5px 0;
     transform: rotate(45deg);
 }
@@ -166,23 +169,26 @@ body {
 
 .register-button {
     padding: 12px;
-    font-size: 15px;
+    font-size: 16px;
     background-color: #4CAF50;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 7px;
     cursor: pointer;
     margin-bottom: 12px;
-    transition: background 0.2s ease-in-out;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
 }
 
 .register-button:hover {
-    background-color: #4CAF50;
+    background-color: #388e3c;
 }
 
 .register-login {
     text-align: center;
     font-size: 14px;
+    margin-top: 8px;
 }
 
 .register-login a {
@@ -191,13 +197,15 @@ body {
     font-weight: 500;
 }
 
-select option {
-    color: black;
-    background-color: white;
-}
-
 select {
-    background-color: #4CAF50;
+    background-color: #e0f7ef;
+    border: 1.5px solid #4CAF50;
+    color: #222;
+    transition: background 0.2s;
+}
+select:focus {
+    background-color: #c2f0e3;
+    border: 2px solid #388e3c;
 }
 
 .form-group {
@@ -207,10 +215,23 @@ select {
 }
 
 .form-group label {
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     font-weight: 500;
     font-size: 14px;
     color: #333;
+}
+
+@media (max-width: 600px) {
+    .register-wrapper {
+        padding: 12px 2vw 18px;
+        max-width: 98vw;
+    }
+    .register-header h2 {
+        font-size: 19px;
+    }
+    .register-box h3 {
+        font-size: 16px;
+    }
 }
 
 .register-section {
