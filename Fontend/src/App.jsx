@@ -10,6 +10,7 @@ import Blog from './pages/Blog';
 import Ranking from './pages/Ranking';
 import Payment from './pages/Payment';
 import CoachDashBoard from './pages/CoachDashBoard';
+import CoachProfile from './pages/CoachProfile';
 import AdminDashboard from './assets/Admin/AdminDashBoard';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/payment" element={<Payment />} />
                 <Route path="/coach-dashboard" element={<CoachDashBoard />} />
+                <Route path="/coach/:id" element={<CoachProfile />} />
                 <Route path="/login/oauth2/code/google" element={<Navigate to="/login" />} />
               </Routes>
               <Footer />

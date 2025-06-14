@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import CoachCard from '../components/CoachCard';
 import '../assets/CSS/CoachDashBoard.css';
 
-const coaches = [
+export const coaches = [
   {
     id: 1,
     initials: 'ML',
@@ -11,6 +12,9 @@ const coaches = [
     rating: 4.9,
     experience: '12 năm',
     online: true,
+    busy: false,
+    reviews: 127,
+    badges: ['NLP Master', 'Certified Life Coach'],
     specialties: ['Chuyên gia cai nghiện', 'Tâm lý trị liệu', 'Y học gia đình'],
     successRate: 87,
     clients: 543,
@@ -19,11 +23,49 @@ const coaches = [
     location: 'Hà Nội',
     responseTime: '< 30 phút',
   },
-  // ...thêm các coach khác như hình bạn gửi
+  {
+    id: 1,
+    initials: 'ML',
+    title: 'TS.BS',
+    name: 'Nguyễn Thị Mai Lan',
+    rating: 4.9,
+    experience: '12 năm',
+    online: true,
+    busy: false,
+    reviews: 127,
+    badges: ['NLP Master', 'Certified Life Coach'],
+    specialties: ['Chuyên gia cai nghiện', 'Tâm lý trị liệu', 'Y học gia đình'],
+    successRate: 87,
+    clients: 543,
+    tags: ['Chuyên nghiệp', 'Kinh nghiệm'],
+    profile: 'Tốt nghiệp ĐH Y Hà Nội, từng giúp hơn 500 người bỏ thuốc thành công.',
+    location: 'Hà Nội',
+    responseTime: '< 30 phút',
+  },
+  {
+    id: 1,
+    initials: 'ML',
+    title: 'TS.BS',
+    name: 'Nguyễn Thị Mai Lan',
+    rating: 4.9,
+    experience: '12 năm',
+    online: true,
+    busy: false,
+    reviews: 127,
+    badges: ['NLP Master', 'Certified Life Coach'],
+    specialties: ['Chuyên gia cai nghiện', 'Tâm lý trị liệu', 'Y học gia đình'],
+    successRate: 87,
+    clients: 543,
+    tags: ['Chuyên nghiệp', 'Kinh nghiệm'],
+    profile: 'Tốt nghiệp ĐH Y Hà Nội, từng giúp hơn 500 người bỏ thuốc thành công.',
+    location: 'Hà Nội',
+    responseTime: '< 30 phút',
+  },
+  // ...thêm các coach khác tương tự, đủ trường
 ];
 
 function CoachDashBoard() {
-  const [selectedCoach, setSelectedCoach] = useState(null);
+  const navigate = useNavigate();
 
   return (
     <div className="coach-dashboard-bg">
@@ -40,22 +82,14 @@ function CoachDashBoard() {
       {/* Bộ lọc tìm kiếm có thể thêm ở đây */}
       <div className="coach-list">
         {coaches.map(coach => (
-          <CoachCard key={coach.id} coach={coach} onViewDetail={setSelectedCoach} />
+          <CoachCard
+            key={coach.id}
+            coach={coach}
+            onViewDetail={() => navigate(`/coach/${coach.id}`)}
+          />
         ))}
       </div>
-      {selectedCoach && (
-        <div className="coach-modal">
-          <div className="coach-modal-content">
-            <button className="close-btn" onClick={() => setSelectedCoach(null)}>×</button>
-            <h3>{selectedCoach.title} {selectedCoach.name}</h3>
-            <div><b>Kinh nghiệm:</b> {selectedCoach.experience}</div>
-            <div><b>Đánh giá:</b> {selectedCoach.rating} ⭐</div>
-            <div><b>Chuyên môn:</b> {selectedCoach.specialties.join(', ')}</div>
-            <div><b>Giới thiệu:</b> {selectedCoach.profile}</div>
-            <button className="choose-btn">Chọn coach này</button>
-          </div>
-        </div>
-      )}
+  );
     </div>
   );
 }

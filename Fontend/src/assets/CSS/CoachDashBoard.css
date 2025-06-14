@@ -1,9 +1,8 @@
 /* Phần nền chính */
 .coach-dashboard-bg {
-  background: #e9fdf2;
-  padding: 48px 24px;
-  font-family: 'Segoe UI', sans-serif;
+  background: #eafff3;
   min-height: 100vh;
+  padding: 32px 0;
 }
 
 /* Header */
@@ -13,9 +12,8 @@
 }
 
 .coach-dashboard-header h2 {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #1b5e20;
+  font-size: 2.2rem;
+  margin-bottom: 8px;
 }
 
 .coach-dashboard-header p {
@@ -26,21 +24,16 @@
 /* Stats */
 .coach-dashboard-stats {
   display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
   justify-content: center;
-  margin-bottom: 40px;
+  gap: 32px;
+  margin: 24px 0;
 }
 
 .coach-dashboard-stats > div {
-  flex: 1;
-  max-width: 220px;
-  padding: 20px;
-  background: linear-gradient(to right, #43a047, #66bb6a);
-  color: white;
-  border-radius: 16px;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 32px;
+  box-shadow: 0 2px 8px #eee;
 }
 
 .coach-dashboard-stats > div > div {
@@ -49,7 +42,7 @@
 }
 
 .coach-dashboard-stats > div > span {
-  font-size: 1rem;
+  color: #888;
 }
 
 /* Bộ lọc */
@@ -72,17 +65,22 @@
 /* Danh sách Coach */
 .coach-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  justify-content: center;
+  margin: 0 auto;
+  max-width: 1200px;
 }
 
 /* Coach card */
 .coach-card {
-  background: white;
+  background: #fff;
   border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(76, 175, 80, 0.1);
-  padding: 20px;
-  transition: transform 0.2s ease;
+  box-shadow: 0 2px 12px #e0f2f1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .coach-card:hover {
@@ -93,28 +91,25 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  border-bottom: 1px solid #e0f2f1;
-  padding-bottom: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .coach-avatar {
-  width: 60px;
-  height: 60px;
-  background: #66bb6a;
-  color: white;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
+  background: #1abc9c;
+  color: #fff;
+  font-size: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: 1.4rem;
 }
 
-.coach-name {
-  font-weight: 700;
+.coach-title {
   font-size: 1.1rem;
-  color: #1b5e20;
+  font-weight: bold;
 }
 
 .coach-status {
@@ -127,59 +122,89 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.9rem;
-  color: #4caf50;
+  margin-top: 4px;
 }
 
 .coach-exp {
-  background: #dcedc8;
-  padding: 4px 10px;
+  background: #e0f7fa;
+  color: #00796b;
   border-radius: 8px;
-  font-size: 0.85rem;
-  color: #558b2f;
-  font-weight: 500;
+  padding: 2px 8px;
+  font-size: 0.9rem;
+}
+
+.coach-status.online {
+  color: #16a34a;
+  font-weight: bold;
+}
+
+.coach-status.busy {
+  color: #fbbf24;
+  font-weight: bold;
+}
+
+.coach-status.offline {
+  color: #bdbdbd;
+  font-weight: bold;
+}
+
+.coach-badges {
+  margin-top: 6px;
+}
+
+.coach-badge {
+  background: #fef08a;
+  color: #b45309;
+  border-radius: 8px;
+  padding: 4px 10px;
+  margin-right: 8px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.coach-profile {
+  margin: 10px 0;
+  color: #333;
 }
 
 /* Chuyên môn */
 .coach-specialties {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 10px 0;
+  margin-bottom: 10px;
 }
 
 .coach-specialty {
-  background: #e8f5e9;
-  color: #388e3c;
-  padding: 4px 10px;
-  border-radius: 10px;
-  font-size: 0.85rem;
+  background: #d1fae5;
+  color: #047857;
+  border-radius: 8px;
+  padding: 4px 12px;
+  margin-right: 8px;
+  font-weight: 600;
+  font-size: 15px;
 }
 
 /* Stats */
-.coach-stats {
+.coach-stats-row {
   display: flex;
-  justify-content: space-between;
-  margin: 10px 0;
+  gap: 12px;
+  margin: 12px 0;
 }
 
-.stat-block {
-  background: #f1f8e9;
-  padding: 12px;
-  border-radius: 10px;
-  width: 48%;
+.coach-stat {
+  flex: 1;
+  background: #f0fdf4;
+  border-radius: 12px;
+  padding: 12px 0;
   text-align: center;
 }
 
-.stat-value {
-  font-size: 1.3rem;
+.coach-stat .stat-value {
+  font-size: 1.2rem;
   font-weight: bold;
-  color: #2e7d32;
 }
 
-.stat-label {
-  font-size: 0.85rem;
-  color: #757575;
+.coach-stat .stat-label {
+  color: #888;
+  font-size: 0.9rem;
 }
 
 /* Thông tin thêm */
@@ -193,33 +218,26 @@
 }
 
 .coach-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .coach-tag {
   background: #fffde7;
   color: #fbc02d;
-  border-radius: 10px;
-  padding: 4px 10px;
-  font-size: 0.85rem;
+  border-radius: 8px;
+  padding: 2px 8px;
+  margin-right: 6px;
+  font-size: 0.9rem;
 }
 
 /* Button */
 .coach-detail-btn {
-  width: 100%;
-  background: linear-gradient(to right, #43a047, #66bb6a);
-  color: white;
-  padding: 10px;
-  font-weight: 600;
+  background: #009688;
+  color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.coach-detail-btn:hover {
-  background: linear-gradient(to right, #2e7d32, #4caf50);
+  margin-top: 10px;
 }
