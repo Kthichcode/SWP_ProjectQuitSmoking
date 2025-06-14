@@ -169,7 +169,7 @@ function Register() {
 
                             <button type="submit" className="register-button">Đăng ký</button>
 
-                            <p className="register-login">Đã có tài khoản? <a href="/login">Đăng nhập ngay</a></p>
+                            <p className="register-login">Đã có tài khoản? <a href="/login" onClick={e => { e.preventDefault(); navigate('/login'); }}>Đăng nhập ngay</a></p>
                         </form>
                     </div>
                 </div>
