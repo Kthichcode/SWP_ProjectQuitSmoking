@@ -17,12 +17,19 @@ export const AuthProvider = ({ children }) => {
       const storedUser = localStorage.getItem('user');
       const storedToken = localStorage.getItem('token');
 
-      if (storedUser && storedToken) {
-        const parsedUser = JSON.parse(storedUser);
-        if (parsedUser) {
-          setUser(parsedUser);
-          setToken(storedToken);
-        }
+      // Nếu không có token hoặc user thì không cho đăng nhập tự động
+      if (!storedUser || !storedToken) {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        return;
+      }
+
+      const parsedUser = JSON.parse(storedUser);
+      if (parsedUser) {
+        setUser(parsedUser);
+        setToken(storedToken);
       }
     } catch (error) {
       console.error('Lỗi khi parse localStorage:', error);

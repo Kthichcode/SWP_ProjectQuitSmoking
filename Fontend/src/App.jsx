@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Header from './pages/Header';
@@ -12,6 +12,15 @@ import Payment from './pages/Payment';
 import CoachDashBoard from './pages/CoachDashBoard';
 import CoachProfile from './pages/CoachProfile';
 import AdminDashboard from './assets/Admin/AdminDashBoard';
+import { useAuth } from './contexts/AuthContext';
+
+function RequireRole({ role, children }) {
+  const { user } = useAuth();
+  const location = useLocation();
+  if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (user.scope?.toUpperCase() !== role) return <Navigate to="/login" replace />;
+  return children;
+}
 
 function App() {
   return (
@@ -19,7 +28,19 @@ function App() {
       <Routes>
         <Route
           path="/admin/dashboard"
-          element={<AdminDashboard />}
+          element={
+            <RequireRole role="ADMIN">
+              <AdminDashboard />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/coach-dashboard"
+          element={
+            <RequireRole role="COACH">
+              <CoachDashBoard />
+            </RequireRole>
+          }
         />
         <Route
           path="*"
@@ -34,7 +55,6 @@ function App() {
                 <Route path="/ranking" element={<Ranking />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/payment" element={<Payment />} />
-                <Route path="/coach-dashboard" element={<CoachDashBoard />} />
                 <Route path="/coach/:id" element={<CoachProfile />} />
                 <Route path="/login/oauth2/code/google" element={<Navigate to="/login" />} />
               </Routes>

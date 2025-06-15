@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../assets/CSS/Home.css';
 import { useAuth } from '../contexts/AuthContext';
@@ -6,6 +6,17 @@ import { useAuth } from '../contexts/AuthContext';
 const Header = () => {
   const { user, logout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
+
+  useEffect(() => {
+    const handleUnload = () => {
+      localStorage.removeItem('token');
+      logout(); // Xóa context user khi đóng tab/trình duyệt
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, [logout]);
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 

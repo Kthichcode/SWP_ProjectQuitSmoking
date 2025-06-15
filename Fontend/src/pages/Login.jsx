@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import '../assets/CSS/Login.css';
 import { Link, useNavigate } from 'react-router-dom';
@@ -7,13 +7,32 @@ import { useAuth } from '../contexts/AuthContext';
 import { jwtDecode } from 'jwt-decode';
 
 function Login() {  
-  const { login } = useAuth(); // Đặt lên đầu
+  const { login, user } = useAuth(); // lấy user từ context
   const [accessToken, setAccessToken] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      // Xóa toàn bộ lịch sử trước đó để không thể back về trang cũ
+      if (user.scope?.toUpperCase() === 'ADMIN') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (user.scope?.toUpperCase() === 'COACH') {
+        navigate('/coach-dashboard', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
+      window.history.pushState(null, '', window.location.href); // chặn back
+      window.onpopstate = function () {
+        navigate(1);
+      };
+    } else {
+      window.onpopstate = null;
+    }
+  }, [user, navigate]);
 
   // Login bằng Google
   const googleLogin = useGoogleLogin({
@@ -62,7 +81,7 @@ function Login() {
     if (role === 'ADMIN') {
       navigate('/admin/dashboard');
     } else if (role === 'COACH') {
-      navigate('/coach/dashboard');
+      navigate('/coach-dashboard'); // chuyển về trang CoachDashBoard
     } else {
       navigate('/');
     }
@@ -77,6 +96,18 @@ function Login() {
     }
   }
 };
+
+  // Khi component mount, nếu không ở trang login thì xóa token và context user
+  useEffect(() => {
+    const handleUnload = () => {
+      localStorage.removeItem('token');
+      login(null); // Xóa context user
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, [login]);
 
   return (
     <section className="login-section">
