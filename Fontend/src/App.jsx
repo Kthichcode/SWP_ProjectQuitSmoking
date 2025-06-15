@@ -12,6 +12,14 @@ import Payment from './pages/Payment';
 import CoachDashBoard from './pages/CoachDashBoard';
 import CoachProfile from './pages/CoachProfile';
 import AdminDashboard from './assets/Admin/AdminDashBoard';
+import AdminUsers from './assets/Admin/AdminUsers';
+import AdminCoaches from './assets/Admin/AdminCoaches';
+import AdminPlans from './assets/Admin/AdminPlans';
+import AdminAchievements from './assets/Admin/AdminAchievements';
+import AdminSystem from './assets/Admin/AdminSystem';
+import AdminFeedback from './assets/Admin/AdminFeedback';
+import AdminPackages from './assets/Admin/AdminPackages';
+import AdminStatistics from './assets/Admin/AdminStatistics';
 import { useAuth } from './contexts/AuthContext';
 
 function RequireRole({ role, children }) {
@@ -33,15 +41,17 @@ function App() {
               <AdminDashboard />
             </RequireRole>
           }
-        />
-        <Route
-          path="/coach-dashboard"
-          element={
-            <RequireRole role="COACH">
-              <CoachDashBoard />
-            </RequireRole>
-          }
-        />
+        >
+          <Route index element={<div>Thống kê tổng quan</div>} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="coaches" element={<AdminCoaches />} />
+          <Route path="plans" element={<AdminPlans />} />
+          <Route path="achievements" element={<AdminAchievements />} />
+          <Route path="system" element={<AdminSystem />} />
+          <Route path="feedback" element={<AdminFeedback />} />
+          <Route path="packages" element={<AdminPackages />} />
+          <Route path="statistics" element={<AdminStatistics />} />
+        </Route>
         <Route
           path="*"
           element={
@@ -55,6 +65,7 @@ function App() {
                 <Route path="/ranking" element={<Ranking />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/payment" element={<Payment />} />
+                <Route path="/coach-dashboard" element={<CoachDashBoard />} />
                 <Route path="/coach/:id" element={<CoachProfile />} />
                 <Route path="/login/oauth2/code/google" element={<Navigate to="/login" />} />
               </Routes>
