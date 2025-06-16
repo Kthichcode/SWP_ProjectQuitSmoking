@@ -14,7 +14,7 @@ function Payment() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    if (!user) {
+    if (user === null) {
       navigate('/login', { replace: true });
     }
   }, [user, navigate]);

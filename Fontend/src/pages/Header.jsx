@@ -17,7 +17,7 @@ const Header = () => {
       if (scope === 'ADMIN') {
         navigate('/admin/dashboard', { replace: true });
       } else if (scope === 'COACH') {
-        navigate('/coach/dashboard', { replace: true });
+        navigate('/coach', { replace: true });
       }
     }
   }, [user, navigate]);
@@ -50,7 +50,7 @@ const Header = () => {
               style={{ background: '#ffe082', color: '#222', fontWeight: 600, marginRight: 8 }}
               onClick={() => {
                 setShowDropdown(false);
-                window.location.href = '/payment';
+                navigate('/payment');
               }}
             >
               Nâng Cấp
