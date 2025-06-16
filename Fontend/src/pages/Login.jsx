@@ -6,8 +6,8 @@ import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { jwtDecode } from 'jwt-decode';
 
-function Login() {  
-  const { login, user } = useAuth(); // lấy user từ context
+function Login() {
+  const { login, user } = useAuth();
   const [accessToken, setAccessToken] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -15,30 +15,36 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
+  // 🚫 Nếu đã đăng nhập thì redirect khỏi /login luôn
   useEffect(() => {
     if (user) {
-      // Xóa toàn bộ lịch sử trước đó để không thể back về trang cũ
+      // Chuyển hướng đúng theo role khi đã login
       if (user.scope?.toUpperCase() === 'ADMIN') {
         navigate('/admin/dashboard', { replace: true });
       } else if (user.scope?.toUpperCase() === 'COACH') {
-        navigate('/coach-dashboard', { replace: true });
+        navigate('/coach', { replace: true });
       } else {
-        navigate('/', { replace: true });
+        navigate('/home', { replace: true });
       }
-      window.history.pushState(null, '', window.location.href); // chặn back
-      window.onpopstate = function () {
-        navigate(1);
-      };
-    } else {
-      window.onpopstate = null;
     }
   }, [user, navigate]);
+  
+  useEffect(() => {
+  const handlePageShow = (e) => {
+    const token = localStorage.getItem('token');
+    if (token && user) {
+      window.location.reload();
+    }
+  };
 
-  // Login bằng Google
+  window.addEventListener('pageshow', handlePageShow);
+  return () => window.removeEventListener('pageshow', handlePageShow);
+}, [user]);
+
+  // ✅ Login bằng Google
   const googleLogin = useGoogleLogin({
     scope: 'openid profile email https://www.googleapis.com/auth/userinfo.profile',
     onSuccess: async (tokenResponse) => {
-      console.log('Google login success:', tokenResponse);
       const googleToken = tokenResponse.access_token;
       setAccessToken(googleToken);
 
@@ -49,9 +55,9 @@ function Login() {
 
         const token = res.data.data.token;
         localStorage.setItem('token', token);
-        login(res.data.data); // Cập nhật context
+        login(res.data.data);
 
-        navigate('/');
+        navigate('/home', { replace: true });
       } catch (err) {
         console.error('Gửi access_token về backend thất bại:', err);
         setErrorMessage('Đăng nhập Google thất bại. Vui lòng thử lại.');
@@ -63,51 +69,40 @@ function Login() {
     },
   });
 
-  // Login bằng username + password
+  // ✅ Login bằng username + password
   const handleLoginSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const response = await axios.post("http://localhost:5175/api/auth/login", {
-      username,
-      password,
-    });
+    e.preventDefault();
+    try {
+      const response = await axios.post("http://localhost:5175/api/auth/login", {
+        username,
+        password,
+      });
 
-    const token = response.data.data.token;
-    localStorage.setItem('token', token);
-    login(response.data.data);
-    const decoded = jwtDecode(token);
-    const role = decoded.scope?.toUpperCase();
+      const token = response.data.data.token;
+      localStorage.setItem('token', token);
+      login(response.data.data);
 
-    if (role === 'ADMIN') {
-      navigate('/admin/dashboard');
-    } else if (role === 'COACH') {
-      navigate('/coach-dashboard'); // chuyển về trang CoachDashBoard
-    } else {
-      navigate('/');
+      const decoded = jwtDecode(token);
+      const role = decoded.scope?.toUpperCase();
+
+      if (role === 'ADMIN') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (role === 'COACH') {
+        navigate('/coach', { replace: true });
+      } else {
+        navigate('/home', { replace: true });
+      }
+
+      setErrorMessage('');
+    } catch (error) {
+      console.error("Login failed", error);
+      if (error.response && error.response.status === 401) {
+        setErrorMessage("Sai tài khoản hoặc mật khẩu");
+      } else {
+        setErrorMessage("Đã có lỗi xảy ra. Vui lòng thử lại.");
+      }
     }
-
-    setErrorMessage('');
-  } catch (error) {
-    console.error("Login failed", error);
-    if (error.response && error.response.status === 401) {
-      setErrorMessage("Sai tài khoản hoặc mật khẩu");
-    } else {
-      setErrorMessage("Đã có lỗi xảy ra. Vui lòng thử lại.");
-    }
-  }
-};
-
-  // Khi component mount, nếu không ở trang login thì xóa token và context user
-  useEffect(() => {
-    const handleUnload = () => {
-      localStorage.removeItem('token');
-      login(null); // Xóa context user
-    };
-    window.addEventListener('beforeunload', handleUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleUnload);
-    };
-  }, [login]);
+  };
 
   return (
     <section className="login-section">
@@ -149,9 +144,9 @@ function Login() {
               tabIndex={0}
             >
               {showPassword ? (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
               ) : (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.81 21.81 0 0 1 5.06-6.06M1 1l22 22"></path></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.81 21.81 0 0 1 5.06-6.06M1 1l22 22"/></svg>
               )}
             </span>
           </div>

@@ -1,7 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import '../assets/CSS/About.css'; 
 
 const About = () => {
+  useEffect(() => {
+    const handlePageShow = (event) => {
+      if (event.persisted || performance.getEntriesByType("navigation")[0]?.type === "back_forward") {
+        window.location.reload();
+      }
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, []);
   return (
     <div className="about-container">
       <section className="intro">

@@ -9,17 +9,10 @@ import About from './pages/About';
 import Blog from './pages/Blog';
 import Ranking from './pages/Ranking';
 import Payment from './pages/Payment';
-import CoachDashBoard from './pages/CoachDashBoard';
+import CoachPayment from './pages/CoachPayment';
 import CoachProfile from './pages/CoachProfile';
 import AdminDashboard from './assets/Admin/AdminDashBoard';
-import AdminUsers from './assets/Admin/AdminUsers';
-import AdminCoaches from './assets/Admin/AdminCoaches';
-import AdminPlans from './assets/Admin/AdminPlans';
-import AdminAchievements from './assets/Admin/AdminAchievements';
-import AdminSystem from './assets/Admin/AdminSystem';
-import AdminFeedback from './assets/Admin/AdminFeedback';
-import AdminPackages from './assets/Admin/AdminPackages';
-import AdminStatistics from './assets/Admin/AdminStatistics';
+import Coach from './assets/Coach/Coach';
 import { useAuth } from './contexts/AuthContext';
 
 function RequireRole({ role, children }) {
@@ -41,33 +34,35 @@ function App() {
               <AdminDashboard />
             </RequireRole>
           }
-        >
-          <Route index element={<div>Thống kê tổng quan</div>} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="coaches" element={<AdminCoaches />} />
-          <Route path="plans" element={<AdminPlans />} />
-          <Route path="achievements" element={<AdminAchievements />} />
-          <Route path="system" element={<AdminSystem />} />
-          <Route path="feedback" element={<AdminFeedback />} />
-          <Route path="packages" element={<AdminPackages />} />
-          <Route path="statistics" element={<AdminStatistics />} />
-        </Route>
+        />
+        <Route
+          path="/coach"
+          element={
+            <RequireRole role="COACH">
+              <Coach />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/coach-payment"
+          element={<CoachPayment />}
+        />
         <Route
           path="*"
           element={
             <>
               <Header />
               <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/home" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/ranking" element={<Ranking />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/payment" element={<Payment />} />
-                <Route path="/coach-dashboard" element={<CoachDashBoard />} />
                 <Route path="/coach/:id" element={<CoachProfile />} />
                 <Route path="/login/oauth2/code/google" element={<Navigate to="/login" />} />
+                <Route path="/" element={<Navigate to="/home" replace />} />
               </Routes>
               <Footer />
             </>

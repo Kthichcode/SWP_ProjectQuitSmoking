@@ -1,7 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import '../assets/CSS/Ranking.css';
 
 const Ranking = () => {
+  useEffect(() => {
+  // Reload trang nếu người dùng trở lại từ nút Back (trình duyệt cache)
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      window.location.reload();
+    }
+  });
+}, []);
+
   const topUsers = [
     { rank: 1, name: 'Nguyễn Văn A', days: 120, emoji: '🥇' },
     { rank: 2, name: 'Trần Văn B', days: 85, emoji: '🥈' },

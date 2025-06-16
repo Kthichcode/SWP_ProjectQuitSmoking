@@ -1,51 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import '../assets/CSS/Home.css';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const { user, logout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
+  const navigate = useNavigate();
 
+  // Chuyển hướng nếu là ADMIN hoặc COACH
   useEffect(() => {
-    const handleUnload = () => {
-      localStorage.removeItem('token');
-      logout(); // Xóa context user khi đóng tab/trình duyệt
-    };
-    window.addEventListener('beforeunload', handleUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleUnload);
-    };
-  }, [logout]);
-
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!user) return;
+    const scope = user.scope?.toUpperCase();
+    const path = window.location.pathname;
+    if ((path === '/' || path === '/home')) {
+      if (scope === 'ADMIN') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (scope === 'COACH') {
+        navigate('/coach/dashboard', { replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   return (
     <div className="home-header-bar">
-      <Link to="/" className="home-logo" onClick={scrollToTop}>
+      <a href="/home" className="home-logo">
         <img src="/src/assets/img1/android-chrome-192x192.png" alt="NoSmoke Logo" className="logo-img" />
         <span className="logo-text">NoSmoke</span>
-      </Link>
+      </a>
+
       <div className="home-nav">
-        <Link to="/" onClick={scrollToTop}><button className="nav-btn">Trang chủ</button></Link>
-        <Link to="/blog" onClick={scrollToTop}><button className="nav-btn">Blog</button></Link>
-        <Link to="/ranking" onClick={scrollToTop}><button className="nav-btn">Bảng xếp hạng</button></Link>
-        <Link to="/about" onClick={scrollToTop}><button className="nav-btn">Giới thiệu</button></Link>
-        <button className="nav-btn" onClick={scrollToTop}>Tiến Trình Cai Thuốc</button>
+        <button className="nav-btn" onClick={() => (window.location.href = '/home')}>Trang chủ</button>
+        <button className="nav-btn" onClick={() => (window.location.href = '/blog')}>Blog</button>
+        <button className="nav-btn" onClick={() => (window.location.href = '/ranking')}>Bảng xếp hạng</button>
+        <button className="nav-btn" onClick={() => (window.location.href = '/about')}>Giới thiệu</button>
+        <button className="nav-btn" onClick={() => (window.location.href = '/process')}>Tiến Trình Cai Thuốc</button>
       </div>
+
       <div className="home-auth-buttons">
         {!user ? (
           <>
-            <Link to="/login"><button className="nav-btn">Đăng Nhập</button></Link>
-            <Link to="/register"><button className="nav-btn">Đăng Ký</button></Link>
+            <button className="nav-btn" onClick={() => (window.location.href = '/login')}>Đăng Nhập</button>
+            <button className="nav-btn" onClick={() => (window.location.href = '/register')}>Đăng Ký</button>
           </>
         ) : (
           <>
-            <button className="nav-btn" style={{background:'#ffe082',color:'#222',fontWeight:600,marginRight:8}} onClick={()=>{
-              setShowDropdown(false);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-              window.location.href = '/payment';
-            }}>Nâng Cấp</button>
+            <button
+              className="nav-btn"
+              style={{ background: '#ffe082', color: '#222', fontWeight: 600, marginRight: 8 }}
+              onClick={() => {
+                setShowDropdown(false);
+                window.location.href = '/payment';
+              }}
+            >
+              Nâng Cấp
+            </button>
             <div className="user-dropdown" style={{ position: 'relative', display: 'inline-block' }}>
               <button
                 className="nav-btn"
@@ -61,10 +70,26 @@ const Header = () => {
                     <div>{user.name || 'No name'}</div>
                     <div>{user.email}</div>
                   </div>
-                  <Link to="/profile" className="dropdown-item" onClick={() => setShowDropdown(false)}>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      setShowDropdown(false);
+                      window.location.href = '/profile';
+                    }}
+                  >
                     Thông tin cá nhân
-                  </Link>
-                  <button className="dropdown-item logout-btn" onClick={() => { logout(); setShowDropdown(false); }}>
+                  </button>
+                  <button
+                    className="dropdown-item logout-btn"
+                    onClick={() => {
+                      logout(); // xóa context
+                      localStorage.removeItem('token');
+                      setShowDropdown(false);
+                      setTimeout(() => {
+                        window.location.href = '/login'; // reload hoàn toàn
+                      }, 100);
+                    }}
+                  >
                     Đăng xuất
                   </button>
                 </div>

@@ -1,5 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom'; // Thêm dòng này
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import '../assets/CSS/Payment.css';
 
 const packages = [
@@ -9,7 +10,22 @@ const packages = [
 ];
 
 function Payment() {
-  const navigate = useNavigate(); // Thêm dòng này
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!user) {
+      navigate('/login', { replace: true });
+    }
+  }, [user, navigate]);
+
+  const handleBuy = () => {
+    if (!user) {
+      navigate('/login');
+    } else {
+      navigate('/coach-payment');
+    }
+  };
 
   return (
     <div className="payment-container" style={{padding: '60px 0', textAlign: 'center'}}>
@@ -24,7 +40,7 @@ function Payment() {
             <ul>
               {pkg.features.map(f => <li key={f}>{f}</li>)}
             </ul>
-            <button className="buy-btn" onClick={() => navigate('/coach-dashboard')}>Chọn gói này</button>
+            <button className="buy-btn" onClick={handleBuy}>Chọn gói này</button>
           </div>
         ))}
       </div>

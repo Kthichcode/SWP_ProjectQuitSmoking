@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../assets/CSS/Blog.css';
 import BlogCard from '../components/BlogCard';
 
@@ -62,6 +62,17 @@ const dummyBlogs = [
 export default function Blog() {
     const [currentPage, setCurrentPage] = useState(1);
     const blogsPerPage = 3;
+    useEffect(() => {
+        const handlePageShow = (event) => {
+            if (event.persisted || performance.getEntriesByType("navigation")[0]?.type === "back_forward") {
+                window.location.reload();
+            }
+        };
+        window.addEventListener('pageshow', handlePageShow);
+        return () => {
+            window.removeEventListener('pageshow', handlePageShow);
+        };
+    }, []);
 
     // Tính chỉ số blog để phân trang
     const indexOfLastBlog = currentPage * blogsPerPage;

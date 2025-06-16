@@ -1,7 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import CoachCard from '../components/CoachCard';
-import '../assets/CSS/CoachDashBoard.css';
+import Header from './Header';
+import '../assets/CSS/CoachPayment.css';
 
 export const coaches = [
   {
@@ -64,34 +66,43 @@ export const coaches = [
   // ...thêm các coach khác tương tự, đủ trường
 ];
 
-function CoachDashBoard() {
+function CoachPayment() {
+  const { user } = useAuth();
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    if (!user) {
+      navigate('/login', { replace: true });
+    }
+  }, [user, navigate]);
+
   return (
-    <div className="coach-dashboard-bg">
-      <div className="coach-dashboard-header">
-        <h2>Chọn <span style={{ color: '#1abc9c' }}>Coach</span> phù hợp</h2>
-        <p>Tìm chuyên gia tư vấn phù hợp nhất cho hành trình cai thuốc lá của bạn.<br />Tất cả coach đều được kiểm định chuyên môn.</p>
-        <div className="coach-dashboard-stats">
-          <div><div>6</div><span>Chuyên gia</span></div>
-          <div><div>4.8</div><span>Đánh giá TB</span></div>
-          <div><div>84%</div><span>Tỷ lệ thành công</span></div>
-          <div><div>1.9K+</div><span>Khách hàng</span></div>
+    <>
+      <Header />
+      <div className="coach-payment-bg">
+        <div className="coach-payment-header">
+          <h2>Chọn <span style={{ color: '#1abc9c' }}>Coach</span> phù hợp</h2>
+          <p>Tìm chuyên gia tư vấn phù hợp nhất cho hành trình cai thuốc lá của bạn.<br />Tất cả coach đều được kiểm định chuyên môn.</p>
+          <div className="coach-payment-stats">
+            <div><div>6</div><span>Chuyên gia</span></div>
+            <div><div>4.8</div><span>Đánh giá TB</span></div>
+            <div><div>84%</div><span>Tỷ lệ thành công</span></div>
+            <div><div>1.9K+</div><span>Khách hàng</span></div>
+          </div>
+        </div>
+        {/* Bộ lọc tìm kiếm có thể thêm ở đây */}
+        <div className="coach-payment-list">
+          {coaches.map(coach => (
+            <CoachCard
+              key={coach.id}
+              coach={coach}
+              onViewDetail={() => navigate(`/coach/${coach.id}`)}
+            />
+          ))}
         </div>
       </div>
-      {/* Bộ lọc tìm kiếm có thể thêm ở đây */}
-      <div className="coach-list">
-        {coaches.map(coach => (
-          <CoachCard
-            key={coach.id}
-            coach={coach}
-            onViewDetail={() => navigate(`/coach/${coach.id}`)}
-          />
-        ))}
-      </div>
-  );
-    </div>
+    </>
   );
 }
 
-export default CoachDashBoard;
+export default CoachPayment;

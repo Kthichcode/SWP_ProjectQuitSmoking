@@ -1,19 +1,49 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import '../assets/CSS/Home.css';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+
 function Home() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+
+  useEffect(() => {
+    if (!user) return;
+    const scope = user.scope?.toUpperCase();
+    const currentPath = window.location.pathname;
+
+    if (scope === 'ADMIN' && (currentPath === '/' || currentPath === '/home')) {
+      window.location.replace('/admin/dashboard'); 
+    } else if (scope === 'COACH' && (currentPath === '/' || currentPath === '/home')) {
+      window.location.replace('/coach'); 
+    }
+  }, [user]);
+
+  const handleProtectedClick = (targetPath) => {
+    if (user) {
+      navigate(targetPath);
+    } else {
+      navigate('/login');
+    }
+  };
 
   return (
     <div>
-     
-
+      {/* Section 1 - Hero */}
       <div className="home-main-section">
         <div className="main-left">
           <h1>Bắt đầu cuộc sống không khói thuốc ngay hôm nay</h1>
           <p>Nền tảng hỗ trợ cai nghiện thuốc lá hiệu quả với cộng đồng hỗ trợ và công cụ theo dõi tiến trình cá nhân.</p>
           <div className="main-buttons">
-            <button className="green-btn">Bắt đầu ngay</button>
-            <button className="white-btn">Tìm hiểu thêm</button>
+            {!user && (
+              <button className="green-btn" onClick={() => handleProtectedClick('/register')}>
+                Bắt đầu ngay
+              </button>
+            )}
+            <button className="white-btn" onClick={() => navigate('/about')}>
+              Tìm hiểu thêm
+            </button>
           </div>
         </div>
         <div className="main-right">
@@ -25,6 +55,7 @@ function Home() {
         </div>
       </div>
 
+      {/* Section 2 - Lý do chọn */}
       <div className="why-nosmoke">
         <h2>Tại sao nên chọn NoSmoke?</h2>
         <p>Nền tảng của chúng tôi cung cấp những công cụ và hỗ trợ thiết thực để giúp bạn từng bước cai nghiện thuốc lá thành công.</p>
@@ -51,38 +82,32 @@ function Home() {
           </div>
         </div>
       </div>
+
+      {/* Section 3 - Bảng xếp hạng */}
       <div className="ranking-section">
         <h2>Bảng xếp hạng thành tích</h2>
         <p>Hãy xem những người xuất sắc trong việc cai thuốc và số ngày không hút thuốc họ đã đạt được.</p>
         <div className="ranking-list">
-          <div className="rank-card top">
-            <div className="rank-avatar"></div>
-            <h4>Nguyễn Văn A</h4>
-            <p>120 ngày</p>
-            <strong>2,400,000₫</strong>
-          </div>
-          <div className="rank-card">
-            <div className="rank-avatar"></div>
-            <h4>Trần Thị B</h4>
-            <p>95 ngày</p>
-            <strong>1,900,000₫</strong>
-          </div>
-          <div className="rank-card">
-            <div className="rank-avatar"></div>
-            <h4>Phạm Văn C</h4>
-            <p>70 ngày</p>
-            <strong>1,400,000₫</strong>
-          </div>
-          <div className="rank-card">
-            <div className="rank-avatar"></div>
-            <h4>Lê Thị D</h4>
-            <p>60 ngày</p>
-            <strong>1,200,000₫</strong>
-          </div>
+          {[
+            { name: 'Nguyễn Văn A', days: 120, money: '2,400,000₫' },
+            { name: 'Trần Thị B', days: 95, money: '1,900,000₫' },
+            { name: 'Phạm Văn C', days: 70, money: '1,400,000₫' },
+            { name: 'Lê Thị D', days: 60, money: '1,200,000₫' },
+          ].map((user, index) => (
+            <div className={`rank-card ${index === 0 ? 'top' : ''}`} key={user.name}>
+              <div className="rank-avatar"></div>
+              <h4>{user.name}</h4>
+              <p>{user.days} ngày</p>
+              <strong>{user.money}</strong>
+            </div>
+          ))}
         </div>
-        <button className="white-btn">Xem bảng xếp hạng đầy đủ</button>
+        <button className="white-btn" aria-label="Xem bảng xếp hạng đầy đủ" onClick={() => handleProtectedClick('/ranking')}>
+          Xem bảng xếp hạng đầy đủ
+        </button>
       </div>
 
+      {/* Section 4 - Blog */}
       <div className="blog-section">
         <h2>Blog chia sẻ kinh nghiệm</h2>
         <p>Cùng lắng nghe những câu chuyện, lời khuyên chân thực từ cộng đồng và chuyên gia trong hành trình bỏ thuốc lá.</p>
@@ -106,7 +131,9 @@ function Home() {
             <span>Đọc tiếp →</span>
           </div>
         </div>
-        <button className="white-btn">Xem tất cả bài viết</button>
+        <button className="white-btn" aria-label="Xem tất cả bài viết" onClick={() => handleProtectedClick('/blog')}>
+          Xem tất cả bài viết
+        </button>
       </div>
     </div>
   );
