@@ -131,18 +131,6 @@ body {
     background: #fff;
 }
 
-select {
-    background-color: #e0f7ef;
-    border: 1.5px solid #4CAF50;
-    color: #222;
-    transition: background 0.2s;
-}
-
-select:focus {
-    background-color: #c2f0e3;
-    border: 2px solid #388e3c;
-}
-
 .register-input-group {
     display: flex;
     gap: 14px;

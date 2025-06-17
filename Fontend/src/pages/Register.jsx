@@ -2,180 +2,221 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import '../assets/CSS/Register.css';
+import Modal from '../components/Modal';
+import '../components/Modal.css';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 function Register() {
-    const { login } = useAuth();
-    const navigate = useNavigate();
-    const [formData, setFormData] = useState({
-        name: '',
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        cigarettePerDay: '',
-        smokingFrequency: 'Hàng ngày',
-        agree: false,
-    });
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-    };
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-        if (!formData.agree) return alert("Bạn cần đồng ý với điều khoản.");
-        if (formData.password !== formData.confirmPassword) return alert("Mật khẩu không khớp.");
+  const [formData, setFormData] = useState({
+    name: '',
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    agree: false,
+  });
 
-        const payload = {
-            fullName: formData.name,
-            username: formData.username,
-            email: formData.email,
-            password: formData.password,
-            cigarettePerDay: formData.cigarettePerDay,
-            smokingFrequency: formData.smokingFrequency
-        };
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
-        try {
-            const res = await fetch('http://localhost:5175/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
 
-            const data = await res.json();
-            if (res.ok) {
-                alert("🎉 Đăng ký thành công!");
-                navigate('/login');
-            } else {
-                alert(data.message || "Đăng ký thất bại!");
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Lỗi kết nối backend.");
-        }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!formData.agree) return alert("Bạn cần đồng ý với điều khoản.");
+    if (formData.password !== formData.confirmPassword) return alert("Mật khẩu không khớp.");
+
+    const payload = {
+      fullName: formData.name,
+      username: formData.username,
+      email: formData.email,
+      password: formData.password
     };
 
-    return (
-        <div className="register-section">
-            <div className="register-container">
-                <div className="register-wrapper">
-                    <div className="register-header">
-                        <img src="/src/assets/img1/android-chrome-192x192.png" alt="NoSmoke" className="register-logo" />
-                        <h2>Đăng ký tài khoản</h2>
-                        <p>Bắt đầu hành trình không khói thuốc của bạn ngay hôm nay</p>
-                    </div>
+    try {
+      const res = await fetch('http://localhost:5175/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-                    <div className="register-box">
-                        <h3>Tạo tài khoản mới</h3>
-                        <p>Điền thông tin của bạn để tạo tài khoản</p>
+      const data = await res.json();
+      if (res.ok) {
+        alert("🎉 Đăng ký thành công!");
+        navigate('/login');
+      } else {
+        alert(data.message || "Đăng ký thất bại!");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi kết nối backend.");
+    }
+  };
 
-                        <form className="register-form" onSubmit={handleSubmit}>
-                            <div className="form-group">
-                                <label>Họ và tên</label>
-                                <input type="text" name="name" placeholder="Nhập họ và tên"
-                                    value={formData.name} onChange={handleChange} required />
+  return (
+    <div className="register-section">
+      <div className="register-container">
+        <div className="register-wrapper">
+          <div className="register-header">
+            <img src="/src/assets/img1/android-chrome-192x192.png" alt="NoSmoke" className="register-logo" />
+            <h2>Đăng ký tài khoản</h2>
+            <p>Bắt đầu hành trình không khói thuốc của bạn ngay hôm nay</p>
+          </div>
 
-                            </div>
+          <div className="register-box">
+            <h3>Tạo tài khoản mới</h3>
+            <p>Điền thông tin của bạn để tạo tài khoản</p>
 
-                            <div className="form-group">
-                                <label>Tên Đăng Nhập</label>
-                                <input type="text" name="username" placeholder="Nhập Tên Đăng Nhập" value={formData.username} onChange={handleChange} required />
-                            </div>
+            <form className="register-form" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="name">Họ và tên</label>
+                <input type="text" name="name" id="name" placeholder="Nhập họ và tên"
+                  value={formData.name} onChange={handleChange} required />
+              </div>
 
-                            <div className="form-group">
-                                <label>Gmail</label>
-                                <input type="email" name="email" placeholder="example@gmail.com" value={formData.email} onChange={handleChange} required />
-                            </div>
+              <div className="form-group">
+                <label htmlFor="username">Tên Đăng Nhập</label>
+                <input type="text" name="username" id="username" placeholder="Nhập Tên Đăng Nhập"
+                  value={formData.username} onChange={handleChange} required />
+              </div>
 
-                            <div className="register-input-group">
-                                <div className="form-group half-width" style={{ position: 'relative' }}>
-                                    <label>Mật khẩu</label>
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        required
-                                        style={{ paddingRight: '36px' }}
-                                    />
-                                    <span
-                                        onClick={() => setShowPassword((prev) => !prev)}
-                                        className="password-toggle-icon"
-                                    >
-                                        {showPassword ? (
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                        ) : (
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.81 21.81 0 0 1 5.06-6.06M1 1l22 22"></path></svg>
-                                        )}
-                                    </span>
-                                </div>
-                                <div className="form-group half-width" style={{ position: 'relative' }}>
-                                    <label>Xác nhận mật khẩu</label>
-                                    <input
-                                        type={showConfirmPassword ? "text" : "password"}
-                                        name="confirmPassword"
-                                        value={formData.confirmPassword}
-                                        onChange={handleChange}
-                                        required
-                                        style={{ paddingRight: '36px' }}
-                                    />
-                                    <span
-                                        onClick={() => setShowConfirmPassword((prev) => !prev)}
-                                        className="password-toggle-icon"
-                                    >
-                                        {showConfirmPassword ? (
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                        ) : (
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.81 21.81 0 0 1 5.06-6.06M1 1l22 22"></path></svg>
-                                        )}
-                                    </span>
-                                </div>
+              <div className="form-group">
+                <label htmlFor="email">Gmail</label>
+                <input type="email" name="email" id="email" placeholder="example@gmail.com"
+                  value={formData.email} onChange={handleChange} required />
+              </div>
 
-                            </div>
-
-                            <p className="register-form-subheading">Thông tin thói quen hút thuốc</p>
-
-                            <div className="form-group">
-                                <label>Số điếu thuốc/ngày</label>
-                                <input type="number" name="cigarettePerDay" value={formData.cigarettePerDay} onChange={handleChange} required />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Tần suất hút thuốc</label>
-                                <select
-                                    name="smokingFrequency"
-                                    value={formData.smokingFrequency}
-                                    onChange={handleChange}
-                                    required
-                                >
-                                    <option value="Hàng ngày">Hàng ngày</option>
-                                    <option value="Vài lần mỗi tuần">Vài lần mỗi tuần</option>
-                                    <option value="Không thường xuyên">Không thường xuyên</option>
-                                </select>
-                            </div>
-
-                            <div className="register-checkbox">
-                                <label htmlFor="agree">
-                                    <input type="checkbox" name="agree" checked={formData.agree} onChange={handleChange} />
-                                    <span className="custom-box"></span>
-                                    Tôi đồng ý với <a href="#">Điều khoản sử dụng</a> và <a href="#">Chính sách bảo mật</a>
-                                </label>
-                            </div>
-
-                            <button type="submit" className="register-button">Đăng ký</button>
-
-                            <p className="register-login">Đã có tài khoản? <a href="/login" onClick={e => { e.preventDefault(); navigate('/login'); }}>Đăng nhập ngay</a></p>
-                        </form>
-                    </div>
+              <div className="register-input-group">
+                <div className="form-group half-width" style={{ position: 'relative' }}>
+                  <label htmlFor="password">Mật khẩu</label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    id="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    style={{ paddingRight: '36px' }}
+                  />
+                  <span
+                    onClick={() => setShowPassword(prev => !prev)}
+                    className="password-toggle-icon"
+                  >
+                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  </span>
                 </div>
-            </div>
+
+                <div className="form-group half-width" style={{ position: 'relative' }}>
+                  <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    id="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    required
+                    style={{ paddingRight: '36px' }}
+                  />
+                  <span
+                    onClick={() => setShowConfirmPassword(prev => !prev)}
+                    className="password-toggle-icon"
+                  >
+                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  </span>
+                </div>
+              </div>
+
+              <div className="register-checkbox">
+                <label htmlFor="agree">
+                  <input type="checkbox" name="agree" checked={formData.agree} onChange={handleChange} />
+                  <span className="custom-box"></span>
+                  Tôi đồng ý với <a href="#" onClick={e => { e.preventDefault(); setShowTermsModal(true); }}>Điều khoản sử dụng</a> và <a href="#" onClick={e => { e.preventDefault(); setShowPrivacyModal(true); }}>Chính sách bảo mật</a>
+                </label>
+              </div>
+
+              <button type="submit" className="register-button">Đăng ký</button>
+
+              <p className="register-login">Đã có tài khoản? <a href="/login" onClick={e => { e.preventDefault(); navigate('/login'); }}>Đăng nhập ngay</a></p>
+            </form>
+          </div>
         </div>
-    );
+      </div>
+
+      
+      {showTermsModal && (
+  <Modal title="Điều khoản sử dụng" onClose={() => setShowTermsModal(false)}>
+    <h4>1. Mục đích sử dụng</h4>
+    <p>
+      Nền tảng được phát triển nhằm hỗ trợ người dùng trong hành trình cai thuốc lá, bao gồm việc lập kế hoạch bỏ thuốc, theo dõi tiến trình, nhận thông báo động viên và kết nối cộng đồng.
+    </p>
+
+    <h4>2. Trách nhiệm của người dùng</h4>
+    <ul>
+      <li>Không cung cấp thông tin sai lệch khi đăng ký tài khoản.</li>
+      <li>Không đăng tải nội dung gây hại, xúc phạm, hoặc trái pháp luật.</li>
+      <li>Không sử dụng nền tảng cho mục đích gian lận hoặc thương mại trái phép.</li>
+    </ul>
+
+    <h4>3. Quyền của nền tảng</h4>
+    <ul>
+      <li>Có quyền khóa tài khoản nếu người dùng vi phạm điều khoản.</li>
+      <li>Có thể thay đổi nội dung và chức năng mà không cần báo trước.</li>
+    </ul>
+
+    <h4>4. Miễn trừ trách nhiệm</h4>
+    <p>
+      Nền tảng không thay thế tư vấn y tế chuyên môn. Người dùng nên tham khảo bác sĩ nếu cần hỗ trợ y tế cụ thể.
+    </p>
+  </Modal>
+)}
+
+
+      
+      {showPrivacyModal && (
+  <Modal title="Chính sách bảo mật" onClose={() => setShowPrivacyModal(false)}>
+    <h4>1. Thông tin thu thập</h4>
+    <p>Chúng tôi có thể thu thập các thông tin sau:</p>
+    <ul>
+      <li>Họ tên, email, tên đăng nhập, mật khẩu</li>
+      <li>Thông tin tiến trình cai thuốc</li>
+      <li>Thông tin hành vi sử dụng (ẩn danh)</li>
+    </ul>
+
+    <h4>2. Mục đích sử dụng thông tin</h4>
+    <ul>
+      <li>Cung cấp và cải thiện dịch vụ</li>
+      <li>Gửi thông báo, lời nhắc và lời khuyên</li>
+      <li>Hỗ trợ kỹ thuật và phản hồi người dùng</li>
+    </ul>
+
+    <h4>3. Bảo mật và chia sẻ thông tin</h4>
+    <ul>
+      <li>Thông tin của bạn được bảo mật bằng các biện pháp kỹ thuật phù hợp.</li>
+      <li>Chúng tôi không chia sẻ dữ liệu cá nhân cho bên thứ ba, trừ khi có sự đồng ý của bạn hoặc theo yêu cầu pháp luật.</li>
+    </ul>
+
+    <h4>4. Quyền của người dùng</h4>
+    <ul>
+      <li>Có thể xem, chỉnh sửa hoặc yêu cầu xóa thông tin cá nhân.</li>
+      <li>Có thể yêu cầu xóa tài khoản bất cứ lúc nào.</li>
+    </ul>
+  </Modal>
+)}
+
+    </div>
+  );
 }
 
 export default Register;
