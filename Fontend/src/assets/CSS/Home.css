@@ -495,3 +495,11 @@ html, body, #root {
   -moz-appearance: none;
   appearance: none;
 }
+.home-logo {
+  outline: none;
+}
+
+.home-logo:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}

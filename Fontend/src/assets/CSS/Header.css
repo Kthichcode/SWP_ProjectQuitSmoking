@@ -1,0 +1,6 @@
+.home-logo:focus,
+.home-logo img:focus,
+.home-logo span:focus {
+  outline: none;
+  box-shadow: none;
+}
