@@ -1,0 +1,170 @@
+import React, { useState } from 'react';
+import Modal from './Modal';
+import { useNavigate } from 'react-router-dom';
+
+const maskEmail = (email) => {
+  const [user, domain] = email.split('@');
+  if (user.length < 5) return email;
+  const first2 = user.slice(0, 2);
+  const last3 = user.slice(-3);
+  return `${first2}*****${last3}@${domain}`;
+};
+
+const ForgotPasswordModal = ({ show, onClose }) => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [maskedEmail, setMaskedEmail] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [enteredOtp, setEnteredOtp] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [error, setError] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const generateOtp = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
+  const handleEmailSubmit = (e) => {
+    e.preventDefault();
+    if (!email) return setError('Vui lòng nhập email.');
+    const generated = generateOtp();
+    setOtp(generated);
+    setMaskedEmail(maskEmail(email));
+    setOtpSent(true);
+    setError('');
+    console.log('OTP giả lập đã gửi:', generated); // Gửi OTP thật nếu có backend
+  };
+
+  const handleOtpSubmit = (e) => {
+    e.preventDefault();
+    if (enteredOtp === otp) {
+      setOtpVerified(true);
+      setError('');
+    } else {
+      setError('Mã OTP không đúng. Vui lòng thử lại.');
+    }
+  };
+
+  const handlePasswordReset = (e) => {
+    e.preventDefault();
+    if (!newPassword || !confirmPassword) {
+      setError('Vui lòng nhập đầy đủ mật khẩu.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('Mật khẩu không trùng khớp.');
+      return;
+    }
+
+    // TODO: Gửi mật khẩu mới lên server để cập nhật
+    alert('Mật khẩu đã được cập nhật!');
+    onClose();
+  };
+
+  const handleClose = () => {
+    setEmail('');
+    setMaskedEmail('');
+    setOtpSent(false);
+    setOtp('');
+    setEnteredOtp('');
+    setOtpVerified(false);
+    setError('');
+    setNewPassword('');
+    setConfirmPassword('');
+    onClose();
+  };
+
+  const handleBack = () => {
+    handleClose();
+    setTimeout(() => {
+      navigate(-1);
+    }, 200);
+  };
+
+  // Quay lại bước trước trong modal
+  const handleBackStep = () => {
+    if (otpSent && !otpVerified) {
+      // Quay lại bước nhập email
+      setOtpSent(false);
+      setEnteredOtp('');
+      setError('');
+    } else if (otpVerified) {
+      // Quay lại bước nhập OTP
+      setOtpVerified(false);
+      setNewPassword('');
+      setConfirmPassword('');
+      setError('');
+    }
+  };
+
+  if (!show) return null;
+
+  return (
+    <Modal title="Quên mật khẩu" onClose={handleClose}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 260 }}>
+        {!otpSent ? (
+          <form onSubmit={handleEmailSubmit} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            <label style={{ marginBottom: 6, fontWeight: 500 }}>Nhập email đăng ký:</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={{ width: '220px', margin: '8px 0', padding: '8px', borderRadius: 5, border: '1px solid #b5b5b5', fontSize: 15 }}
+            />
+            {error && <p style={{ color: 'red', fontSize: 14, margin: 0 }}>{error}</p>}
+            <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+              <button type="submit" style={{ padding: '8px 18px', borderRadius: 5, background: '#4CAF50', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Gửi mã OTP</button>
+              <button type="button" onClick={handleBack} style={{ padding: '8px 18px', borderRadius: 5, background: '#ccc', color: '#222', border: 'none', fontWeight: 500, cursor: 'pointer' }}>Quay lại</button>
+            </div>
+          </form>
+        ) : !otpVerified ? (
+          <form onSubmit={handleOtpSubmit} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            <p style={{ marginBottom: 8, fontSize: 15 }}>OTP đã gửi tới email: <strong>{maskedEmail}</strong></p>
+            <label style={{ marginBottom: 6, fontWeight: 500 }}>Nhập mã OTP:</label>
+            <input
+              type="text"
+              value={enteredOtp}
+              onChange={(e) => setEnteredOtp(e.target.value)}
+              required
+              style={{ width: '120px', margin: '8px 0', padding: '8px', borderRadius: 5, border: '1px solid #b5b5b5', fontSize: 15, textAlign: 'center', letterSpacing: 2 }}
+            />
+            {error && <p style={{ color: 'red', fontSize: 14, margin: 0 }}>{error}</p>}
+            <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+              <button type="submit" style={{ padding: '8px 18px', borderRadius: 5, background: '#4CAF50', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Xác nhận OTP</button>
+              <button type="button" onClick={handleBackStep} style={{ padding: '8px 18px', borderRadius: 5, background: '#ccc', color: '#222', border: 'none', fontWeight: 500, cursor: 'pointer' }}>Quay lại</button>
+            </div>
+          </form>
+        ) : (
+          <form onSubmit={handlePasswordReset} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            <label style={{ marginBottom: 6, fontWeight: 500 }}>Nhập mật khẩu mới:</label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              style={{ width: '180px', margin: '8px 0', padding: '8px', borderRadius: 5, border: '1px solid #b5b5b5', fontSize: 15 }}
+            />
+            <label style={{ marginBottom: 6, fontWeight: 500 }}>Xác nhận mật khẩu:</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              style={{ width: '180px', margin: '8px 0', padding: '8px', borderRadius: 5, border: '1px solid #b5b5b5', fontSize: 15 }}
+            />
+            {error && <p style={{ color: 'red', fontSize: 14, margin: 0 }}>{error}</p>}
+            <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+              <button type="submit" style={{ padding: '8px 18px', borderRadius: 5, background: '#4CAF50', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Cập nhật mật khẩu</button>
+              <button type="button" onClick={handleBackStep} style={{ padding: '8px 18px', borderRadius: 5, background: '#ccc', color: '#222', border: 'none', fontWeight: 500, cursor: 'pointer' }}>Quay lại</button>
+            </div>
+          </form>
+        )}
+      </div>
+    </Modal>
+  );
+};
+
+export default ForgotPasswordModal;

@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { jwtDecode } from 'jwt-decode';
+import ForgotPasswordModal from '../components/ForgotPasswordModal';
 
 function Login() {
   const { login, user } = useAuth();
@@ -13,6 +14,7 @@ function Login() {
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotModal, setShowForgotModal] = useState(false);
   const navigate = useNavigate();
 
   // 🚫 Nếu đã đăng nhập thì redirect khỏi /login luôn
@@ -154,7 +156,9 @@ function Login() {
           {errorMessage && <p className="error-message">{errorMessage}</p>}
 
           <div className="forgot-password">
-            <Link to="#">Quên mật khẩu?</Link>
+            <span style={{ cursor: 'pointer', color: '#4CAF50' }} onClick={() => setShowForgotModal(true)}>
+              Quên mật khẩu?
+            </span>
           </div>
 
           <button type="submit" className="btn-login">→ Đăng nhập</button>
@@ -182,6 +186,7 @@ function Login() {
           </p>
         </form>
       </div>
+      <ForgotPasswordModal show={showForgotModal} onClose={() => setShowForgotModal(false)} />
     </section>
   );
 }
