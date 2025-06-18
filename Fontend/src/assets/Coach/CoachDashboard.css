@@ -1,0 +1,277 @@
+/* CoachDashboard.css */
+
+body, html {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f6f8fa;
+}
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background: #f6f8fa;
+}
+.sidebar {
+  position: relative;
+  min-width: 260px;
+  background: #e5f9ee;
+  padding: 32px 16px 16px 16px;
+  border-radius: 0 24px 24px 0;
+  box-shadow: 2px 0 8px #0001;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.sidebar h3 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 32px;
+  color: #222;
+}
+.sidebar p {
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #444;
+}
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: #222;
+  text-decoration: none;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: background 0.2s, color 0.2s;
+  background: none;
+}
+.sidebar-link.active, .sidebar-link:hover {
+  background: #22c55e;
+  color: #fff;
+}
+.sidebar-link svg {
+  margin-right: 12px;
+  font-size: 1.2em;
+}
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.sidebar li {
+  margin-bottom: 4px;
+}
+.sidebar-logout {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-weight: 500;
+  font-size: 1rem;
+  margin-top: auto;
+  margin-bottom: 8px;
+  width: 100%;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.sidebar-logout:hover {
+  background: #b91c1c;
+}
+.sidebar-logout svg {
+  margin-right: 12px;
+  font-size: 1.2em;
+}
+.main-content {
+  flex: 1;
+  padding: 40px 48px;
+  background: #fff;
+  border-radius: 24px;
+  margin: 24px;
+  box-shadow: 0 2px 16px #0001;
+  min-width: 0;
+}
+.welcome-section {
+  margin-bottom: 32px;
+}
+.welcome-section h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+.welcome-section p {
+  color: #555;
+  margin-bottom: 12px;
+}
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.rating span {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #22c55e;
+}
+.rating button {
+  background: #22c55e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 4px 16px;
+  margin-left: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.cards-container {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+.card {
+  background: #f3f4f6;
+  border-radius: 16px;
+  padding: 24px 32px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 8px #0001;
+}
+.card svg {
+  color: #22c55e;
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+.card h3 {
+  font-size: 2rem;
+  margin: 0;
+}
+.card p {
+  color: #555;
+  margin: 0;
+}
+.performance-container {
+  margin-bottom: 32px;
+}
+.performance-container h4 {
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+.performance-container > div {
+  margin-bottom: 12px;
+}
+.progress-bar {
+  background: #e5e7eb;
+  border-radius: 8px;
+  height: 10px;
+  width: 100%;
+  margin: 4px 0 4px 0;
+}
+.progress {
+  background: #22c55e;
+  height: 10px;
+  border-radius: 8px;
+}
+.activity-section {
+  margin-top: 32px;
+}
+.activity-section h4 {
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 8px;
+}
+.activity-time {
+  color: #22c55e;
+  font-weight: bold;
+  min-width: 100px;
+}
+.activity-title {
+  color: #222;
+  font-weight: 500;
+}
+/* User list */
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 24px;
+}
+.user-card {
+  display: flex;
+  gap: 24px;
+  background: #f3f4f6;
+  border-radius: 16px;
+  padding: 20px 28px;
+  box-shadow: 0 2px 8px #0001;
+  align-items: flex-start;
+}
+.user-avatar {
+  min-width: 48px;
+  min-height: 48px;
+  background: #e5f9ee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #22c55e;
+}
+.user-info {
+  flex: 1;
+}
+.user-info button {
+  background: #22c55e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.user-info button:hover {
+  background: #16a34a;
+}
+/* Appointments */
+.appointment-list {
+  margin-top: 24px;
+}
+/* Messages */
+@media (max-width: 900px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+  .sidebar {
+    min-width: 100%;
+    border-radius: 0 0 24px 24px;
+    box-shadow: none;
+    align-items: stretch;
+  }
+  .main-content {
+    margin: 0;
+    border-radius: 0 0 24px 24px;
+    padding: 24px 8px;
+  }
+  .cards-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .user-card {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 12px;
+  }
+}

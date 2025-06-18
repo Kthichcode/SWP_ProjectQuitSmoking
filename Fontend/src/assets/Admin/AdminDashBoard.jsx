@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import './AdminDashboard.css';
 
@@ -16,15 +16,30 @@ function AdminDashboard() {
       <aside className="sidebar">
         <div className="sidebar-header">Admin</div>
         <ul className="menu">
-          <li><Link to="/admin/dashboard" className="menu-link">Thống kê</Link></li>
-          <li><Link to="/admin/dashboard/users" className="menu-link">Quản lý Người Dùng</Link></li>
-          <li><Link to="/admin/dashboard/coaches" className="menu-link">Quản lý Coach</Link></li>
-          <li><Link to="/admin/dashboard/plans" className="menu-link">Quản lý Kế Hoạch</Link></li>
-          <li><Link to="/admin/dashboard/achievements" className="menu-link">Quản lý Thành Tích</Link></li>
-          <li><Link to="/admin/dashboard/system" className="menu-link">Quản lý Hệ Thống</Link></li>
-          <li><Link to="/admin/dashboard/feedback" className="menu-link">Phản Hồi Người Dùng</Link></li>
-          <li><Link to="/admin/dashboard/packages" className="menu-link">Quản lý Gói Dịch Vụ</Link></li>
-          <li><Link to="/admin/dashboard/statistics" className="menu-link">Thống Kê Người Dùng</Link></li>
+          <li>
+            <NavLink to="/admin/dashboard" end className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Thống kê</NavLink>
+          </li>
+          <li>
+            <NavLink to="/admin/dashboard/users" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Người Dùng</NavLink>
+          </li>
+          <li>
+            <NavLink to="/admin/dashboard/coaches" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Coach</NavLink>
+          </li>
+          <li>
+            <NavLink to="/admin/dashboard/plans" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Kế Hoạch</NavLink>
+          </li>
+          <li>
+            <NavLink to="/admin/dashboard/achievements" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Thành Tích</NavLink>
+          </li>
+          <li>
+            <NavLink to="/admin/dashboard/system" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Hệ Thống</NavLink>
+          </li>
+          <li>
+            <NavLink to="/admin/dashboard/feedback" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Phản Hồi Người Dùng</NavLink>
+          </li>
+          <li>
+            <NavLink to="/admin/dashboard/packages" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Gói Dịch Vụ</NavLink>
+          </li>
           <li className="logout" onClick={handleLogout}>Đăng Xuất</li>
         </ul>
       </aside>

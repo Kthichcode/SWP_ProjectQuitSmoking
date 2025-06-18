@@ -1,0 +1,52 @@
+/* CSS cho trang Users */
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 24px;
+}
+.user-card {
+  display: flex;
+  gap: 24px;
+  background: #f3f4f6;
+  border-radius: 16px;
+  padding: 20px 28px;
+  box-shadow: 0 2px 8px #0001;
+  align-items: flex-start;
+}
+.user-avatar {
+  min-width: 48px;
+  min-height: 48px;
+  background: #e5f9ee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #22c55e;
+}
+.user-info {
+  flex: 1;
+}
+.user-info button {
+  background: #22c55e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-right: 8px;
+}
+.user-info button:hover {
+  background: #16a34a;
+}
+@media (max-width: 900px) {
+  .user-card {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 12px;
+  }
+}
