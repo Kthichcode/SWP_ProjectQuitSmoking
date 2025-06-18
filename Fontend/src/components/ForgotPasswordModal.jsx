@@ -132,6 +132,16 @@ const ForgotPasswordModal = ({ show, onClose }) => {
               style={{ width: '120px', margin: '8px 0', padding: '8px', borderRadius: 5, border: '1px solid #b5b5b5', fontSize: 15, textAlign: 'center', letterSpacing: 2 }}
             />
             {error && <p style={{ color: 'red', fontSize: 14, margin: 0 }}>{error}</p>}
+            <div style={{ marginTop: 10, marginBottom: 4, textAlign: 'center' }}>
+              <span style={{ fontSize: 14 }}>Bạn không nhận được mã?</span>
+              <button type="button" onClick={() => {
+                const generated = generateOtp();
+                setOtp(generated);
+                setEnteredOtp('');
+                setError('');
+                console.log('OTP giả lập đã gửi:', generated); // Hiện OTP giả lập trong console khi gửi lại
+              }} style={{ marginLeft: 8, padding: '4px 12px', borderRadius: 5, background: '#4CAF50', color: '#fff', border: 'none', fontWeight: 500, cursor: 'pointer', fontSize: 14 }}>Gửi lại OTP</button>
+            </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
               <button type="submit" style={{ padding: '8px 18px', borderRadius: 5, background: '#4CAF50', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Xác nhận OTP</button>
               <button type="button" onClick={handleBackStep} style={{ padding: '8px 18px', borderRadius: 5, background: '#ccc', color: '#222', border: 'none', fontWeight: 500, cursor: 'pointer' }}>Quay lại</button>
