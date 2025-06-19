@@ -40,6 +40,9 @@ function AdminDashboard() {
           <li>
             <NavLink to="/admin/dashboard/packages" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Gói Dịch Vụ</NavLink>
           </li>
+          <li>
+            <NavLink to="/admin/dashboard/blogs" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Blog</NavLink>
+          </li>
           <li className="logout" onClick={handleLogout}>Đăng Xuất</li>
         </ul>
       </aside>

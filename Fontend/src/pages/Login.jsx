@@ -57,7 +57,7 @@ function Login() {
 
         const token = res.data.data.token;
         localStorage.setItem('token', token);
-        login(res.data.data);
+        login(token);
 
         navigate('/home', { replace: true });
       } catch (err) {
@@ -82,7 +82,7 @@ function Login() {
 
       const token = response.data.data.token;
       localStorage.setItem('token', token);
-      login(response.data.data);
+      login(token);
 
       const decoded = jwtDecode(token);
       const role = decoded.scope?.toUpperCase();

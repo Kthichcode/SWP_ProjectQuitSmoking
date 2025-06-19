@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (data) => {
-    const token = data.token || data;
+  const token = data.token || data;
 
     try {
       const decoded = jwtDecode(token);
@@ -68,8 +68,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ user, token, login, logout }}>
+  {children}
+</AuthContext.Provider>
   );
 };

@@ -25,6 +25,7 @@ import AdminPlans from './assets/Admin/AdminPlans';
 import AdminStatistics from './assets/Admin/AdminStatistics';
 import AdminSystem from './assets/Admin/AdminSystem';
 import AdminFeedback from './assets/Admin/AdminFeedback';
+import AdminBlogs from './assets/Admin/AdminBlogs';
 function RequireRole({ role, children }) {
   const { user } = useAuth();
   const location = useLocation();
@@ -53,6 +54,7 @@ function App() {
           <Route path="plans" element={<AdminPlans />} />
           <Route path="system" element={<AdminSystem />} />
           <Route path="feedback" element={<AdminFeedback />} />
+          <Route path="blogs" element={<AdminBlogs />} />
         </Route>
         <Route
           path="/coach/*"
