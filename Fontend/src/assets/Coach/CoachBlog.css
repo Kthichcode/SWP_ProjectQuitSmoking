@@ -1,0 +1,270 @@
+/* Reset & base */
+body, html {
+  font-family: 'Inter', Arial, sans-serif;
+  background: #f6f8fa;
+  margin: 0;
+  padding: 0;
+  color: #222;
+}
+
+.coach-blog-container {
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 0 24px 32px 24px;
+}
+
+.coach-blog-header {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.coach-blog-desc {
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin-bottom: 32px;
+}
+
+.coach-blog-stats {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.coach-blog-stat-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 20px 32px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 160px;
+}
+
+.coach-blog-stat-label {
+  color: #6b7280;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.coach-blog-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.coach-blog-stat-value.green { color: #22c55e; }
+.coach-blog-stat-value.red { color: #ef4444; }
+.coach-blog-stat-value.purple { color: #a855f7; }
+
+.coach-blog-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.coach-blog-btn-new {
+  background: #22c55e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.coach-blog-btn-new:hover {
+  background: #16a34a;
+}
+
+.coach-blog-search-filter {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.coach-blog-search,
+.coach-blog-filter {
+  height: 44px;
+  box-sizing: border-box;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  outline: none;
+  padding: 0 16px;
+  transition: border 0.2s;
+}
+
+.coach-blog-search {
+  flex: 1;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.coach-blog-search:focus,
+.coach-blog-filter:focus {
+  border: 1.5px solid #22c55e;
+}
+
+.coach-blog-filter {
+  min-width: 180px;
+  max-width: 240px;
+  padding-right: 32px;
+  color: #222;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: #fff url('data:image/svg+xml;utf8,<svg fill="%236b7280" height="20" viewBox="0 0 20 20" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7.293 7.293a1 1 0 011.414 0L10 8.586l1.293-1.293a1 1 0 111.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 010-1.414z"/></svg>') no-repeat right 12px center/18px 18px;
+}
+
+.coach-blog-filter option {
+  color: #222;
+  font-size: 1rem;
+  background: #fff;
+}
+
+.coach-blog-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .coach-blog-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.coach-blog-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 24px 24px 16px 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.coach-blog-card .coach-blog-badge {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  background: #111827;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 4px 14px;
+}
+.coach-blog-card .coach-blog-badge.draft {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.coach-blog-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+  color: #222;
+}
+
+.coach-blog-desc2 {
+  color: #6b7280;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  min-height: 24px;
+}
+
+.coach-blog-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #6b7280;
+  font-size: 0.98rem;
+  margin-bottom: 8px;
+}
+.coach-blog-meta .icon {
+  margin-right: 4px;
+}
+
+.coach-blog-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.coach-blog-tag {
+  background: #f1f5f9;
+  color: #2563eb;
+  font-size: 0.92rem;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-weight: 500;
+}
+
+.coach-blog-label {
+  background: #e0e7ff;
+  color: #3730a3;
+  font-size: 0.92rem;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+.coach-blog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.coach-blog-readtime {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.coach-blog-actions-card {
+  display: flex;
+  gap: 10px;
+}
+
+.coach-blog-btn-icon {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 1.1rem;
+  color: #374151;
+  display: flex;
+  align-items: center;
+}
+.coach-blog-btn-icon:hover {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+/* Hide Lovable watermark */
+#lovable-watermark, .lovable-watermark, [aria-label*="Lovable"] {
+  display: none !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 8px;
+}
