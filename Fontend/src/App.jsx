@@ -25,7 +25,8 @@ import AdminPlans from './assets/Admin/AdminPlans';
 import AdminStatistics from './assets/Admin/AdminStatistics';
 import AdminSystem from './assets/Admin/AdminSystem';
 import AdminFeedback from './assets/Admin/AdminFeedback';
-
+import CoachBlog from './assets/Coach/CoachBlog';
+import AdminBlogs from './assets/Admin/AdminBlogs';
 function RequireRole({ role, children }) {
   const { user } = useAuth();
   const location = useLocation();
