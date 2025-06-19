@@ -2,7 +2,7 @@
 
 import React from 'react';
 import './CoachDashboard.css';
-import { FaUsers, FaCalendarAlt, FaEnvelope, FaStar, FaTachometerAlt, FaSignOutAlt } from 'react-icons/fa';
+import { FaUsers, FaCalendarAlt, FaEnvelope, FaStar, FaTachometerAlt, FaSignOutAlt, FaPenNib } from 'react-icons/fa';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 const overviewData = {
@@ -66,6 +66,11 @@ function CoachDashboard() {
           <li>
             <NavLink to="/coach/messages" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
               <FaEnvelope style={{marginRight:8}}/> Tin nhắn
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/coach/blog" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+              <FaPenNib style={{marginRight:8}}/> Viết blog
             </NavLink>
           </li>
           <li>
