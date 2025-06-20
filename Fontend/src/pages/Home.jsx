@@ -32,6 +32,12 @@ function Home() {
     <div>
       {/* Section 1 - Hero */}
       <div className="home-main-section">
+        {/* Biểu tượng động ủng hộ cai nghiện thuốc lá */}
+        <img
+          className="quit-smoking-anim"
+          src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f6ac.svg"
+          alt="No Smoking Support"
+        />
         <div className="main-left">
           <h1>Bắt đầu cuộc sống không khói thuốc ngay hôm nay</h1>
           <p>Nền tảng hỗ trợ cai nghiện thuốc lá hiệu quả với cộng đồng hỗ trợ và công cụ theo dõi tiến trình cá nhân.</p>
@@ -48,7 +54,7 @@ function Home() {
         </div>
         <div className="main-right">
           <div className="box">
-            <img src="/src/assets/img/no-smoking.png" alt="Tự do không khói thuốc" className="icon" />
+            <img src="/src/assets/img1/android-chrome-192x192.png" alt="Tự do không khói thuốc" className="icon" />
             <h3>Tự do không khói thuốc</h3>
             <p>Hơn 10,000+ người đã thành công cai nghiện thuốc lá với nền tảng của chúng tôi.</p>
           </div>

@@ -163,9 +163,29 @@ html, body, #root {
     justify-content: space-between;
     align-items: center;
     padding: 120px 80px 60px 80px;
-    background: #f8fbff;
+    background: linear-gradient(120deg, #b2ff59 0%, #43ea7a 100%);
     min-height: 400px;
+    position: relative;
+    overflow: hidden;
   }
+
+  /* Biểu tượng động ủng hộ cai nghiện thuốc lá */
+.home-main-section .quit-smoking-anim {
+  position: absolute;
+  right: 48px;
+  bottom: 32px;
+  width: 72px;
+  height: 72px;
+  z-index: 3;
+  animation: shake 2.5s infinite cubic-bezier(.36,.07,.19,.97);
+  opacity: 0.85;
+}
+
+@keyframes shake {
+  0%, 100% { transform: rotate(-8deg) scale(1); }
+  10%, 30%, 50%, 70%, 90% { transform: rotate(8deg) scale(1.08); }
+  20%, 40%, 60%, 80% { transform: rotate(-8deg) scale(1); }
+}
 
   .main-left h1 {
     font-size: 2.6rem;
