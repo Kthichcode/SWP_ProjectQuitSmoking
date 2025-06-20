@@ -1,67 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import '../assets/CSS/Blog.css';
 import BlogCard from '../components/BlogCard';
-
-const dummyBlogs = [
-    {
-        id: 1,
-        title: '10 lợi ích sau khi bỏ thuốc lá trong 30 ngày đầu tiên',
-        summary: 'Khám phá những thay đổi tích cực mà cơ thể bạn trải qua ngay khi dừng hút thuốc lá.',
-        tag: 'Câu chuyện',
-        author: 'BS. Trịnh Văn Hiền',
-        date: '13/03/2025',
-        image: '/src/assets/images/blog1.jpg',
-    },
-    {
-        id: 2,
-        title: '5 bước vượt qua cơn thèm thuốc hiệu quả',
-        summary: 'Cơn thèm thuốc là thử thách lớn, nhưng bạn có thể vượt qua nó với các bước đơn giản.',
-        tag: 'Kinh nghiệm',
-        author: 'Coach Thanh Phong',
-        date: '20/03/2025',
-        image: '/src/assets/images/blog2.jpg',
-    },
-    {
-        id: 3,
-        title: 'Sự hỗ trợ của gia đình khi bạn cai thuốc',
-        summary: 'Vai trò của gia đình rất quan trọng trong quá trình bỏ thuốc lá.',
-        tag: 'Câu chuyện',
-        author: 'Mai Hương',
-        date: '22/03/2025',
-        image: '/src/assets/images/blog3.jpg',
-    },
-    {
-        id: 4,
-        title: 'Dinh dưỡng phù hợp khi cai thuốc lá',
-        summary: 'Chế độ ăn uống ảnh hưởng lớn đến tâm trạng và khả năng cai thuốc.',
-        tag: 'Kinh nghiệm',
-        author: 'Dược sĩ Khánh Linh',
-        date: '25/03/2025',
-        image: '/src/assets/images/blog4.jpg',
-    },
-    {
-        id: 5,
-        title: 'Những sai lầm thường gặp khi bỏ thuốc',
-        summary: 'Tránh những sai lầm phổ biến giúp bạn duy trì việc cai thuốc lâu dài.',
-        tag: 'Nghiên cứu',
-        author: 'TS. Trần Mạnh',
-        date: '27/03/2025',
-        image: '/src/assets/images/blog5.jpg',
-    },
-    {
-        id: 6,
-        title: 'Ứng dụng hỗ trợ hành trình không khói thuốc',
-        summary: 'Các app như NoSmoke mang lại động lực và theo dõi tiến trình dễ dàng.',
-        tag: 'Nghiên cứu',
-        author: 'Admin NoSmoke',
-        date: '01/04/2025',
-        image: '/src/assets/images/blog6.jpg',
-    },
-];
+import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function Blog() {
+    const { token, user } = useAuth();
+    const navigate = useNavigate();
+    const [blogs, setBlogs] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const blogsPerPage = 3;
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        if (!token) {
+            setError('Bạn cần đăng nhập để xem blog.');
+            return;
+        }
+        setLoading(true);
+        axios.get('/api/blog/getAllBlog', {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+            .then(res => {
+                setBlogs(res.data.data || []);
+                setError('');
+            })
+            .catch(err => {
+                setError('Không thể tải blog. Vui lòng thử lại.');
+                console.error('Lỗi lấy danh sách blog:', err);
+            })
+            .finally(() => setLoading(false));
+    }, [token]);
+
     useEffect(() => {
         const handlePageShow = (event) => {
             if (event.persisted || performance.getEntriesByType("navigation")[0]?.type === "back_forward") {
@@ -77,15 +49,25 @@ export default function Blog() {
     // Tính chỉ số blog để phân trang
     const indexOfLastBlog = currentPage * blogsPerPage;
     const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
-    const currentBlogs = dummyBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
-
-    const totalPages = Math.ceil(dummyBlogs.length / blogsPerPage);
+    const currentBlogs = blogs.slice(indexOfFirstBlog, indexOfLastBlog);
+    const totalPages = Math.ceil(blogs.length / blogsPerPage);
 
     const handlePageChange = (pageNumber) => {
         if (pageNumber >= 1 && pageNumber <= totalPages) {
             setCurrentPage(pageNumber);
         }
     };
+
+    // Xử lý khi bấm Đọc tiếp
+    const handleReadMore = (blog) => {
+        const blogId = blog.id || blog._id;
+        if (!token) {
+            navigate('/login');
+        } else if (blogId) {
+            navigate(`/blog/${blogId}`);
+        }
+    };
+
     return (
         <div className="blog-container">
             <h2 className="blog-title">Blog chia sẻ kinh nghiệm</h2>
@@ -101,9 +83,11 @@ export default function Blog() {
                 </div>
             </div>
 
+            {error && <div style={{color:'red',margin:'16px 0'}}>{error}</div>}
+
             <div className="blog-grid">
-                {currentBlogs.map(blog => (
-                    <BlogCard key={blog.id} blog={blog} />
+                {loading ? <p>Đang tải...</p> : currentBlogs.map(blog => (
+                    <BlogCard key={blog.id || blog._id} blog={blog} onReadMore={handleReadMore} />
                 ))}
             </div>
 
