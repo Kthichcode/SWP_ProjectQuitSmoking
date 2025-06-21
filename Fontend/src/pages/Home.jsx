@@ -81,7 +81,7 @@ function Home() {
       <div className="home-main-section">
         <img
           className="quit-smoking-anim"
-          src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f6ac.svg"
+          src="https://openmoji.org/data/color/svg/1F6AD.svg"
           alt="No Smoking Support"
         />
         <div className="main-left">
