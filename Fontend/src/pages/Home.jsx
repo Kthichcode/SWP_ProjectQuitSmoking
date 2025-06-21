@@ -1,38 +1,84 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../assets/CSS/Home.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
 
 function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [blogs, setBlogs] = useState([]);
+  const [loadingBlogs, setLoadingBlogs] = useState(false);
 
-
+  // ✅ Điều hướng ADMIN / COACH
   useEffect(() => {
     if (!user) return;
     const scope = user.scope?.toUpperCase();
     const currentPath = window.location.pathname;
 
     if (scope === 'ADMIN' && (currentPath === '/' || currentPath === '/home')) {
-      window.location.replace('/admin/dashboard'); 
+      window.location.replace('/admin/dashboard');
     } else if (scope === 'COACH' && (currentPath === '/' || currentPath === '/home')) {
-      window.location.replace('/coach'); 
+      window.location.replace('/coach');
     }
   }, [user]);
 
+  // ✅ Gọi API lấy blog
+  useEffect(() => {
+    const token = user?.token || user?.accessToken;
+    console.log('🔑 Token gửi lên:', token);
+
+    if (!token) {
+      console.warn('⚠️ Không có token, không gọi API');
+      setBlogs([]);
+      return;
+    }
+
+    setLoadingBlogs(true);
+
+    axios.get('/api/blog/getAllBlog', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => {
+        console.log('✅ API blog trả về:', res.data);
+        const data = res.data?.data || [];
+        setBlogs(data);
+      })
+      .catch(err => {
+        console.error('❌ Lỗi tải blog:', err);
+        setBlogs([]);
+      })
+      .finally(() => setLoadingBlogs(false));
+  }, [user]);
+
+  // ✅ Chuyển hướng khi click nút cần login
   const handleProtectedClick = (targetPath) => {
-    if (user) {
-      navigate(targetPath);
-    } else {
+    if (user) navigate(targetPath);
+    else navigate('/login');
+  };
+
+  // ✅ Xử lý đọc tiếp
+  const handleReadMore = (blog) => {
+    const blogId = blog.id || blog._id;
+    if (!user) {
       navigate('/login');
+    } else if (blogId) {
+      navigate(`/blog/${blogId}`);
     }
   };
 
+  // ✅ Tạm thời không lọc theo ảnh để tránh bị loại
+  const validBlogs = blogs.filter(blog =>
+    blog.title && blog.content // && (blog.coverImage || blog.image)
+  );
+
+  console.log('📦 Danh sách blog từ API:', blogs);
+  console.log('✅ Blog hợp lệ sau lọc:', validBlogs);
+
   return (
     <div>
-      {/* Section 1 - Hero */}
+      {/* Hero section */}
       <div className="home-main-section">
-        {/* Biểu tượng động ủng hộ cai nghiện thuốc lá */}
         <img
           className="quit-smoking-anim"
           src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f6ac.svg"
@@ -61,35 +107,27 @@ function Home() {
         </div>
       </div>
 
-      {/* Section 2 - Lý do chọn */}
+      {/* Lý do chọn */}
       <div className="why-nosmoke">
         <h2>Tại sao nên chọn NoSmoke?</h2>
         <p>Nền tảng của chúng tôi cung cấp những công cụ và hỗ trợ thiết thực để giúp bạn từng bước cai nghiện thuốc lá thành công.</p>
         <div className="features">
-          <div className="feature-box">
-            <img src="/src/assets/img/progress.png" alt="Theo dõi tiến trình" />
-            <h4>Theo dõi tiến trình</h4>
-            <p>Ghi lại và xem quá trình cai nghiện với các thống kê trực quan.</p>
-          </div>
-          <div className="feature-box">
-            <img src="/src/assets/img/health.png" alt="Cải thiện sức khỏe" />
-            <h4>Cải thiện sức khỏe</h4>
-            <p>Xem những lợi ích sức khỏe và thay đổi tích cực sau khi bỏ thuốc.</p>
-          </div>
-          <div className="feature-box">
-            <img src="/src/assets/img/time.png" alt="Đếm thời gian thực" />
-            <h4>Đếm thời gian thực</h4>
-            <p>Theo dõi chính xác thời gian bạn đã không hút thuốc và đạt được các cột mốc.</p>
-          </div>
-          <div className="feature-box">
-            <img src="/src/assets/img/save-money.png" alt="Tiết kiệm chi phí" />
-            <h4>Tiết kiệm chi phí</h4>
-            <p>Tính toán số tiền bạn đã tiết kiệm được kể từ khi bỏ thuốc.</p>
-          </div>
+          {[
+            { icon: 'progress.png', title: 'Theo dõi tiến trình', desc: 'Ghi lại và xem quá trình cai nghiện với các thống kê trực quan.' },
+            { icon: 'health.png', title: 'Cải thiện sức khỏe', desc: 'Xem những lợi ích sức khỏe và thay đổi tích cực sau khi bỏ thuốc.' },
+            { icon: 'time.png', title: 'Đếm thời gian thực', desc: 'Theo dõi chính xác thời gian bạn đã không hút thuốc và đạt được các cột mốc.' },
+            { icon: 'save-money.png', title: 'Tiết kiệm chi phí', desc: 'Tính toán số tiền bạn đã tiết kiệm được kể từ khi bỏ thuốc.' },
+          ].map(f => (
+            <div className="feature-box" key={f.title}>
+              <img src={`/src/assets/img/${f.icon}`} alt={f.title} />
+              <h4>{f.title}</h4>
+              <p>{f.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Section 3 - Bảng xếp hạng */}
+      {/* Ranking */}
       <div className="ranking-section">
         <h2>Bảng xếp hạng thành tích</h2>
         <p>Hãy xem những người xuất sắc trong việc cai thuốc và số ngày không hút thuốc họ đã đạt được.</p>
@@ -99,8 +137,8 @@ function Home() {
             { name: 'Trần Thị B', days: 95, money: '1,900,000₫' },
             { name: 'Phạm Văn C', days: 70, money: '1,400,000₫' },
             { name: 'Lê Thị D', days: 60, money: '1,200,000₫' },
-          ].map((user, index) => (
-            <div className={`rank-card ${index === 0 ? 'top' : ''}`} key={user.name}>
+          ].map((user, i) => (
+            <div className={`rank-card ${i === 0 ? 'top' : ''}`} key={user.name}>
               <div className="rank-avatar"></div>
               <h4>{user.name}</h4>
               <p>{user.days} ngày</p>
@@ -108,36 +146,40 @@ function Home() {
             </div>
           ))}
         </div>
-        <button className="white-btn" aria-label="Xem bảng xếp hạng đầy đủ" onClick={() => handleProtectedClick('/ranking')}>
+        <button className="white-btn" onClick={() => handleProtectedClick('/ranking')}>
           Xem bảng xếp hạng đầy đủ
         </button>
       </div>
 
-      {/* Section 4 - Blog */}
+      {/* Blog section */}
       <div className="blog-section">
         <h2>Blog chia sẻ kinh nghiệm</h2>
         <p>Cùng lắng nghe những câu chuyện, lời khuyên chân thực từ cộng đồng và chuyên gia trong hành trình bỏ thuốc lá.</p>
         <div className="blog-list">
-          <div className="blog-card">
-            <img src="/src/assets/img/blog1.jpg" alt="Blog 1" />
-            <h4>10 lợi ích sức khỏe khi bạn bỏ thuốc lá trong 30 ngày đầu tiên</h4>
-            <p>Khám phá những thay đổi kỳ diệu trong cơ thể bạn chỉ sau 1 tháng không hút thuốc.</p>
-            <span>Đọc tiếp →</span>
-          </div>
-          <div className="blog-card">
-            <img src="/src/assets/img/blog2.jpg" alt="Blog 2" />
-            <h4>Phương pháp giữ vững cam kết bỏ thuốc hiệu quả nhất</h4>
-            <p>Các mẹo thực tế giúp bạn kiên trì và vượt qua cám dỗ.</p>
-            <span>Đọc tiếp →</span>
-          </div>
-          <div className="blog-card">
-            <img src="/src/assets/img/blog3.jpg" alt="Blog 3" />
-            <h4>Câu chuyện thành công: Thử 2-3 lần rồi cũng bỏ được thuốc</h4>
-            <p>Một câu chuyện truyền cảm hứng từ người từng thất bại nhiều lần.</p>
-            <span>Đọc tiếp →</span>
-          </div>
+          {loadingBlogs ? (
+            <p>Đang tải...</p>
+          ) : validBlogs.length > 0 ? (
+            validBlogs.slice(0, 3).map(blog => (
+              <div className="blog-card" key={blog.id || blog._id}>
+                <img
+                  src={blog.coverImage || blog.image || '/default-image.jpg'}
+                  alt={blog.title || 'Bài viết'}
+                />
+                <h4>{blog.title || 'Không có tiêu đề'}</h4>
+                <p>{blog.content?.slice(0, 100) || 'Không có nội dung.'}</p>
+                <span
+                  style={{ color: '#2e7dff', cursor: 'pointer' }}
+                  onClick={() => handleReadMore(blog)}
+                >
+                  Đọc tiếp →
+                </span>
+              </div>
+            ))
+          ) : (
+            <p>Không có bài viết nào phù hợp.</p>
+          )}
         </div>
-        <button className="white-btn" aria-label="Xem tất cả bài viết" onClick={() => handleProtectedClick('/blog')}>
+        <button className="white-btn" onClick={() => handleProtectedClick('/blog')}>
           Xem tất cả bài viết
         </button>
       </div>
