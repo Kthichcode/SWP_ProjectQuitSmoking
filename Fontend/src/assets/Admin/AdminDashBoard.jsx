@@ -1,6 +1,8 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { MdDashboard, MdPeople, MdEmojiEvents, MdSettings, MdFeedback, MdLogout } from 'react-icons/md';
+import { FaUserTie, FaClipboardList, FaBoxOpen, FaBlog } from 'react-icons/fa';
 import './AdminDashboard.css';
 
 function AdminDashboard() {
@@ -17,33 +19,53 @@ function AdminDashboard() {
         <div className="sidebar-header">Admin</div>
         <ul className="menu">
           <li>
-            <NavLink to="/admin/dashboard" end className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Thống kê</NavLink>
+            <NavLink to="/admin/dashboard" end className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
+              <MdDashboard size={20} /> Thống kê
+            </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/dashboard/users" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Người Dùng</NavLink>
+            <NavLink to="/admin/dashboard/users" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
+              <MdPeople size={20} /> Quản lý Người Dùng
+            </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/dashboard/coaches" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Coach</NavLink>
+            <NavLink to="/admin/dashboard/coaches" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
+              <FaUserTie size={20} /> Quản lý Coach
+            </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/dashboard/plans" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Kế Hoạch</NavLink>
+            <NavLink to="/admin/dashboard/plans" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
+              <FaClipboardList size={20} /> Quản lý Kế Hoạch
+            </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/dashboard/achievements" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Thành Tích</NavLink>
+            <NavLink to="/admin/dashboard/achievements" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
+              <MdEmojiEvents size={20} /> Quản lý Thành Tích
+            </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/dashboard/system" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Hệ Thống</NavLink>
+            <NavLink to="/admin/dashboard/system" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
+              <MdSettings size={20} /> Quản lý Hệ Thống
+            </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/dashboard/feedback" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Phản Hồi Người Dùng</NavLink>
+            <NavLink to="/admin/dashboard/feedback" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
+              <MdFeedback size={20} /> Phản Hồi Người Dùng
+            </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/dashboard/packages" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Gói Dịch Vụ</NavLink>
+            <NavLink to="/admin/dashboard/packages" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
+              <FaBoxOpen size={20} /> Quản lý Gói Dịch Vụ
+            </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/dashboard/blogs" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>Quản lý Blog</NavLink>
+            <NavLink to="/admin/dashboard/blogs" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
+              <FaBlog size={20} /> Quản lý Blog
+            </NavLink>
           </li>
-          <li className="logout" onClick={handleLogout}>Đăng Xuất</li>
+          <li className="logout" onClick={handleLogout}>
+            <MdLogout size={20} style={{ marginRight: 8 }} /> Đăng Xuất
+          </li>
         </ul>
       </aside>
       <main className="main">

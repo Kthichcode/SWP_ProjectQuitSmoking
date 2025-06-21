@@ -46,7 +46,10 @@ body, html {
 }
 .sidebar-link.active, .sidebar-link:hover {
   background: #22c55e;
-  color: #fff;
+  color: #222;
+}
+.sidebar-link.active svg, .sidebar-link:hover svg {
+  color: #222;
 }
 .sidebar-link svg {
   margin-right: 12px;
