@@ -28,6 +28,7 @@ import AdminFeedback from './assets/Admin/AdminFeedback';
 import CoachBlog from './assets/Coach/CoachBlog';
 import AdminBlogs from './assets/Admin/AdminBlogs';
 import BlogDetail from './pages/BlogDetail';
+import Profile from './pages/Profile';
 function RequireRole({ role, children }) {
   const { user } = useAuth();
   const location = useLocation();
@@ -99,6 +100,7 @@ function App() {
                 <Route path="/login/oauth2/code/google" element={<Navigate to="/login" />} />
                 <Route path="/blog/:id" element={<BlogDetail />} />
                 <Route path="/" element={<Navigate to="/home" replace />} />
+                <Route path="/profile" element={<Profile />} />
               </Routes>
               <Footer />
             </>

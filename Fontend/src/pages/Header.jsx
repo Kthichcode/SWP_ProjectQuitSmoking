@@ -22,6 +22,9 @@ const Header = () => {
     }
   }, [user, navigate]);
 
+  // Hàm kiểm tra active
+  const isActive = (path) => window.location.pathname === path;
+
   return (
     <div className="home-header-bar">
       <a href="/home" className="home-logo">
@@ -30,11 +33,11 @@ const Header = () => {
       </a>
 
       <div className="home-nav">
-        <button className="nav-btn" onClick={() => (window.location.href = '/home')}>Trang chủ</button>
-        <button className="nav-btn" onClick={() => (window.location.href = '/blog')}>Blog</button>
-        <button className="nav-btn" onClick={() => (window.location.href = '/ranking')}>Bảng xếp hạng</button>
-        <button className="nav-btn" onClick={() => (window.location.href = '/about')}>Giới thiệu</button>
-        <button className="nav-btn" onClick={() => (window.location.href = '/process')}>Tiến Trình Cai Thuốc</button>
+        <button className={`nav-btn${isActive('/home') || isActive('/') ? ' active' : ''}`} onClick={() => (window.location.href = '/home')}>Trang chủ</button>
+        <button className={`nav-btn${isActive('/blog') ? ' active' : ''}`} onClick={() => (window.location.href = '/blog')}>Blog</button>
+        <button className={`nav-btn${isActive('/ranking') ? ' active' : ''}`} onClick={() => (window.location.href = '/ranking')}>Bảng xếp hạng</button>
+        <button className={`nav-btn${isActive('/about') ? ' active' : ''}`} onClick={() => (window.location.href = '/about')}>Giới thiệu</button>
+        <button className={`nav-btn${isActive('/process') ? ' active' : ''}`} onClick={() => (window.location.href = '/process')}>Tiến Trình Cai Thuốc</button>
       </div>
 
       <div className="home-auth-buttons">
@@ -65,31 +68,29 @@ const Header = () => {
                 <span style={{ marginLeft: 6 }}>&#9662;</span>
               </button>
               {showDropdown && (
-                <div className="dropdown-menu">
-                  <div className="dropdown-header">
-                    <div>{user.name || 'No name'}</div>
-                    <div>{user.email}</div>
-                  </div>
+                <div className="dropdown-menu custom-dropdown2">
                   <button
-                    className="dropdown-item"
+                    className="dropdown-item2 profile-btn2"
                     onClick={() => {
                       setShowDropdown(false);
-                      window.location.href = '/profile';
+                      navigate('/profile');
                     }}
                   >
-                    Thông tin cá nhân
+                    <span className="dropdown-icon2" role="img" aria-label="profile">👤</span>
+                    Tài khoản
                   </button>
                   <button
-                    className="dropdown-item logout-btn"
+                    className="dropdown-item2 logout-btn2"
                     onClick={() => {
-                      logout(); // xóa context
+                      logout();
                       localStorage.removeItem('token');
                       setShowDropdown(false);
                       setTimeout(() => {
-                        window.location.href = '/login'; // reload hoàn toàn
+                        window.location.href = '/login';
                       }, 100);
                     }}
                   >
+                    <span className="dropdown-icon2" role="img" aria-label="logout">🚪</span>
                     Đăng xuất
                   </button>
                 </div>
