@@ -10,29 +10,24 @@ export default function Blog() {
     const navigate = useNavigate();
     const [blogs, setBlogs] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const blogsPerPage = 3;
+    const blogsPerPage = 9;
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        if (!token) {
-            setError('Bạn cần đăng nhập để xem blog.');
-            return;
-        }
         setLoading(true);
-        axios.get('/api/blog/getAllBlog', {
-            headers: { Authorization: `Bearer ${token}` }
-        })
+        axios.get('/api/blog/getAllBlog')
             .then(res => {
                 setBlogs(res.data.data || []);
                 setError('');
             })
             .catch(err => {
                 setError('Không thể tải blog. Vui lòng thử lại.');
+                setBlogs([]);
                 console.error('Lỗi lấy danh sách blog:', err);
             })
             .finally(() => setLoading(false));
-    }, [token]);
+    }, []);
 
     useEffect(() => {
         const handlePageShow = (event) => {
@@ -85,7 +80,12 @@ export default function Blog() {
 
             {error && <div style={{color:'red',margin:'16px 0'}}>{error}</div>}
 
-            <div className="blog-grid">
+            <div className="blog-grid" style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '24px',
+                margin: '24px 0'
+            }}>
                 {loading ? <p>Đang tải...</p> : currentBlogs.map(blog => (
                     <BlogCard key={blog.id || blog._id} blog={blog} onReadMore={handleReadMore} />
                 ))}

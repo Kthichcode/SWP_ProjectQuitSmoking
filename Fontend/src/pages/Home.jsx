@@ -25,31 +25,17 @@ function Home() {
 
   // ✅ Gọi API lấy blog
   useEffect(() => {
-    const token = user?.token || user?.accessToken;
-    console.log('🔑 Token gửi lên:', token);
-
-    if (!token) {
-      console.warn('⚠️ Không có token, không gọi API');
-      setBlogs([]);
-      return;
-    }
-
     setLoadingBlogs(true);
-
-    axios.get('/api/blog/getAllBlog', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    axios.get('/api/blog/getAllBlog')
       .then(res => {
-        console.log('✅ API blog trả về:', res.data);
         const data = res.data?.data || [];
         setBlogs(data);
       })
       .catch(err => {
-        console.error('❌ Lỗi tải blog:', err);
         setBlogs([]);
       })
       .finally(() => setLoadingBlogs(false));
-  }, [user]);
+  }, []);
 
   // ✅ Chuyển hướng khi click nút cần login
   const handleProtectedClick = (targetPath) => {
@@ -155,11 +141,16 @@ function Home() {
       <div className="blog-section">
         <h2>Blog chia sẻ kinh nghiệm</h2>
         <p>Cùng lắng nghe những câu chuyện, lời khuyên chân thực từ cộng đồng và chuyên gia trong hành trình bỏ thuốc lá.</p>
-        <div className="blog-list">
+        <div className="blog-list" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '24px',
+          margin: '24px 0'
+        }}>
           {loadingBlogs ? (
             <p>Đang tải...</p>
           ) : validBlogs.length > 0 ? (
-            validBlogs.slice(0, 3).map(blog => (
+            validBlogs.slice(0, 6).map(blog => (
               <div className="blog-card" key={blog.id || blog._id}>
                 <img
                   src={blog.coverImage || blog.image || '/default-image.jpg'}

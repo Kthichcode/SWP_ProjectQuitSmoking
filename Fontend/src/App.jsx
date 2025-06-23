@@ -29,6 +29,8 @@ import CoachBlog from './assets/Coach/CoachBlog';
 import AdminBlogs from './assets/Admin/AdminBlogs';
 import BlogDetail from './pages/BlogDetail';
 import Profile from './pages/Profile';
+import AdminBadges from './assets/Admin/AdminBadges';
+
 function RequireRole({ role, children }) {
   const { user } = useAuth();
   const location = useLocation();
@@ -58,6 +60,7 @@ function App() {
           <Route path="system" element={<AdminSystem />} />
           <Route path="feedback" element={<AdminFeedback />} />
           <Route path="blogs" element={<AdminBlogs />} />
+          <Route path="badges" element={<AdminBadges />} />
         </Route>
         <Route
           path="/coach/*"

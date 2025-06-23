@@ -7,7 +7,7 @@ import './AdminDashboard.css';
 
 function AdminDashboard() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const handleLogout = () => {
     localStorage.removeItem('token');
     logout(); // Xóa context user
@@ -61,6 +61,11 @@ function AdminDashboard() {
           <li>
             <NavLink to="/admin/dashboard/blogs" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
               <FaBlog size={20} /> Quản lý Blog
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/admin/dashboard/badges" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
+              <MdEmojiEvents size={20} /> Quản lý Huy Hiệu
             </NavLink>
           </li>
           <li className="logout" onClick={handleLogout}>
