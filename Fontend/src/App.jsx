@@ -30,6 +30,7 @@ import AdminBlogs from './assets/Admin/AdminBlogs';
 import BlogDetail from './pages/BlogDetail';
 import Profile from './pages/Profile';
 import AdminBadges from './assets/Admin/AdminBadges';
+import Checkout from './pages/Checkout';
 
 function RequireRole({ role, children }) {
   const { user } = useAuth();
@@ -99,6 +100,7 @@ function App() {
                 <Route path="/ranking" element={<Ranking />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/payment" element={<Payment />} />
+                <Route path="/checkout" element={<Checkout />} />
                 <Route path="/coach/:id" element={<CoachProfile />} />
                 <Route path="/login/oauth2/code/google" element={<Navigate to="/login" />} />
                 <Route path="/blog/:id" element={<BlogDetail />} />
