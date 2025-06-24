@@ -61,6 +61,30 @@ function Home() {
   console.log('📦 Danh sách blog từ API:', blogs);
   console.log('✅ Blog hợp lệ sau lọc:', validBlogs);
 
+  // 🕒 Tự động đăng xuất nếu tab bị đóng quá 5 phút
+  useEffect(() => {
+    const checkAndLogout = () => {
+      const lastClosed = sessionStorage.getItem('lastClosed');
+      if (lastClosed) {
+        const diff = Date.now() - parseInt(lastClosed, 10);
+        if (diff > 5 * 60 * 1000) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+        }
+      }
+      sessionStorage.removeItem('lastClosed');
+    };
+    checkAndLogout();
+    const handleBeforeUnload = () => {
+      sessionStorage.setItem('lastClosed', Date.now().toString());
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
   return (
     <div>
       {/* Hero section */}
