@@ -73,6 +73,11 @@ const Profile = () => {
       if (birthDate instanceof Date) {
         birthDate = birthDate.toISOString().slice(0, 10);
       }
+      // Nếu là dd/MM/yyyy thì chuyển sang yyyy-MM-dd
+      if (typeof birthDate === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(birthDate)) {
+        const [day, month, year] = birthDate.split('/');
+        birthDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      }
       if (!birthDate || birthDate === '') birthDate = null;
       // Chỉ gửi các trường hợp hợp lệ, loại bỏ undefined/null nếu backend cho phép
       const updateData = {
@@ -157,15 +162,43 @@ const Profile = () => {
                 </div>
                 <div className="form-row-2col">
                   <label><AiOutlineCalendar/> Ngày sinh</label>
-                  <input name="birthDate" value={editForm.birthDate ? (() => {
-                    // Hiển thị dạng dd/MM/yyyy nếu có birthDate
-                    const d = new Date(editForm.birthDate);
-                    if (isNaN(d.getTime())) return editForm.birthDate;
-                    const day = String(d.getDate()).padStart(2, '0');
-                    const month = String(d.getMonth() + 1).padStart(2, '0');
-                    const year = d.getFullYear();
-                    return `${day}/${month}/${year}`;
-                  })() : ''} onChange={handleEditChange} type="text" placeholder="dd/mm/yyyy" />
+                  <input
+                    name="birthDate"
+                    type="text"
+                    value={(() => {
+                      if (!editForm.birthDate) return '';
+                      // Nếu là yyyy-MM-dd thì chuyển sang dd/MM/yyyy khi hiển thị
+                      if (/^\d{4}-\d{2}-\d{2}$/.test(editForm.birthDate)) {
+                        const [year, month, day] = editForm.birthDate.split('-');
+                        return `${day}/${month}/${year}`;
+                      }
+                      return editForm.birthDate;
+                    })()}
+                    onChange={e => {
+                      // Tự động thêm dấu / khi nhập ngày
+                      let val = e.target.value.replace(/[^\d]/g, '');
+                      if (val.length > 8) val = val.slice(0, 8);
+                      let formatted = val;
+                      if (val.length > 4) {
+                        formatted = val.slice(0,2) + '/' + val.slice(2,4) + '/' + val.slice(4);
+                      } else if (val.length > 2) {
+                        formatted = val.slice(0,2) + '/' + val.slice(2);
+                      }
+                      setEditForm({ ...editForm, birthDate: formatted });
+                    }}
+                    onBlur={e => {
+                      let val = e.target.value;
+                      // Nếu blur mà là yyyy-MM-dd thì chuyển sang dd/MM/yyyy
+                      if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+                        const [year, month, day] = val.split('-');
+                        setEditForm({ ...editForm, birthDate: `${day}/${month}/${year}` });
+                      } else if (!/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+                        alert('Vui lòng nhập ngày theo định dạng dd/MM/yyyy!');
+                        setEditForm({ ...editForm, birthDate: '' });
+                      }
+                    }}
+                    placeholder="dd/MM/yyyy"
+                  />
                 </div>
                 <div className="form-row-2col">
                   <label><AiOutlineHome/> Địa chỉ</label>
@@ -204,12 +237,28 @@ const Profile = () => {
                   <div><span className="icon-phone"/> <b>Điện thoại:</b> {user.phoneNumber}</div>
                   <div><span className="icon-birth"/> <b>Ngày sinh:</b> {user.birthDate ? (() => {
                     // Hiển thị dạng dd/MM/yyyy nếu có birthDate
-                    const d = new Date(user.birthDate);
-                    if (isNaN(d.getTime())) return user.birthDate;
-                    const day = String(d.getDate()).padStart(2, '0');
-                    const month = String(d.getMonth() + 1).padStart(2, '0');
-                    const year = d.getFullYear();
-                    return `${day}/${month}/${year}`;
+                    let d;
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(user.birthDate)) {
+                      // yyyy-MM-dd
+                      const [year, month, day] = user.birthDate.split('-');
+                      return `${day}/${month}/${year}`;
+                    } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(user.birthDate)) {
+                      // dd/MM/yyyy
+                      return user.birthDate;
+                    } else if (/^\d{2}-\d{2}-\d{4}$/.test(user.birthDate)) {
+                      // dd-MM-yyyy
+                      const [day, month, year] = user.birthDate.split('-');
+                      return `${day}/${month}/${year}`;
+                    } else {
+                      d = new Date(user.birthDate);
+                      if (!isNaN(d.getTime())) {
+                        const day = String(d.getDate()).padStart(2, '0');
+                        const month = String(d.getMonth() + 1).padStart(2, '0');
+                        const year = d.getFullYear();
+                        return `${day}/${month}/${year}`;
+                      }
+                      return user.birthDate;
+                    }
                   })() : ''}</div>
                   <div><span className="icon-home"/> <b>Địa chỉ:</b> {user.address}</div>
                   {/* Huy hiệu cá nhân ngay dưới thông tin cá nhân */}

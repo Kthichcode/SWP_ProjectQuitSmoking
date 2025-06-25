@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const maskEmail = (email) => {
   const [user, domain] = email.split('@');
@@ -26,28 +27,43 @@ const ForgotPasswordModal = ({ show, onClose }) => {
     return Math.floor(100000 + Math.random() * 900000).toString();
   };
 
-  const handleEmailSubmit = (e) => {
+  // Gửi email để nhận OTP từ backend
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
     if (!email) return setError('Vui lòng nhập email.');
-    const generated = generateOtp();
-    setOtp(generated);
-    setMaskedEmail(maskEmail(email));
-    setOtpSent(true);
-    setError('');
-    console.log('OTP giả lập đã gửi:', generated); // Gửi OTP thật nếu có backend
-  };
-
-  const handleOtpSubmit = (e) => {
-    e.preventDefault();
-    if (enteredOtp === otp) {
-      setOtpVerified(true);
-      setError('');
-    } else {
-      setError('Mã OTP không đúng. Vui lòng thử lại.');
+    try {
+      const res = await axios.post('/api/password/forgot', { email });
+      if (res.data && res.data.status === 'success') {
+        setMaskedEmail(maskEmail(email));
+        setOtpSent(true);
+        setError('');
+      } else {
+        setError(res.data?.message || 'Không gửi được mã OTP.');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Không gửi được mã OTP.');
     }
   };
 
-  const handlePasswordReset = (e) => {
+  // Xác thực OTP với backend
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    if (!enteredOtp) return setError('Vui lòng nhập mã OTP.');
+    try {
+      const res = await axios.get('/api/password/validate-code', { params: { code: enteredOtp } });
+      if (res.data && res.data.status === 'success' && res.data.data === true) {
+        setOtpVerified(true);
+        setError('');
+      } else {
+        setError('Mã OTP không đúng hoặc đã hết hạn.');
+      }
+    } catch (err) {
+      setError('Mã OTP không đúng hoặc đã hết hạn.');
+    }
+  };
+
+  // Đổi mật khẩu mới với backend
+  const handlePasswordReset = async (e) => {
     e.preventDefault();
     if (!newPassword || !confirmPassword) {
       setError('Vui lòng nhập đầy đủ mật khẩu.');
@@ -57,10 +73,20 @@ const ForgotPasswordModal = ({ show, onClose }) => {
       setError('Mật khẩu không trùng khớp.');
       return;
     }
-
-    // TODO: Gửi mật khẩu mới lên server để cập nhật
-    alert('Mật khẩu đã được cập nhật!');
-    onClose();
+    try {
+      const res = await axios.post('/api/password/reset', {
+        code: enteredOtp,
+        newPassword,
+      });
+      if (res.data && res.data.status === 'success') {
+        alert('Mật khẩu đã được cập nhật!');
+        onClose();
+      } else {
+        setError(res.data?.message || 'Không thể cập nhật mật khẩu.');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Không thể cập nhật mật khẩu.');
+    }
   };
 
   const handleClose = () => {
@@ -134,12 +160,18 @@ const ForgotPasswordModal = ({ show, onClose }) => {
             {error && <p style={{ color: 'red', fontSize: 14, margin: 0 }}>{error}</p>}
             <div style={{ marginTop: 10, marginBottom: 4, textAlign: 'center' }}>
               <span style={{ fontSize: 14 }}>Bạn không nhận được mã?</span>
-              <button type="button" onClick={() => {
-                const generated = generateOtp();
-                setOtp(generated);
+              <button type="button" onClick={async () => {
+                try {
+                  const res = await axios.post('/api/password/forgot', { email });
+                  if (res.data && res.data.status === 'success') {
+                    setError('Đã gửi lại mã OTP!');
+                  } else {
+                    setError(res.data?.message || 'Không gửi lại được mã OTP.');
+                  }
+                } catch (err) {
+                  setError(err.response?.data?.message || 'Không gửi lại được mã OTP.');
+                }
                 setEnteredOtp('');
-                setError('');
-                console.log('OTP giả lập đã gửi:', generated); // Hiện OTP giả lập trong console khi gửi lại
               }} style={{ marginLeft: 8, padding: '4px 12px', borderRadius: 5, background: '#4CAF50', color: '#fff', border: 'none', fontWeight: 500, cursor: 'pointer', fontSize: 14 }}>Gửi lại OTP</button>
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>

@@ -1,82 +1,44 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import '../assets/CSS/Payment.css';
 import { AiFillHeart, AiFillStar, AiFillCrown, AiOutlineCheck } from 'react-icons/ai';
-
-const packages = [
-  {
-    id: 1,
-    name: 'Cơ bản',
-    price: 0,
-    priceLabel: 'Miễn phí',
-    icon: <AiFillHeart size={38} color="#2e7d32" style={{background:'#fff',borderRadius:'50%',padding:6}} />,
-    features: [
-      'Theo dõi tiến trình cơ bản',
-      'Thống kê số ngày không hút thuốc',
-      'Tính toán tiền tiết kiệm',
-      'Nhật ký cá nhân',
-      'Truy cập cộng đồng',
-      'Hỗ trợ qua email',
-    ],
-    btn: 'Bắt đầu miễn phí',
-    btnClass: 'btn-free',
-    highlight: false,
-    borderColor: '#e0e0e0',
-  },
-  {
-    id: 2,
-    name: 'Nâng cao',
-    price: 199000,
-    priceLabel: '199.000đ/tháng',
-    icon: <AiFillStar size={38} color="#1976d2" style={{background:'#fff',borderRadius:'50%',padding:6}} />,
-    features: [
-      'Tất cả tính năng gói Cơ bản',
-      'Kế hoạch cai nghiện cá nhân hóa',
-      'Biểu đồ chi tiết về sức khỏe',
-      'Nhắc nhở thông minh',
-      'Hệ thống huy hiệu mở rộng',
-      'Tư vấn qua chat (5 buổi/tháng)',
-      'Báo cáo tiến trình hàng tuần',
-    ],
-    btn: 'Chọn gói này',
-    btnClass: 'btn-popular',
-    highlight: true,
-    borderColor: '#1976d2',
-    label: 'Phổ biến nhất',
-  },
-  {
-    id: 3,
-    name: 'Premium',
-    price: 399000,
-    priceLabel: '399.000đ/tháng',
-    icon: <AiFillCrown size={38} color="#8e24aa" style={{background:'#fff',borderRadius:'50%',padding:6}} />,
-    features: [
-      'Tất cả tính năng gói Nâng cao',
-      'Tư vấn 1-1 không giới hạn',
-      'Video call với chuyên gia',
-      'Kế hoạch dinh dưỡng cá nhân',
-      'Theo dõi sức khỏe chi tiết',
-      'Ưu tiên hỗ trợ 24/7',
-      'Báo cáo chi tiết cho bác sĩ',
-      'Nhóm hỗ trợ VIP',
-    ],
-    btn: 'Chọn gói này',
-    btnClass: 'btn-premium',
-    highlight: false,
-    borderColor: '#8e24aa',
-  },
-];
+import axios from 'axios';
 
 function Payment() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [apiPackages, setApiPackages] = useState([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (user === null) {
       navigate('/login', { replace: true });
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    // Lấy gói từ API
+    const fetchPackages = async () => {
+      try {
+        let config = {};
+        if (user && user.token) {
+          config.headers = { Authorization: `Bearer ${user.token}` };
+        }
+        const res = await axios.get('/api/membership-packages/getAll', config);
+          let data = res.data.data;
+        if (Array.isArray(data)) {
+          setApiPackages(data);
+        } else if (data && typeof data === 'object') {
+          setApiPackages([data]);
+        } else {
+          setApiPackages([]);
+        }
+      } catch {
+        setApiPackages([]);
+      }
+    };
+    fetchPackages();
+  }, [user]);
 
   const handleBuy = (id) => {
     if (!user) {
@@ -86,13 +48,30 @@ function Payment() {
     }
   };
 
+  const displayPackages = apiPackages.map((pkg, idx) => ({
+    id: pkg.id,
+    name: pkg.name,
+    price: Number(pkg.price),
+    priceLabel: pkg.price === 0 ? 'Miễn phí' : `${Number(pkg.price).toLocaleString('vi-VN')}đ/tháng`,
+    icon: idx === 0 ? <AiFillHeart size={38} color="#2e7d32" style={{background:'#fff',borderRadius:'50%',padding:6}} />
+      : idx === 1 ? <AiFillStar size={38} color="#1976d2" style={{background:'#fff',borderRadius:'50%',padding:6}} />
+      : <AiFillCrown size={38} color="#8e24aa" style={{background:'#fff',borderRadius:'50%',padding:6}} />,
+    features: pkg.features && Array.isArray(pkg.features) ? pkg.features : [pkg.description || ''],
+    btn: pkg.price === 0 ? 'Bắt đầu miễn phí' : 'Chọn gói này',
+    btnClass: idx === 0 ? 'btn-free' : idx === 1 ? 'btn-popular' : 'btn-premium',
+    highlight: idx === 1,
+    borderColor: idx === 1 ? '#1976d2' : (idx === 2 ? '#8e24aa' : '#e0e0e0'),
+    label: idx === 1 ? 'Phổ biến nhất' : undefined,
+    desc: pkg.description || '',
+  }));
+
   return (
     <div className="payment-bg">
       <div className="payment-container">
         <h2 className="payment-title">Hành trình cai nghiện thuốc lá cùng chúng tôi</h2>
         <div className="payment-sub">Chọn gói dịch vụ phù hợp để bắt đầu cuộc sống khỏe mạnh</div>
         <div className="package-list">
-          {packages.map((pkg, idx) => (
+          {displayPackages.map((pkg, idx) => (
             <div
               className={`package-card-v2${pkg.highlight ? ' package-popular' : ''}`}
               key={pkg.id}
@@ -105,13 +84,11 @@ function Payment() {
                 <span className="package-price-main">{pkg.priceLabel}</span>
               </div>
               <div className="package-desc">
-                {pkg.id === 1 && 'Bắt đầu hành trình cai thuốc lá'}
-                {pkg.id === 2 && 'Hỗ trợ chuyên sâu và cá nhân hóa'}
-                {pkg.id === 3 && 'Trải nghiệm hoàn hảo với hỗ trợ 24/7'}
+                {pkg.desc}
               </div>
               <ul className="package-features">
-                {pkg.features.map(f => (
-                  <li key={f}><AiOutlineCheck color="#43a047" style={{marginRight:6}}/>{f}</li>
+                {pkg.features.map((f, i) => (
+                  <li key={f + i}><AiOutlineCheck color="#43a047" style={{marginRight:6}}/>{f}</li>
                 ))}
               </ul>
               <button className={`buy-btn-v2 ${pkg.btnClass}`} onClick={()=>handleBuy(pkg.id)}>{pkg.btn}</button>
