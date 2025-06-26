@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './AdminPage.css';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { parse, format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 function AdminPackages() {
   const [packages, setPackages] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState('add'); // 'add' or 'edit'
-  const [currentPackage, setCurrentPackage] = useState({ name: '', price: '', description: '', startDate: '', endDate: '' });
+  const [modalType, setModalType] = useState('add');
+  const [currentPackage, setCurrentPackage] = useState({ name: '', price: '', description: '', releaseDate: '', endDate: '' });
   const [editId, setEditId] = useState(null);
 
   useEffect(() => {
     fetchPackages();
   }, []);
 
-  // Lấy token từ localStorage (hoặc context nếu có)
   const getToken = () => localStorage.getItem('token') || localStorage.getItem('accessToken');
 
   const fetchPackages = async () => {
@@ -26,46 +29,55 @@ function AdminPackages() {
     }
   };
 
+  const parseDateString = (dateStr) => {
+    try {
+      return parse(dateStr, 'dd/MM/yyyy', new Date());
+    } catch {
+      return null;
+    }
+  };
+
+  const formatDateString = (date) => {
+    try {
+      return format(date, 'dd/MM/yyyy');
+    } catch {
+      return '';
+    }
+  };
+
   const handleOpenModal = (type, pkg = null) => {
     setModalType(type);
     setShowModal(true);
+    const todayStr = format(new Date(), 'dd/MM/yyyy');
+
     if (type === 'edit' && pkg) {
-      // Tách startDate và endDate từ duration nếu có định dạng "Từ ngày ... đến ngày ..."
-      let startDate = '', endDate = '';
-      if (pkg.duration) {
-        const match = pkg.duration.match(/Từ ngày (\d{4}-\d{2}-\d{2}) đến ngày (\d{4}-\d{2}-\d{2})/);
-        if (match) {
-          // Chuyển yyyy-MM-dd sang dd/MM/yyyy để hiển thị
-          const [sy, sm, sd] = match[1].split('-');
-          const [ey, em, ed] = match[2].split('-');
-          startDate = `${sd}/${sm}/${sy}`;
-          endDate = `${ed}/${em}/${ey}`;
-        } else {
-          // Nếu không match, thử lấy luôn giá trị cũ nếu đã có
-          startDate = pkg.startDate || '';
-          endDate = pkg.endDate || '';
+      const parseDate = (val) => {
+        if (!val) return '';
+        if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+          const [y, m, d] = val.split('-');
+          return `${d}/${m}/${y}`;
+        } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+          return val;
         }
-      } else {
-        startDate = pkg.startDate || '';
-        endDate = pkg.endDate || '';
-      }
+        return '';
+      };
       setCurrentPackage({
         name: pkg.name,
         price: pkg.price,
         description: pkg.description || '',
-        startDate,
-        endDate,
+        releaseDate: todayStr,
+        endDate: parseDate(pkg.endDate),
       });
       setEditId(pkg.id);
     } else {
-      setCurrentPackage({ name: '', price: '', description: '', startDate: '', endDate: '' });
+      setCurrentPackage({ name: '', price: '', description: '', releaseDate: todayStr, endDate: '' });
       setEditId(null);
     }
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setCurrentPackage({ name: '', price: '', description: '', startDate: '', endDate: '' });
+    setCurrentPackage({ name: '', price: '', description: '', releaseDate: '', endDate: '' });
     setEditId(null);
   };
 
@@ -73,40 +85,6 @@ function AdminPackages() {
     setCurrentPackage({ ...currentPackage, [e.target.name]: e.target.value });
   };
 
-  // Xử lý chuyển đổi ngày khi blur (chỉ cho phép dd/MM/yyyy và không cho nhập ngày quá khứ)
-  const handleDateBlur = (e) => {
-    let val = e.target.value;
-    // Nếu không đúng định dạng dd/MM/yyyy thì báo lỗi và clear
-    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
-      alert('Vui lòng nhập ngày theo định dạng dd/MM/yyyy!');
-      setCurrentPackage((prev) => ({ ...prev, [e.target.name]: '' }));
-      return;
-    }
-    // Kiểm tra ngày không được nhỏ hơn hôm nay
-    const [day, month, year] = val.split('/');
-    const inputDate = new Date(`${year}-${month}-${day}T00:00:00`);
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    if (inputDate < today) {
-      alert('Chỉ được nhập ngày từ hôm nay trở đi!');
-      setCurrentPackage((prev) => ({ ...prev, [e.target.name]: '' }));
-    }
-  };
-
-  // Xử lý tự động thêm dấu / khi nhập ngày (dd/MM/yyyy)
-  const handleDateInput = (e) => {
-    let val = e.target.value.replace(/[^\d]/g, ''); // chỉ lấy số
-    if (val.length > 8) val = val.slice(0, 8);
-    let formatted = val;
-    if (val.length > 4) {
-      formatted = val.slice(0,2) + '/' + val.slice(2,4) + '/' + val.slice(4);
-    } else if (val.length > 2) {
-      formatted = val.slice(0,2) + '/' + val.slice(2);
-    }
-    setCurrentPackage((prev) => ({ ...prev, [e.target.name]: formatted }));
-  };
-
-  // Xử lý nhập giá: chỉ cho phép số, tự động thêm dấu chấm phân cách nghìn
   const handlePriceInput = (e) => {
     let val = e.target.value.replace(/[^\d]/g, '');
     if (!val) val = '';
@@ -117,31 +95,37 @@ function AdminPackages() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Chỉ cho phép dd/MM/yyyy, nếu không đúng thì không cho submit
       const checkDate = (val) => /^\d{2}\/\d{2}\/\d{4}$/.test(val);
-      if (!checkDate(currentPackage.startDate) || !checkDate(currentPackage.endDate)) {
-        alert('Vui lòng nhập ngày theo định dạng dd/MM/yyyy!');
+      if (!checkDate(currentPackage.releaseDate) || !checkDate(currentPackage.endDate)) {
+        alert('Vui lòng nhập ngày hợp lệ!');
         return;
       }
-      // Chuyển startDate, endDate về yyyy-MM-dd
+
       const convertDate = (val) => {
         const [day, month, year] = val.split('/');
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
       };
+
+      const releaseDateStr = convertDate(currentPackage.releaseDate);
+      const endDateStr = convertDate(currentPackage.endDate);
+
       const payload = {
         name: currentPackage.name,
-        // Chuyển price về số nguyên không có dấu chấm
         price: Number(String(currentPackage.price).replace(/\D/g, '')),
         description: currentPackage.description,
-        duration: `Từ ngày ${convertDate(currentPackage.startDate)} đến ngày ${convertDate(currentPackage.endDate)}`,
+        releaseDate: releaseDateStr,
+        endDate: endDateStr,
       };
+
       const token = getToken();
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+
       if (modalType === 'add') {
         await axios.post('/api/membership-packages/create', payload, config);
       } else {
         await axios.put(`/api/membership-packages/updateByID/${editId}`, payload, config);
       }
+
       fetchPackages();
       handleCloseModal();
     } catch (err) {
@@ -182,7 +166,27 @@ function AdminPackages() {
                 <td>{pkg.name}</td>
                 <td>{pkg.price ? Number(String(pkg.price).replace(/\D/g, '')).toLocaleString('vi-VN') + ' VNĐ' : ''}</td>
                 <td>{pkg.description}</td>
-                <td>{pkg.duration}</td>
+                <td>{pkg.releaseDate && pkg.endDate ? (() => {
+                  const parseToDMY = (val) => {
+                    if (!val || typeof val !== 'string') return '';
+                    if (/^\d{4}-\d{2}-\d{2}T/.test(val)) {
+                      const datePart = val.split('T')[0];
+                      const [y, m, d] = datePart.split('-');
+                      return `${d}/${m}/${y}`;
+                    }
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+                      const [y, m, d] = val.split('-');
+                      return `${d}/${m}/${y}`;
+                    }
+                    if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+                      return val;
+                    }
+                    return '';
+                  };
+                  const d1 = parseToDMY(pkg.releaseDate);
+                  const d2 = parseToDMY(pkg.endDate);
+                  return `Từ ngày ${d1} đến ngày ${d2}`;
+                })() : ''}</td>
                 <td>
                   <button className="admin-btn" onClick={() => handleOpenModal('edit', pkg)}>Sửa</button>
                   <button className="admin-btn" onClick={() => handleDelete(pkg.id)}>Xóa</button>
@@ -192,6 +196,7 @@ function AdminPackages() {
           )}
         </tbody>
       </table>
+
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
@@ -213,48 +218,26 @@ function AdminPackages() {
               <label>Mô tả:<input name="description" value={currentPackage.description} onChange={handleChange} required /></label>
               <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 }}>
                 <label style={{ marginBottom: 0 }}>Ngày bắt đầu:
-                  <input
-                    type="text"
-                    name="startDate"
-                    value={currentPackage.startDate}
-                    onChange={handleDateInput}
-                    onBlur={handleDateBlur}
-                    required
-                    placeholder={modalType === 'edit' && packages[editId != null ? packages.findIndex(p => p.id === editId) : -1]?.duration ? (() => {
-                      const pkg = packages[editId != null ? packages.findIndex(p => p.id === editId) : -1];
-                      if (!pkg) return 'dd/MM/yyyy';
-                      const match = pkg.duration.match(/Từ ngày (\d{4}-\d{2}-\d{2}) đến ngày (\d{4}-\d{2}-\d{2})/);
-                      if (match) {
-                        const [sy, sm, sd] = match[1].split('-');
-                        return `${sd}/${sm}/${sy}`;
-                      }
-                      return 'dd/MM/yyyy';
-                    })() : 'dd/MM/yyyy'}
-                    style={{ marginLeft: 8, width: 120 }}
-                    maxLength={10}
+                  <DatePicker
+                    selected={parseDateString(currentPackage.releaseDate)}
+                    dateFormat="dd/MM/yyyy"
+                    className="date-picker-input"
+                    disabled
+                    locale={vi}
                   />
                 </label>
                 <span>đến</span>
                 <label style={{ marginBottom: 0 }}>Ngày kết thúc:
-                  <input
-                    type="text"
-                    name="endDate"
-                    value={currentPackage.endDate}
-                    onChange={handleDateInput}
-                    onBlur={handleDateBlur}
-                    required
-                    placeholder={modalType === 'edit' && packages[editId != null ? packages.findIndex(p => p.id === editId) : -1]?.duration ? (() => {
-                      const pkg = packages[editId != null ? packages.findIndex(p => p.id === editId) : -1];
-                      if (!pkg) return 'dd/MM/yyyy';
-                      const match = pkg.duration.match(/Từ ngày (\d{4}-\d{2}-\d{2}) đến ngày (\d{4}-\d{2}-\d{2})/);
-                      if (match) {
-                        const [ey, em, ed] = match[2].split('-');
-                        return `${ed}/${em}/${ey}`;
-                      }
-                      return 'dd/MM/yyyy';
-                    })() : 'dd/MM/yyyy'}
-                    style={{ marginLeft: 8, width: 120 }}
-                    maxLength={10}
+                  <DatePicker
+                    selected={currentPackage.endDate ? parseDateString(currentPackage.endDate) : null}
+                    onChange={(date) => {
+                      setCurrentPackage(prev => ({ ...prev, endDate: formatDateString(date) }));
+                    }}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="dd/MM/yyyy"
+                    minDate={new Date()}
+                    className="date-picker-input"
+                    locale={vi}
                   />
                 </label>
               </div>
@@ -269,4 +252,5 @@ function AdminPackages() {
     </div>
   );
 }
+
 export default AdminPackages;

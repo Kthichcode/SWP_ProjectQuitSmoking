@@ -1,20 +1,13 @@
-import React, { useState, useRef } from "react";
+// Profile.jsx
+import React, { useState, useRef, useEffect } from "react";
 import "../assets/CSS/Profile.css";
 import { useAuth } from '../contexts/AuthContext';
-import { AiOutlineBell, AiOutlineMail, AiOutlineLock, AiOutlineSafety, AiOutlineUser, AiOutlinePhone, AiOutlineHome, AiOutlineCalendar, AiOutlineMan, AiOutlineIdcard, AiOutlineContacts, AiOutlineClose } from "react-icons/ai";
+import { AiOutlineBell, AiOutlineMail, AiOutlineLock, AiOutlineSafety, AiOutlineUser, AiOutlinePhone, AiOutlineHome, AiOutlineCalendar, AiOutlineClose } from "react-icons/ai";
 import axios from 'axios';
-
-const SETTINGS = {
-  notifications: [
-    { label: "Nhắc nhở hàng ngày", checked: true, icon: <AiOutlineBell size={22} /> },
-    { label: "Thông báo thành tích", checked: true, icon: <AiOutlineMail size={22} /> },
-    { label: "Email tuần", checked: false, icon: <AiOutlineMail size={22} /> },
-  ],
-  security: [
-    { label: "Đổi mật khẩu", icon: <AiOutlineLock size={22} /> },
-    { label: "Xác thực 2 bước", icon: <AiOutlineSafety size={22} /> },
-  ],
-};
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { parse } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 const Profile = () => {
   const { user: authUser } = useAuth();
@@ -26,8 +19,17 @@ const Profile = () => {
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [badges, setBadges] = useState();
 
-  // Lấy thông tin cá nhân từ API
-  React.useEffect(() => {
+  const parseDateString = (dateStr) => {
+    if (!dateStr) return null;
+    if (typeof dateStr === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+      const [day, month, year] = dateStr.split('/');
+      return new Date(`${year}-${month}-${day}T00:00:00`);
+    }
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  useEffect(() => {
     const token = authUser?.token || authUser?.accessToken;
     if (!token) return;
     setLoadingProfile(true);
@@ -46,8 +48,7 @@ const Profile = () => {
       .finally(() => setLoadingProfile(false));
   }, [authUser]);
 
-  // Lấy huy hiệu của user (chỉ lấy theo user, không lấy tất cả)
-  React.useEffect(() => {
+  useEffect(() => {
     const token = authUser?.token || authUser?.accessToken;
     if (!token) return;
     axios.get('/api/users/badges', {
@@ -57,7 +58,6 @@ const Profile = () => {
       .catch(() => setBadges([]));
   }, [authUser]);
 
-  // Lưu thông tin cá nhân (PUT)
   const handleEditSave = async (e) => {
     e.preventDefault();
     if (!editForm.fullName || editForm.fullName.length > 40) {
@@ -68,18 +68,15 @@ const Profile = () => {
     if (!token) return;
     setLoadingProfile(true);
     try {
-      // Đảm bảo birthDate đúng định dạng yyyy-MM-dd hoặc null
       let birthDate = editForm.birthDate;
       if (birthDate instanceof Date) {
         birthDate = birthDate.toISOString().slice(0, 10);
       }
-      // Nếu là dd/MM/yyyy thì chuyển sang yyyy-MM-dd
       if (typeof birthDate === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(birthDate)) {
         const [day, month, year] = birthDate.split('/');
         birthDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
       }
       if (!birthDate || birthDate === '') birthDate = null;
-      // Chỉ gửi các trường hợp hợp lệ, loại bỏ undefined/null nếu backend cho phép
       const updateData = {
         username: editForm.username || '',
         email: editForm.email || '',
@@ -91,7 +88,6 @@ const Profile = () => {
       await axios.put('/api/users/profile', updateData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      // Sau khi update thành công, lấy lại dữ liệu mới nhất từ BE
       const res = await axios.get('/api/users/profile', {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -105,15 +101,7 @@ const Profile = () => {
     }
   };
 
-  // Lấy tên hiển thị ưu tiên theo thứ tự: user.fullName > user.username > user.email > "Người dùng"
-  let displayName = "Người dùng";
-  if (authUser?.fullName && authUser.fullName.trim() !== "") {
-    displayName = authUser.fullName;
-  } else if (authUser?.username) {
-    displayName = authUser.username;
-  } else if (authUser?.email) {
-    displayName = authUser.email;
-  }
+  let displayName = authUser?.fullName?.trim() || authUser?.username || authUser?.email || "Người dùng";
 
   const handleEditClick = () => {
     setEditForm({
@@ -124,9 +112,11 @@ const Profile = () => {
     });
     setShowEdit(true);
   };
+
   const handleEditChange = (e) => {
     setEditForm({ ...editForm, [e.target.name]: e.target.value });
   };
+
   const handleEditCancel = () => setShowEdit(false);
 
   return (
@@ -135,73 +125,59 @@ const Profile = () => {
         <div className="modal-overlay" onClick={handleEditCancel}>
           <div className="modal-edit-profile modal-edit-profile-2col" onClick={e => e.stopPropagation()} ref={modalRef}>
             <div className="modal-edit-header">
-              <AiOutlineUser size={26} style={{color:'#1976d2',marginRight:8}}/>
+              <AiOutlineUser size={26} style={{ color: '#1976d2', marginRight: 8 }} />
               <div>
                 <div className="modal-edit-title">Chỉnh sửa thông tin cá nhân</div>
                 <div className="modal-edit-desc">Cập nhật thông tin cá nhân của bạn. Nhấn lưu để thay đổi.</div>
               </div>
-              <button className="modal-edit-close" onClick={handleEditCancel}><AiOutlineClose size={22}/></button>
+              <button className="modal-edit-close" onClick={handleEditCancel}><AiOutlineClose size={22} /></button>
             </div>
             <form className="edit-profile-form-2col" onSubmit={handleEditSave}>
               <div className="form-2col">
                 <div className="form-row-2col">
-                  <label><AiOutlineUser/> Username</label>
+                  <label><AiOutlineUser /> Username</label>
                   <input name="username" value={editForm.username} onChange={handleEditChange} required autoFocus readOnly />
                 </div>
                 <div className="form-row-2col">
-                  <label><AiOutlineUser/> Họ và tên</label>
+                  <label><AiOutlineUser /> Họ và tên</label>
                   <input name="fullName" value={editForm.fullName} onChange={handleEditChange} required />
                 </div>
                 <div className="form-row-2col">
-                  <label><AiOutlineMail/> Email</label>
-                  <input name="email" value={editForm.email} readOnly tabIndex={-1} style={{background:'#f5f5f5', color:'#888'}} />
+                  <label><AiOutlineMail /> Email</label>
+                  <input name="email" value={editForm.email} readOnly tabIndex={-1} style={{ background: '#f5f5f5', color: '#888' }} />
                 </div>
                 <div className="form-row-2col">
-                  <label><AiOutlinePhone/> Số điện thoại</label>
+                  <label><AiOutlinePhone /> Số điện thoại</label>
                   <input name="phoneNumber" value={editForm.phoneNumber} onChange={handleEditChange} required />
                 </div>
                 <div className="form-row-2col">
-                  <label><AiOutlineCalendar/> Ngày sinh</label>
-                  <input
-                    name="birthDate"
-                    type="text"
-                    value={(() => {
-                      if (!editForm.birthDate) return '';
-                      // Nếu là yyyy-MM-dd thì chuyển sang dd/MM/yyyy khi hiển thị
-                      if (/^\d{4}-\d{2}-\d{2}$/.test(editForm.birthDate)) {
-                        const [year, month, day] = editForm.birthDate.split('-');
-                        return `${day}/${month}/${year}`;
+                  <label><AiOutlineCalendar /> Ngày sinh</label>
+                  <DatePicker
+                    selected={editForm.birthDate ? parseDateString(editForm.birthDate) : null}
+                    onChange={(date) => {
+                      if (date > new Date()) {
+                        alert("Ngày sinh không được lớn hơn hôm nay!");
+                        return;
                       }
-                      return editForm.birthDate;
-                    })()}
-                    onChange={e => {
-                      // Tự động thêm dấu / khi nhập ngày
-                      let val = e.target.value.replace(/[^\d]/g, '');
-                      if (val.length > 8) val = val.slice(0, 8);
-                      let formatted = val;
-                      if (val.length > 4) {
-                        formatted = val.slice(0,2) + '/' + val.slice(2,4) + '/' + val.slice(4);
-                      } else if (val.length > 2) {
-                        formatted = val.slice(0,2) + '/' + val.slice(2);
-                      }
+                      const day = String(date.getDate()).padStart(2, '0');
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const year = date.getFullYear();
+                      const formatted = `${day}/${month}/${year}`;
                       setEditForm({ ...editForm, birthDate: formatted });
                     }}
-                    onBlur={e => {
-                      let val = e.target.value;
-                      // Nếu blur mà là yyyy-MM-dd thì chuyển sang dd/MM/yyyy
-                      if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
-                        const [year, month, day] = val.split('-');
-                        setEditForm({ ...editForm, birthDate: `${day}/${month}/${year}` });
-                      } else if (!/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
-                        alert('Vui lòng nhập ngày theo định dạng dd/MM/yyyy!');
-                        setEditForm({ ...editForm, birthDate: '' });
-                      }
-                    }}
-                    placeholder="dd/MM/yyyy"
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="dd/MM/yyyy"
+                    maxDate={new Date()}
+                    className="date-picker-input"
+                    showMonthDropdown
+                    showYearDropdown
+                    dropdownMode="select"
+                    locale={vi}
+                    onKeyDown={(e) => e.preventDefault()}
                   />
                 </div>
                 <div className="form-row-2col">
-                  <label><AiOutlineHome/> Địa chỉ</label>
+                  <label><AiOutlineHome /> Địa chỉ</label>
                   <input name="address" value={editForm.address} onChange={handleEditChange} />
                 </div>
               </div>
@@ -215,15 +191,11 @@ const Profile = () => {
       )}
       <div className="profile-main-card">
         <div className="profile-header-row">
-          <div>
-            <h1>{displayName}</h1>
-          </div>
-          <button className="profile-edit-btn" onClick={handleEditClick}>
-            <span className="icon-edit" /> Chỉnh sửa
-          </button>
+          <div><h1>{displayName}</h1></div>
+          <button className="profile-edit-btn" onClick={handleEditClick}><span className="icon-edit" /> Chỉnh sửa</button>
         </div>
         <div className="profile-tabs-row">
-          <button className={tab==="overview" ? "tab-btn active" : "tab-btn"} onClick={()=>setTab("overview")}>Tổng quan</button>
+          <button className={tab === "overview" ? "tab-btn active" : "tab-btn"} onClick={() => setTab("overview")}>Tổng quan</button>
         </div>
         {tab === "overview" && (
           <div className="profile-content-row">
@@ -231,39 +203,14 @@ const Profile = () => {
               <div className="profile-info-title">Thông tin cá nhân</div>
               <div className="profile-info-list">
                 {loadingProfile ? <div>Đang tải...</div> : user ? <>
-                  <div><span className="icon-user"/> <b>Username:</b> {user.username}</div>
-                  <div><span className="icon-mail"/> <b>Email:</b> {user.email}</div>
-                  <div><span className="icon-user"/> <b>Họ và tên:</b> {user.fullName}</div>
-                  <div><span className="icon-phone"/> <b>Điện thoại:</b> {user.phoneNumber}</div>
-                  <div><span className="icon-birth"/> <b>Ngày sinh:</b> {user.birthDate ? (() => {
-                    // Hiển thị dạng dd/MM/yyyy nếu có birthDate
-                    let d;
-                    if (/^\d{4}-\d{2}-\d{2}$/.test(user.birthDate)) {
-                      // yyyy-MM-dd
-                      const [year, month, day] = user.birthDate.split('-');
-                      return `${day}/${month}/${year}`;
-                    } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(user.birthDate)) {
-                      // dd/MM/yyyy
-                      return user.birthDate;
-                    } else if (/^\d{2}-\d{2}-\d{4}$/.test(user.birthDate)) {
-                      // dd-MM-yyyy
-                      const [day, month, year] = user.birthDate.split('-');
-                      return `${day}/${month}/${year}`;
-                    } else {
-                      d = new Date(user.birthDate);
-                      if (!isNaN(d.getTime())) {
-                        const day = String(d.getDate()).padStart(2, '0');
-                        const month = String(d.getMonth() + 1).padStart(2, '0');
-                        const year = d.getFullYear();
-                        return `${day}/${month}/${year}`;
-                      }
-                      return user.birthDate;
-                    }
-                  })() : ''}</div>
-                  <div><span className="icon-home"/> <b>Địa chỉ:</b> {user.address}</div>
-                  {/* Huy hiệu cá nhân ngay dưới thông tin cá nhân */}
-                  <div className="profile-badges-card" style={{marginTop: 18}}>
-                    <div className="profile-info-title" style={{color:'#1976d2'}}>Huy hiệu cá nhân</div>
+                  <div><span className="icon-user" /> <b>Username:</b> {user.username}</div>
+                  <div><span className="icon-mail" /> <b>Email:</b> {user.email}</div>
+                  <div><span className="icon-user" /> <b>Họ và tên:</b> {user.fullName}</div>
+                  <div><span className="icon-phone" /> <b>Điện thoại:</b> {user.phoneNumber}</div>
+                  <div><span className="icon-birth" /> <b>Ngày sinh:</b> {user.birthDate}</div>
+                  <div><span className="icon-home" /> <b>Địa chỉ:</b> {user.address}</div>
+                  <div className="profile-badges-card" style={{ marginTop: 18 }}>
+                    <div className="profile-info-title" style={{ color: '#1976d2' }}>Huy hiệu cá nhân</div>
                     <div className="profile-badges-list">
                       {badges === undefined ? (
                         <div>Đang tải huy hiệu...</div>
