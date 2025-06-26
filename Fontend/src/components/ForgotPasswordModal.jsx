@@ -27,16 +27,46 @@ const ForgotPasswordModal = ({ show, onClose }) => {
     return Math.floor(100000 + Math.random() * 900000).toString();
   };
 
+  // Hàm kiểm tra và cập nhật lượt gửi OTP
+  const canSendOtp = () => {
+    const key = `otp_limit_${email}`;
+    const data = JSON.parse(localStorage.getItem(key) || '{}');
+    const now = Date.now();
+    if (!data.firstTime || now - data.firstTime > 24 * 60 * 60 * 1000) {
+      // Reset nếu đã qua 24h hoặc chưa có dữ liệu
+      localStorage.setItem(key, JSON.stringify({ count: 0, firstTime: now }));
+      return true;
+    }
+    if (data.count >= 5) return false;
+    return true;
+  };
+
+  const increaseOtpCount = () => {
+    const key = `otp_limit_${email}`;
+    const data = JSON.parse(localStorage.getItem(key) || '{}');
+    const now = Date.now();
+    if (!data.firstTime || now - data.firstTime > 24 * 60 * 60 * 1000) {
+      localStorage.setItem(key, JSON.stringify({ count: 1, firstTime: now }));
+    } else {
+      localStorage.setItem(key, JSON.stringify({ count: (data.count || 0) + 1, firstTime: data.firstTime }));
+    }
+  };
+
   // Gửi email để nhận OTP từ backend
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     if (!email) return setError('Vui lòng nhập email.');
+    if (!canSendOtp()) {
+      setError('Bạn đã gửi quá 5 lần. Vui lòng thử lại sau 24 giờ.');
+      return;
+    }
     try {
       const res = await axios.post('/api/password/forgot', { email });
       if (res.data && res.data.status === 'success') {
         setMaskedEmail(maskEmail(email));
         setOtpSent(true);
         setError('');
+        increaseOtpCount();
       } else {
         setError(res.data?.message || 'Không gửi được mã OTP.');
       }
@@ -105,23 +135,24 @@ const ForgotPasswordModal = ({ show, onClose }) => {
   const handleBack = () => {
     handleClose();
     setTimeout(() => {
-      navigate(-1);
+      navigate('/login');
     }, 200);
   };
 
   // Quay lại bước trước trong modal
   const handleBackStep = () => {
     if (otpSent && !otpVerified) {
-      // Quay lại bước nhập email
-      setOtpSent(false);
-      setEnteredOtp('');
-      setError('');
+      // Quay lại trang trước (ví dụ: login)
+      handleClose();
+      setTimeout(() => {
+        navigate(-1);
+      }, 200);
     } else if (otpVerified) {
-      // Quay lại bước nhập OTP
-      setOtpVerified(false);
-      setNewPassword('');
-      setConfirmPassword('');
-      setError('');
+      // Ở bước nhập mật khẩu mới, quay lại trang login
+      handleClose();
+      setTimeout(() => {
+        navigate('/login');
+      }, 200);
     }
   };
 
@@ -161,10 +192,15 @@ const ForgotPasswordModal = ({ show, onClose }) => {
             <div style={{ marginTop: 10, marginBottom: 4, textAlign: 'center' }}>
               <span style={{ fontSize: 14 }}>Bạn không nhận được mã?</span>
               <button type="button" onClick={async () => {
+                if (!canSendOtp()) {
+                  setError('Bạn đã gửi quá 5 lần. Vui lòng thử lại sau 24 giờ.');
+                  return;
+                }
                 try {
                   const res = await axios.post('/api/password/forgot', { email });
                   if (res.data && res.data.status === 'success') {
                     setError('Đã gửi lại mã OTP!');
+                    increaseOtpCount();
                   } else {
                     setError(res.data?.message || 'Không gửi lại được mã OTP.');
                   }
