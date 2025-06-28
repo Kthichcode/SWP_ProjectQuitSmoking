@@ -66,7 +66,10 @@ function Register() {
   };
 
   return (
-    <div className="register-section">
+    <div className="register-section" style={{position:'relative', overflow:'hidden'}}>
+      {/* Đám mây động nền, không làm mờ chữ, pointer-events: none, z-index thấp */}
+      <div className="register-cloud"></div>
+      <div className="register-cloud register-cloud-2"></div>
       <div className="register-container">
         <div className="register-wrapper">
           <div className="register-header">
@@ -76,8 +79,7 @@ function Register() {
           </div>
 
           <div className="register-box">
-            <h3>Tạo tài khoản mới</h3>
-            <p>Điền thông tin của bạn để tạo tài khoản</p>
+            
 
             <form className="register-form" onSubmit={handleSubmit}>
               <div className="form-group">
@@ -113,8 +115,10 @@ function Register() {
                   <span
                     onClick={() => setShowPassword(prev => !prev)}
                     className="password-toggle-icon"
+                    tabIndex={0}
+                    aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                   >
-                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                    {showPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
                   </span>
                 </div>
 
@@ -132,8 +136,10 @@ function Register() {
                   <span
                     onClick={() => setShowConfirmPassword(prev => !prev)}
                     className="password-toggle-icon"
+                    tabIndex={0}
+                    aria-label={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                   >
-                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                    {showConfirmPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
                   </span>
                 </div>
               </div>

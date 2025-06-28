@@ -119,20 +119,20 @@ function AdminBlogs() {
       <h2 style={{ textAlign: 'center' }}>Quản lý Blog</h2>
 
       <form onSubmit={editingId ? handleUpdate : handleAdd} style={{ marginBottom: 32 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 25 }}>
           <input
             name="title"
             value={form.title}
             onChange={handleChange}
             placeholder="Tiêu đề blog"
-            style={{ padding: 10 }}
+            style={{ padding: 5 }}
           />
           <input
             name="coverImage"
             value={form.coverImage}
             onChange={handleChange}
             placeholder="Link ảnh bìa"
-            style={{ padding: 10 }}
+            style={{ padding: 5, background: '#fff', color: '#222', border: '1px solid #ccc', borderRadius: 4 }}
           />
           <textarea
             name="content"
@@ -140,14 +140,14 @@ function AdminBlogs() {
             onChange={handleChange}
             placeholder="Nội dung blog"
             rows={3}
-            style={{ gridColumn: '1 / -1', padding: 10 }}
+            style={{ gridColumn: '1 / -1', padding: 10, background: '#fff', color: '#222', border: '1px solid #ccc', borderRadius: 4 }}
           />
 
           <select
             name="categoryId"
             value={form.categoryId}
             onChange={handleChange}
-            style={{ padding: 10 }}
+            style={{ padding: 10, background: '#fff', color: '#222', border: '1px solid #ccc', borderRadius: 4 }}
           >
             <option value="">-- Chọn danh mục --</option>
             {categories.map((c) => (
@@ -159,7 +159,7 @@ function AdminBlogs() {
             name="status"
             value={form.status}
             onChange={handleChange}
-            style={{ padding: 10 }}
+            style={{ padding: 10, background: '#fff', color: '#222', border: '1px solid #ccc', borderRadius: 4 }}
           >
             <option value="PENDING">Chờ duyệt</option>
             <option value="APPROVED">Đã duyệt</option>

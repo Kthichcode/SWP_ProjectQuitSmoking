@@ -34,8 +34,8 @@ function AdminDashboard() {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/dashboard/plans" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
-              <FaClipboardList size={20} /> Quản lý Kế Hoạch
+            <NavLink to="/admin/dashboard/notifications" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
+              <FaClipboardList size={20} /> Quản lý Thông Báo
             </NavLink>
           </li>
           <li>

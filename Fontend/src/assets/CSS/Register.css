@@ -1,3 +1,38 @@
+/* Đám mây động nền cho trang đăng ký */
+.register-cloud {
+  position: absolute;
+  top: 10%;
+  left: -500px;
+  width: 300px;
+  height: 120px;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: cloudMove 60s linear infinite;
+  filter: blur(8px);
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: normal;
+}
+.register-cloud.register-cloud-2 {
+  top: 30%;
+  left: -400px;
+  width: 500px;
+  height: 200px;
+  animation-duration: 90s;
+  opacity: 0.6;
+  filter: blur(8px);
+  z-index: 0;
+  pointer-events: none;
+}
+@keyframes cloudMove {
+  0% {
+    transform: translateX(-500px);
+  }
+  100% {
+    transform: translateX(1500px);
+  }
+}
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
@@ -15,6 +50,7 @@ body {
     overflow: hidden;
 }
 
+
 .register-section::before,
 .register-section::after {
     content: "";
@@ -25,7 +61,10 @@ body {
     opacity: 0.5;
     animation: cloudMove 60s linear infinite;
     filter: blur(20px);
+    z-index: 0;
+    pointer-events: none;
 }
+
 
 .register-section::after {
     top: 30%;
@@ -33,11 +72,16 @@ body {
     width: 500px;
     height: 200px;
     animation-duration: 90s;
+    z-index: 0;
+    pointer-events: none;
 }
+
 
 .register-section::before {
     width: 300px;
     height: 120px;
+    z-index: 0;
+    pointer-events: none;
 }
 
 @keyframes cloudMove {
@@ -57,6 +101,7 @@ body {
     width: 100%;
 }
 
+
 .register-wrapper {
     background: #fff;
     max-width: 420px;
@@ -64,6 +109,8 @@ body {
     border-radius: 14px;
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
     padding: 28px 18px 32px;
+    position: relative;
+    z-index: 2;
 }
 
 .register-header {

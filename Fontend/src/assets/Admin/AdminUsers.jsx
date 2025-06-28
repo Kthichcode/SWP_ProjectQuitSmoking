@@ -1,6 +1,7 @@
 import './AdminPage.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { FaUser, FaEdit, FaPause, FaEllipsisV } from 'react-icons/fa';
 
 function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -8,6 +9,19 @@ function AdminUsers() {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [openMenu, setOpenMenu] = useState(null); // user id for dropdown
+  const menuRef = useRef();
+
+  // Đóng dropdown khi click ra ngoài
+  useEffect(() => {
+    function handleClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpenMenu(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -61,10 +75,62 @@ function AdminUsers() {
               <td>{u.plans || ''}</td>
               <td><span className={u.status === 'active' || u.status === 'ACTIVE' ? 'active' : u.status === 'pending' ? 'pending' : 'inactive'}>{u.status === 'active' || u.status === 'ACTIVE' ? 'Hoạt động' : u.status === 'pending' ? 'Chờ xác nhận' : 'Khóa'}</span></td>
               <td>{u.lastLogin || ''}</td>
-              <td>
-                <button className="admin-btn" onClick={() => setSelected(u)}>Xem</button>
-                <button className="admin-btn admin-btn-edit">Sửa</button>
-                <button className="admin-btn admin-btn-danger">Khóa</button>
+              <td style={{position:'relative'}}>
+                <button
+                  className="admin-btn admin-btn-more"
+                  onClick={() => setOpenMenu(openMenu === u.id ? null : u.id)}
+                  style={{padding: '6px 10px', borderRadius: '50%', background: '#f3f4f6', border: 'none', cursor: 'pointer', color: '#222', lineHeight: 1}}
+                  title="Thao tác"
+                >
+                  <FaEllipsisV size={18} color="#222" style={{verticalAlign:'middle'}} />
+                </button>
+                {openMenu === u.id && (
+                  <div
+                    ref={menuRef}
+                    style={{
+                      position: 'fixed',
+                      top: (window.event && window.event.clientY ? window.event.clientY + 8 : 100),
+                      left: (window.event && window.event.clientX ? window.event.clientX - 160 : 100),
+                      background: '#fff',
+                      boxShadow: '0 2px 8px #0002',
+                      borderRadius: 8,
+                      zIndex: 1000,
+                      minWidth: 150,
+                      padding: '6px 0'
+                    }}
+                  >
+                    <button
+                      className="admin-btn admin-btn-menu"
+                      style={{
+                        display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
+                        color:'#222',fontSize:'1rem',textAlign:'left',fontWeight:500
+                      }}
+                      onClick={() => { setSelected(u); setOpenMenu(null); }}
+                    >
+                      <FaUser /> <span style={{color:'#222'}}>Xem hồ sơ</span>
+                    </button>
+                    <button
+                      className="admin-btn admin-btn-menu"
+                      style={{
+                        display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
+                        color:'#222',fontSize:'1rem',textAlign:'left',fontWeight:500
+                      }}
+                      onClick={() => { /* TODO: handle edit */ setOpenMenu(null); }}
+                    >
+                      <FaEdit /> <span style={{color:'#222'}}>Chỉnh sửa</span>
+                    </button>
+                    <button
+                      className="admin-btn admin-btn-menu"
+                      style={{
+                        display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
+                        color:'#ef4444',fontSize:'1rem',textAlign:'left',fontWeight:500
+                      }}
+                      onClick={() => { /* TODO: handle pause/lock */ setOpenMenu(null); }}
+                    >
+                      <FaPause /> <span style={{color:'#ef4444'}}>Tạm dừng</span>
+                    </button>
+                  </div>
+                )}
               </td>
             </tr>
           ))}

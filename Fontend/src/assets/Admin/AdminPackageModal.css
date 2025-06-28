@@ -1,0 +1,66 @@
+.admin-package-modal {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 32px #0002;
+  padding: 32px 32px 24px 32px;
+  min-width: 400px;
+  max-width: 520px;
+  margin: 0 auto;
+  position: relative;
+}
+.admin-package-modal-title {
+  margin: 0 0 18px 0;
+  font-weight: 700;
+  font-size: 1.4rem;
+  text-align: center;
+  color: #15803d;
+}
+.admin-package-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.admin-package-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.admin-package-label {
+  font-weight: 500;
+  color: #222;
+  margin-bottom: 2px;
+}
+.admin-package-input {
+  background: #f9fafb;
+  color: #222;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 16px;
+  outline: none;
+  transition: border 0.2s;
+}
+.admin-package-input:focus {
+  border: 1.5px solid #15803d;
+}
+.admin-package-form-row {
+  display: flex;
+  gap: 16px;
+}
+.admin-package-form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+.admin-package-btn {
+  font-weight: 700;
+  font-size: 16px;
+  padding: 12px 0;
+  border-radius: 8px;
+  flex: 1;
+}
+.admin-package-btn-cancel {
+  background: #e5e7eb;
+  color: #222;
+  border: none;
+}

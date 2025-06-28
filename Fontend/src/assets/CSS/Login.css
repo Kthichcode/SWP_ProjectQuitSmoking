@@ -1,3 +1,32 @@
+/* Quote box for login */
+.login-quote-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(90deg, #e0f7fa 0%, #f3ffe3 100%);
+  border: 1.5px solid #b2f2e5;
+  border-radius: 12px;
+  padding: 18px 18px 14px 18px;
+  margin-bottom: 18px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #374151;
+  box-shadow: 0 2px 8px #0001;
+  min-height: 48px;
+  text-align: center;
+  gap: 10px;
+}
+.login-quote-emoji {
+  font-size: 22px;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+.login-quote-text {
+  font-size: 17px;
+  font-weight: 500;
+  color: #374151;
+  line-height: 1.4;
+}
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
@@ -17,26 +46,33 @@ body {
 }
 
 
-.login-section::before,
-.login-section::after {
-  content: "";
+
+/* Đám mây chỉ nằm dưới background, không làm mờ chữ */
+.login-cloud {
   position: absolute;
   top: 10%;
+  left: -500px;
   width: 300px;
   height: 120px;
   background: #fff;
   border-radius: 50%;
-  opacity: 0.5;
+  opacity: 0.6;
   animation: cloudMove 60s linear infinite;
-  filter: blur(20px);
+  filter: blur(8px);
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: normal;
 }
-
-.login-section::after {
+.login-cloud.login-cloud-2 {
   top: 30%;
   left: -400px;
   width: 500px;
   height: 200px;
   animation-duration: 90s;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.6;
+  filter: blur(8px);
 }
 
 @keyframes cloudMove {
@@ -57,6 +93,8 @@ body {
   max-width: 400px;
   width: 100%;
   text-align: center;
+  position: relative;
+  z-index: 2;
 }
 
 .logo {
@@ -270,29 +308,40 @@ input:-webkit-autofill:active {
 .input-password-wrapper input[type="text"] {
   width: 100%;
   box-sizing: border-box;
-  padding-right: 36px;
+  padding-right: 48px;
   margin-bottom: 0;
+  height: 44px;
+  line-height: 44px;
 }
 .input-password-eye {
   position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  user-select: none;
-  color: #888;
-  font-size: 16px;
-  width: 22px;
-  height: 22px;
+  right: 12px;
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
+  height: 24px;
+  width: 24px;
   display: flex;
   align-items: center;
-  background: transparent;
-  padding-left: 0;
+  justify-content: center;
+  cursor: pointer;
+  color: #888;
+  font-size: 16px;
   z-index: 2;
+  background: transparent;
+  padding: 0;
+  pointer-events: auto;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.input-password-eye:hover,
+.input-password-eye:focus {
+  color: #4CAF50;
 }
 .input-password-eye svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
 

@@ -1,3 +1,19 @@
+/* Custom scrollbar for modal content */
+.modal-scroll-custom::-webkit-scrollbar {
+  width: 8px;
+  background: #111;
+}
+.modal-scroll-custom::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 8px;
+}
+.modal-scroll-custom::-webkit-scrollbar-track {
+  background: #111;
+}
+.modal-scroll-custom {
+  scrollbar-color: #333 #111;
+  scrollbar-width: thin;
+}
 .footer {
   background: linear-gradient(90deg, #0f172a 60%, #1e293b 100%);
   color: #cbd5e1;

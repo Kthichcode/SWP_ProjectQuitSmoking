@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './AdminPage.css';
+import './AdminPackageModal.css';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { parse, format } from 'date-fns';
@@ -199,51 +200,60 @@ function AdminPackages() {
 
       {showModal && (
         <div className="modal-overlay">
-          <div className="modal">
-            <h3>{modalType === 'add' ? 'Thêm gói mới' : 'Sửa gói'}</h3>
-            <form onSubmit={handleSubmit}>
-              <label>Tên gói:<input name="name" value={currentPackage.name} onChange={handleChange} required /></label>
-              <label>Giá:
-                <input
-                  name="price"
-                  value={currentPackage.price}
-                  onChange={handlePriceInput}
-                  required
-                  placeholder="0"
-                  style={{ width: 180, marginRight: 8 }}
-                  inputMode="numeric"
-                />
-                <span style={{ color: '#555', marginLeft: 2 }}>VNĐ</span>
-              </label>
-              <label>Mô tả:<input name="description" value={currentPackage.description} onChange={handleChange} required /></label>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 }}>
-                <label style={{ marginBottom: 0 }}>Ngày bắt đầu:
-                  <DatePicker
-                    selected={parseDateString(currentPackage.releaseDate)}
-                    dateFormat="dd/MM/yyyy"
-                    className="date-picker-input"
-                    disabled
-                    locale={vi}
-                  />
-                </label>
-                <span>đến</span>
-                <label style={{ marginBottom: 0 }}>Ngày kết thúc:
-                  <DatePicker
-                    selected={currentPackage.endDate ? parseDateString(currentPackage.endDate) : null}
-                    onChange={(date) => {
-                      setCurrentPackage(prev => ({ ...prev, endDate: formatDateString(date) }));
-                    }}
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="dd/MM/yyyy"
-                    minDate={new Date()}
-                    className="date-picker-input"
-                    locale={vi}
-                  />
-                </label>
+          <div className="modal admin-package-modal">
+            <h3 className="admin-package-modal-title">{modalType === 'add' ? 'Thêm gói mới' : 'Sửa gói'}</h3>
+            <form className="admin-package-form" onSubmit={handleSubmit}>
+              <div className="admin-package-form-group">
+                <label className="admin-package-label">Tên gói</label>
+                <input className="admin-package-input" name="name" value={currentPackage.name} onChange={handleChange} required />
               </div>
-              <div style={{ marginTop: 10 }}>
-                <button className="admin-btn" type="submit">Lưu</button>
-                <button className="admin-btn" type="button" onClick={handleCloseModal}>Hủy</button>
+              <div className="admin-package-form-group">
+                <label className="admin-package-label">Giá</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    className="admin-package-input"
+                    name="price"
+                    value={currentPackage.price}
+                    onChange={handlePriceInput}
+                    required
+                    placeholder="0"
+                    inputMode="numeric"
+                    style={{ flex: 1 }}
+                  />
+                  <span style={{ color: '#555', fontWeight: 500 }}>VNĐ</span>
+                </div>
+              </div>
+              <div className="admin-package-form-group">
+                <label className="admin-package-label">Mô tả</label>
+                <input className="admin-package-input" name="description" value={currentPackage.description} onChange={handleChange} required />
+              </div>
+              <div className="admin-package-form-group">
+                <label className="admin-package-label">Ngày bắt đầu</label>
+                <DatePicker
+                  selected={parseDateString(currentPackage.releaseDate)}
+                  dateFormat="dd/MM/yyyy"
+                  className="admin-package-input"
+                  disabled
+                  locale={vi}
+                />
+              </div>
+              <div className="admin-package-form-group">
+                <label className="admin-package-label">Ngày kết thúc</label>
+                <DatePicker
+                  selected={currentPackage.endDate ? parseDateString(currentPackage.endDate) : null}
+                  onChange={(date) => {
+                    setCurrentPackage(prev => ({ ...prev, endDate: formatDateString(date) }));
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="dd/MM/yyyy"
+                  minDate={new Date()}
+                  className="admin-package-input"
+                  locale={vi}
+                />
+              </div>
+              <div className="admin-package-form-actions">
+                <button className="admin-btn admin-package-btn" type="submit">Lưu</button>
+                <button className="admin-btn admin-package-btn-cancel" type="button" onClick={handleCloseModal}>Hủy</button>
               </div>
             </form>
           </div>

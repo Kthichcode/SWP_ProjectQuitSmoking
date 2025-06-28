@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { useGoogleLogin } from '@react-oauth/google';
 import '../assets/CSS/Login.css';
 import { Link, useNavigate } from 'react-router-dom';
@@ -108,14 +109,19 @@ function Login() {
 
   return (
     <section className="login-section">
+      {/* Đám mây động, pointer-events: none, z-index thấp */}
+      <div className="login-cloud"></div>
+      <div className="login-cloud login-cloud-2"></div>
       <div className="login-container">
         <img src="/src/assets/img1/android-chrome-192x192.png" alt="Logo" className="logo" />
         <h2>Đăng nhập</h2>
         <p className="subtitle">Chào mừng bạn quay lại với hành trình không khói thuốc</p>
 
         <form className="login-form" onSubmit={handleLoginSubmit}>
-          <h3>Đăng nhập tài khoản</h3>
-          <p className="form-subtitle">Nhập thông tin đăng nhập của bạn bên dưới</p>
+          <div className="login-quote-box">
+            <span role="img" aria-label="muscle" className="login-quote-emoji">💪</span>
+            <span className="login-quote-text">"Mỗi ngày mới là một cơ hội để trở thành phiên bản tốt hơn của chính mình"</span>
+          </div>
 
           <label htmlFor="username">Tên đăng nhập</label>
           <div className="input-password-wrapper">
@@ -146,9 +152,9 @@ function Login() {
               tabIndex={0}
             >
               {showPassword ? (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                <FiEye size={18} />
               ) : (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.81 21.81 0 0 1 5.06-6.06M1 1l22 22"/></svg>
+                <FiEyeOff size={18} />
               )}
             </span>
           </div>

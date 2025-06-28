@@ -1,0 +1,75 @@
+.admin-notification-form {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 32px #0002;
+  padding: 32px;
+  min-width: 380px;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+}
+.admin-notification-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #ef4444;
+  cursor: pointer;
+  z-index: 2;
+}
+.admin-notification-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.4rem;
+  text-align: center;
+  color: #222;
+}
+.admin-notification-label {
+  font-weight: 500;
+  color: #222;
+  margin-bottom: 4px;
+}
+.admin-notification-textarea {
+  min-height: 80px;
+  background: #f9fafb;
+  color: #222;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 16px;
+  resize: vertical;
+  margin-bottom: 8px;
+}
+.admin-notification-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.admin-notification-col {
+  flex: 1;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+}
+.admin-notification-select,
+.admin-notification-input {
+  width: 100%;
+  background: #f9fafb;
+  color: #222;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 15px;
+}
+.admin-notification-submit {
+  margin-top: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 12px 0;
+  border-radius: 8px;
+}

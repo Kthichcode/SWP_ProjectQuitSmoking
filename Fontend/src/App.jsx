@@ -21,7 +21,7 @@ import AdminAchievements from './assets/Admin/AdminAchievements';
 import AdminUsers from './assets/Admin/AdminUsers';
 import AdminCoaches from './assets/Admin/AdminCoaches';
 import AdminPackages from './assets/Admin/AdminPackages';
-import AdminPlans from './assets/Admin/AdminPlans';
+import AdminNotifications from './assets/Admin/AdminNotifications';
 import AdminStatistics from './assets/Admin/AdminStatistics';
 import AdminSystem from './assets/Admin/AdminSystem';
 import AdminFeedback from './assets/Admin/AdminFeedback';
@@ -57,7 +57,7 @@ function App() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="coaches" element={<AdminCoaches />} />
           <Route path="packages" element={<AdminPackages />} />
-          <Route path="plans" element={<AdminPlans />} />
+          <Route path="notifications" element={<AdminNotifications />} />
           <Route path="system" element={<AdminSystem />} />
           <Route path="feedback" element={<AdminFeedback />} />
           <Route path="blogs" element={<AdminBlogs />} />
