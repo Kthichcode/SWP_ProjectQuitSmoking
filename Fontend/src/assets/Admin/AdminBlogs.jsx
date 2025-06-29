@@ -103,6 +103,24 @@ function AdminBlogs() {
     }
   };
 
+  const handleApprove = (id) => {
+    axios.put(`/api/blog/approve/${id}`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(() => fetchBlogs())
+      .catch((err) => console.error('Lỗi duyệt blog:', err));
+  };
+
+  const handleReject = (id) => {
+    axios.put(`/api/blog/reject/${id}`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(() => {       
+        setBlogs((prev) => prev.filter((b) => b.id !== id));
+      })
+      .catch((err) => console.error('Lỗi từ chối blog:', err));
+  };
+
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: 24 }}>
       <h2 style={{ textAlign: 'center' }}>Quản lý Blog</h2>
@@ -144,17 +162,6 @@ function AdminBlogs() {
             ))}
           </select>
 
-          <select
-            name="status"
-            value={form.status}
-            onChange={handleChange}
-            style={{ padding: 10, background: '#fff', color: '#222', border: '1px solid #ccc', borderRadius: 4 }}
-          >
-            <option value="PENDING">Chờ duyệt</option>
-            <option value="APPROVED">Đã duyệt</option>
-            <option value="REJECTED">Bị từ chối</option>
-          </select>
-
           <div style={{ gridColumn: '1 / -1' }}>
             <button
               type="submit"
@@ -181,7 +188,7 @@ function AdminBlogs() {
         <p>Không có blog nào.</p>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
-          {blogs.map((blog) => (
+          {blogs.filter((blog) => blog.status !== 'REJECTED').map((blog) => (
             <div key={blog.id} style={{ border: '1px solid #ddd', padding: 16, borderRadius: 8, background: '#fff' }}>
               <h3>{blog.title}</h3>
               <p>{blog.content.length > 100 ? blog.content.slice(0, 100) + '...' : blog.content}</p>
@@ -204,6 +211,23 @@ function AdminBlogs() {
                 >
                   Xóa
                 </button>
+                {/* Thêm nút Duyệt và Từ chối */}
+                {blog.status === 'PENDING' && (
+                  <>
+                    <button
+                      onClick={() => handleApprove(blog.id)}
+                      style={{ marginLeft: 8, padding: '6px 12px', background: '#4CAF50', color: '#fff', border: 'none', borderRadius: 4 }}
+                    >
+                      Duyệt
+                    </button>
+                    <button
+                      onClick={() => handleReject(blog.id)}
+                      style={{ marginLeft: 8, padding: '6px 12px', background: '#ff9800', color: '#fff', border: 'none', borderRadius: 4 }}
+                    >
+                      Từ chối
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}
