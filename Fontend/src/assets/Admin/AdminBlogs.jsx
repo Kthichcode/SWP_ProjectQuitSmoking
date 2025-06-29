@@ -16,23 +16,12 @@ function AdminBlogs() {
   });
   const [loading, setLoading] = useState(false);
 
-  // Lấy danh mục
+  // Lấy danh mục từ API thay vì hardcoded
   useEffect(() => {
-  // Hardcoded danh mục tạm thời
-  const hardcodedCategories = [
-    { id: 3, name: 'Sức khỏe' },
-    { id: 4, name: 'Giáo dục' },
-    { id: 5, name: 'Giải trí' },
-    { id: 6, name: 'Thể thao' },
-    { id: 7, name: 'Công nghệ' },
-    { id: 8, name: 'Đời sống' },
-    { id: 9, name: 'Du lịch' },
-    { id: 10, name: 'Ẩm thực' },
-    { id: 11, name: 'Kinh doanh' },
-    { id: 12, name: 'Tâm lý – Kỹ năng' },
-  ];
-  setCategories(hardcodedCategories);
-}, []);
+    axios.get('/api/blog-categories/getAll')
+      .then(res => setCategories(res.data.data || []))
+      .catch(() => setCategories([]));
+  }, []);
 
   // Lấy danh sách blog
   const fetchBlogs = () => {

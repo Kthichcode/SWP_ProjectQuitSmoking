@@ -17,19 +17,6 @@ const filterOptions = [
   { value: "draft", label: "Bản nháp" }
 ];
 
-const hardcodedCategories = [
-  { id: 3, name: 'Sức khỏe' },
-  { id: 4, name: 'Giáo dục' },
-  { id: 5, name: 'Giải trí' },
-  { id: 6, name: 'Thể thao' },
-  { id: 7, name: 'Công nghệ' },
-  { id: 8, name: 'Đời sống' },
-  { id: 9, name: 'Du lịch' },
-  { id: 10, name: 'Ẩm thực' },
-  { id: 11, name: 'Kinh doanh' },
-  { id: 12, name: 'Tâm lý – Kỹ năng' },
-];
-
 export default function CoachBlog() {
   const { token } = useAuth();
   const [search, setSearch] = useState("");
@@ -46,9 +33,9 @@ export default function CoachBlog() {
     status: 'PENDING',
   });
   const [blogs, setBlogs] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Lấy danh sách blog từ API
   const fetchBlogs = () => {
     if (!token) return;
     setLoading(true);
@@ -64,13 +51,19 @@ export default function CoachBlog() {
     if (token) fetchBlogs();
   }, [token]);
 
+  useEffect(() => {
+    axios.get('/api/blog-categories/getAll')
+      .then(res => setCategories(res.data.data || []))
+      .catch(() => setCategories([]));
+  }, []);
+
   const filteredBlogs = blogs.filter(blog => {
+    // Coach sẽ thấy tất cả bài của mình, nhưng bài chờ duyệt sẽ hiển thị trạng thái "Chờ duyệt" thay vì "Đã xuất bản"
     const matchSearch = blog.title.toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter === "all" ? true : (filter === blog.status);
     return matchSearch && matchFilter;
   });
 
-  // Xử lý mở modal chỉnh sửa
   const handleEdit = (blog) => {
     setEditBlog(blog);
     setEditForm({
@@ -108,7 +101,7 @@ export default function CoachBlog() {
     e.preventDefault();
     if (!addForm.title || !addForm.content || !addForm.categoryId) return;
     try {
-      await axios.post('/api/blog/create', addForm, {
+      await axios.post('/api/blog/create', { ...addForm, status: 'PENDING' }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setShowAddModal(false);
@@ -186,8 +179,12 @@ export default function CoachBlog() {
       <div className="coach-blog-list">
         {loading ? <p>Đang tải...</p> : filteredBlogs.map(blog => (
           <div className="coach-blog-card" key={blog.id}>
-            <div className={`coach-blog-badge${blog.status === "draft" ? " draft" : ""}`}>
-              {blog.status === "draft" ? "Bản nháp" : "Đã xuất bản"}
+            <div className={`coach-blog-badge${blog.status === "draft" ? " draft" : blog.status === "PENDING" ? " pending" : ""}`}>
+              {blog.status === "draft"
+                ? "Bản nháp"
+                : blog.status === "PENDING"
+                ? "Chờ duyệt"
+                : "Đã xuất bản"}
             </div>
             <div className="coach-blog-title">{blog.title}</div>
             <div className="coach-blog-desc2">{blog.content?.slice(0, 100) || blog.desc}</div>
@@ -238,17 +235,9 @@ export default function CoachBlog() {
                   <div style={{fontWeight:500,marginBottom:6}}>Danh mục</div>
                   <select name="categoryId" value={addForm.categoryId} onChange={handleAddFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16}} required>
                     <option value="">-- Chọn danh mục --</option>
-                    {hardcodedCategories.map(c => (
+                    {categories.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
-                  </select>
-                </div>
-                <div>
-                  <div style={{fontWeight:500,marginBottom:6}}>Trạng thái</div>
-                  <select name="status" value={addForm.status} onChange={handleAddFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16}}>
-                    <option value="PENDING">Chờ duyệt</option>
-                    <option value="APPROVED">Đã duyệt</option>
-                    <option value="REJECTED">Bị từ chối</option>
                   </select>
                 </div>
                 <div>
@@ -282,8 +271,8 @@ export default function CoachBlog() {
                     <div style={{fontWeight:500,marginBottom:6}}>Danh mục</div>
                     <select name="label" value={editForm.label||''} onChange={handleFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16}} required>
                       <option value="">-- Chọn danh mục --</option>
-                      {hardcodedCategories.map(c => (
-                        <option key={c.id} value={c.name}>{c.name}</option>
+                      {categories.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
                       ))}
                     </select>
                   </div>

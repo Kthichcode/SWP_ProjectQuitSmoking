@@ -10,12 +10,10 @@ function Home() {
   const [blogs, setBlogs] = useState([]);
   const [loadingBlogs, setLoadingBlogs] = useState(false);
 
-  // ✅ Điều hướng ADMIN / COACH
   useEffect(() => {
     if (!user) return;
     const scope = user.scope?.toUpperCase();
     const currentPath = window.location.pathname;
-
     if (scope === 'ADMIN' && (currentPath === '/' || currentPath === '/home')) {
       window.location.replace('/admin/dashboard');
     } else if (scope === 'COACH' && (currentPath === '/' || currentPath === '/home')) {
@@ -23,13 +21,12 @@ function Home() {
     }
   }, [user]);
 
-  // ✅ Gọi API lấy blog
   useEffect(() => {
     setLoadingBlogs(true);
     axios.get('/api/blog/getAllBlog')
       .then(res => {
         const data = res.data?.data || [];
-        setBlogs(data);
+        setBlogs(data.filter(blog => blog.status === 'APPROVED'));
       })
       .catch(err => {
         setBlogs([]);
@@ -37,13 +34,11 @@ function Home() {
       .finally(() => setLoadingBlogs(false));
   }, []);
 
-  // ✅ Chuyển hướng khi click nút cần login
   const handleProtectedClick = (targetPath) => {
     if (user) navigate(targetPath);
     else navigate('/login');
   };
 
-  // ✅ Xử lý đọc tiếp
   const handleReadMore = (blog) => {
     const blogId = blog.id || blog._id;
     if (!user) {
@@ -53,15 +48,10 @@ function Home() {
     }
   };
 
-  // ✅ Tạm thời không lọc theo ảnh để tránh bị loại
   const validBlogs = blogs.filter(blog =>
-    blog.title && blog.content // && (blog.coverImage || blog.image)
+    blog.title && blog.content
   );
 
-  console.log('📦 Danh sách blog từ API:', blogs);
-  console.log('✅ Blog hợp lệ sau lọc:', validBlogs);
-
-  // 🕒 Tự động đăng xuất nếu tab bị đóng quá 5 phút
   useEffect(() => {
     const checkAndLogout = () => {
       const lastClosed = sessionStorage.getItem('lastClosed');
@@ -87,7 +77,6 @@ function Home() {
 
   return (
     <div>
-      {/* Hero section */}
       <div className="home-main-section">
         <img
           className="quit-smoking-anim"
@@ -116,8 +105,6 @@ function Home() {
           </div>
         </div>
       </div>
-
-      {/* Lý do chọn */}
       <div className="why-nosmoke">
         <h2>Tại sao nên chọn NoSmoke?</h2>
         <p>Nền tảng của chúng tôi cung cấp những công cụ và hỗ trợ thiết thực để giúp bạn từng bước cai nghiện thuốc lá thành công.</p>
@@ -136,8 +123,6 @@ function Home() {
           ))}
         </div>
       </div>
-
-      {/* Ranking */}
       <div className="ranking-section">
         <h2>Bảng xếp hạng thành tích</h2>
         <p>Hãy xem những người xuất sắc trong việc cai thuốc và số ngày không hút thuốc họ đã đạt được.</p>
@@ -160,8 +145,6 @@ function Home() {
           Xem bảng xếp hạng đầy đủ
         </button>
       </div>
-
-      {/* Blog section */}
       <div className="blog-section">
         <h2>Blog chia sẻ kinh nghiệm</h2>
         <p>Cùng lắng nghe những câu chuyện, lời khuyên chân thực từ cộng đồng và chuyên gia trong hành trình bỏ thuốc lá.</p>

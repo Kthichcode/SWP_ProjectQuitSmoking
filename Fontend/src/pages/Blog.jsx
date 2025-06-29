@@ -18,7 +18,9 @@ export default function Blog() {
         setLoading(true);
         axios.get('/api/blog/getAllBlog')
             .then(res => {
-                setBlogs(res.data.data || []);
+                // Chỉ lấy blog đã duyệt
+                const approvedBlogs = (res.data.data || []).filter(blog => blog.status === 'APPROVED');
+                setBlogs(approvedBlogs);
                 setError('');
             })
             .catch(err => {
