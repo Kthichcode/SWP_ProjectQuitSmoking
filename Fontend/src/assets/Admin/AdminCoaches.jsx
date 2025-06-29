@@ -1,15 +1,10 @@
 import './AdminPage.css';
 import { useState, useRef, useEffect } from 'react';
 import { FaUser, FaEdit, FaPause, FaEllipsisV } from 'react-icons/fa';
-
-const initialCoaches = [
-  { id: 1, name: 'Trần Văn Minh', email: 'minhtran@gmail.com', phone: '0901111111', exp: '8 năm', status: 'active', plans: 12, rating: 4.8 },
-  { id: 2, name: 'Lê Thị Hương', email: 'huongle@gmail.com', phone: '0902222222', exp: '6 năm', status: 'inactive', plans: 5, rating: 4.7 },
-];
-
+import axios from 'axios';
 
 function AdminCoaches() {
-  const [coaches, setCoaches] = useState(initialCoaches);
+  const [coaches, setCoaches] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '', exp: '', rating: '' });
   const [selected, setSelected] = useState(null);
@@ -27,14 +22,60 @@ function AdminCoaches() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const handleAdd = e => {
+  // Lấy danh sách coach từ BE (role COACH)
+  useEffect(() => {
+    async function fetchCoaches() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('/api/user/getAll', {
+          headers: token ? { Authorization: 'Bearer ' + token } : {}
+        });
+        // Lọc user có role COACH
+        if (Array.isArray(res.data.data)) {
+          setCoaches(res.data.data.filter(u => u.roles && u.roles.includes('COACH')));
+        }
+      } catch (err) {
+        // Nếu lỗi thì giữ nguyên danh sách mẫu
+      }
+    }
+    fetchCoaches();
+  }, []);
+
+  const handleAdd = async e => {
     e.preventDefault();
-    setCoaches([
-      ...coaches,
-      { ...form, id: Date.now(), status: 'active', plans: 0 }
-    ]);
-    setForm({ name: '', email: '', phone: '', exp: '', rating: '' });
-    setShowAdd(false);
+    // Chuẩn hóa dữ liệu gửi lên BE
+    const payload = {
+      username: form.email, // hoặc bạn có thể cho nhập riêng username nếu muốn
+      email: form.email,
+      fullName: form.name
+    };
+    try {
+      const res = await fetch('/api/coach/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(localStorage.getItem('token') && { 'Authorization': 'Bearer ' + localStorage.getItem('token') })
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.status === 409) {
+        alert('Email hoặc username đã tồn tại!');
+        return;
+      }
+      if (!res.ok) {
+        alert('Có lỗi khi tạo coach!');
+        return;
+      }
+      alert('Tạo coach thành công, mật khẩu đã gửi về email!');
+      setCoaches([
+        ...coaches,
+        { ...form, id: Date.now(), status: 'active', plans: 0 }
+      ]);
+      setForm({ name: '', email: '', phone: '', exp: '', rating: '' });
+      setShowAdd(false);
+    } catch (err) {
+      alert('Có lỗi khi tạo coach!');
+    }
   };
 
   return (
@@ -47,11 +88,8 @@ function AdminCoaches() {
             <button className="admin-modal-close" style={{top: 8, right: 12, fontSize: 28}} onClick={() => setShowAdd(false)} type="button">×</button>
             <h3>Thêm Coach mới</h3>
             <input required placeholder="Họ tên" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-            <input required placeholder="Email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
-            <input required placeholder="Số điện thoại" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
-            <input required placeholder="Kinh nghiệm" value={form.exp} onChange={e => setForm(f => ({ ...f, exp: e.target.value }))} />
-            <input required placeholder="Đánh giá (VD: 4.8)" value={form.rating} onChange={e => setForm(f => ({ ...f, rating: e.target.value }))} />
-            <button className="admin-btn" type="submit">Thêm</button>
+            <input required placeholder="Email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+           <button className="admin-btn" type="submit">Thêm</button>
           </form>
         </div>
       )}

@@ -84,6 +84,7 @@ const Profile = () => {
         phoneNumber: editForm.phoneNumber || '',
         birthDate: birthDate,
         address: editForm.address || '',
+        gender: editForm.gender || '',
       };
       await axios.put('/api/users/profile', updateData, {
         headers: { Authorization: `Bearer ${token}` },
@@ -104,11 +105,13 @@ const Profile = () => {
   let displayName = authUser?.fullName?.trim() || authUser?.username || authUser?.email || "Người dùng";
 
   const handleEditClick = () => {
+    if (!user && !authUser) return;
     setEditForm({
       ...user,
-      email: authUser?.email || user.email,
-      fullName: authUser?.fullName || user.fullName,
-      username: authUser?.username || user.username,
+      email: authUser?.email || user?.email || '',
+      fullName: authUser?.fullName || user?.fullName || '',
+      username: authUser?.username || user?.username || '',
+      gender: user?.gender || '',
     });
     setShowEdit(true);
   };
@@ -177,6 +180,15 @@ const Profile = () => {
                   />
                 </div>
                 <div className="form-row-2col">
+                  <label>Giới tính</label>
+                  <select name="gender" value={editForm.gender || ''} onChange={handleEditChange}>
+                    <option value="">Chưa cập nhật</option>
+                    <option value="MALE">Nam</option>
+                    <option value="FEMALE">Nữ</option>
+                    <option value="OTHER">Khác</option>
+                  </select>
+                </div>
+                <div className="form-row-2col">
                   <label><AiOutlineHome /> Địa chỉ</label>
                   <input name="address" value={editForm.address} onChange={handleEditChange} />
                 </div>
@@ -206,9 +218,10 @@ const Profile = () => {
                   <div><span className="icon-user" /> <b>Username:</b> {user.username}</div>
                   <div><span className="icon-mail" /> <b>Email:</b> {user.email}</div>
                   <div><span className="icon-user" /> <b>Họ và tên:</b> {user.fullName}</div>
-                  <div><span className="icon-phone" /> <b>Điện thoại:</b> {user.phoneNumber}</div>
-                  <div><span className="icon-birth" /> <b>Ngày sinh:</b> {user.birthDate}</div>
-                  <div><span className="icon-home" /> <b>Địa chỉ:</b> {user.address}</div>
+                  <div><span className="icon-phone" /> <b>Điện thoại:</b> {user.phoneNumber || <span style={{color:'#888'}}>Chưa cập nhật</span>}</div>
+                  <div><span className="icon-birth" /> <b>Ngày sinh:</b> {user.birthDate || <span style={{color:'#888'}}>Chưa cập nhật</span>}</div>
+                  <div><span className="icon-user" /> <b>Giới tính:</b> {user.gender === 'MALE' ? 'Nam' : user.gender === 'FEMALE' ? 'Nữ' : user.gender === 'OTHER' ? 'Khác' : <span style={{color:'#888'}}>Chưa cập nhật</span>}</div>
+                  <div><span className="icon-home" /> <b>Địa chỉ:</b> {user.address || <span style={{color:'#888'}}>Chưa cập nhật</span>}</div>
                   <div className="profile-badges-card" style={{ marginTop: 18 }}>
                     <div className="profile-info-title" style={{ color: '#1976d2' }}>Huy hiệu cá nhân</div>
                     <div className="profile-badges-list">

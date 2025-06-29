@@ -23,7 +23,8 @@ function Home() {
 
   useEffect(() => {
     setLoadingBlogs(true);
-    axios.get('/api/blog/getAllBlog')
+    const token = localStorage.getItem('token');
+    axios.get('/api/blog/getAllBlog', token ? { headers: { Authorization: `Bearer ${token}` } } : {})
       .then(res => {
         const data = res.data?.data || [];
         setBlogs(data.filter(blog => blog.status === 'APPROVED'));

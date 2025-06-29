@@ -24,7 +24,7 @@ function AdminPackages() {
     try {
       const token = getToken();
       const res = await axios.get('/api/membership-packages/getAll', token ? { headers: { Authorization: `Bearer ${token}` } } : {});
-      setPackages(res.data.data || []);
+      setPackages(Array.isArray(res.data.data) ? res.data.data : []);
     } catch (err) {
       alert('Lỗi khi tải danh sách gói!');
     }
@@ -122,6 +122,7 @@ function AdminPackages() {
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
       if (modalType === 'add') {
+        // BE trả về { status, message, data: {...} }
         await axios.post('/api/membership-packages/create', payload, config);
       } else {
         await axios.put(`/api/membership-packages/updateByID/${editId}`, payload, config);
@@ -139,6 +140,7 @@ function AdminPackages() {
     try {
       const token = getToken();
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      // BE trả về { status, message, data: ... }
       await axios.delete(`/api/membership-packages/deleteByID/${id}`, config);
       fetchPackages();
     } catch (err) {
