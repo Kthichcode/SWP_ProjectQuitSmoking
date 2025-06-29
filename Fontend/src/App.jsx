@@ -15,7 +15,7 @@ import AdminDashboard from './assets/Admin/AdminDashBoard';
 import { useAuth } from './contexts/AuthContext';
 import CoachDashboard from './assets/Coach/CoachDashboard';
 import Users from './assets/Coach/Users';
-import Appointments from './assets/Coach/Appointments';
+import MakePlans from './assets/Coach/MakePlans';
 import Messages from './assets/Coach/Messages';
 import AdminAchievements from './assets/Admin/AdminAchievements';
 import AdminUsers from './assets/Admin/AdminUsers';
@@ -79,7 +79,7 @@ function App() {
             </div>
           } />
           <Route path="users" element={<Users />} />
-          <Route path="appointments" element={<Appointments />} />
+          <Route path="plans" element={<MakePlans />} />
           <Route path="messages" element={<Messages />} />
           <Route path="blog" element={<CoachBlog />} />
         </Route>

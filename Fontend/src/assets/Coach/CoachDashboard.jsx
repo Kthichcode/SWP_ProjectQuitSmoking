@@ -59,8 +59,8 @@ function CoachDashboard() {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/coach/appointments" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
-              <FaCalendarAlt style={{marginRight:8}}/> Lịch hẹn
+            <NavLink to="/coach/plans" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+              <FaCalendarAlt style={{marginRight:8}}/> Kế hoạch cai thuốc
             </NavLink>
           </li>
           <li>

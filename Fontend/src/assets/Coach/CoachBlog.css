@@ -1,3 +1,8 @@
+/* Đảm bảo input, textarea, select trong modal có nền trắng và chữ tối */
+input, textarea, select {
+  background: #fff !important;
+  color: #222 !important;
+}
 /* Reset & base */
 body, html {
   font-family: 'Inter', Arial, sans-serif;
