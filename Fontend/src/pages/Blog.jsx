@@ -16,7 +16,7 @@ export default function Blog() {
 
     useEffect(() => {
         setLoading(true);
-        // Không gửi Authorization nếu chưa đăng nhập
+        // Không gửi Authorization nếu là API public
         axios.get('/api/blog/getAllBlog')
             .then(res => {
                 // Chỉ lấy blog đã duyệt
