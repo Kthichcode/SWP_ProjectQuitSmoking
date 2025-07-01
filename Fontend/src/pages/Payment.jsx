@@ -17,7 +17,7 @@ function Payment() {
   }, [user, navigate]);
 
   useEffect(() => {
-    // Lấy gói từ API
+    
     const fetchPackages = async () => {
       try {
         let config = {};

@@ -18,7 +18,7 @@ export default function BlogDetail() {
       return;
     }
     setLoading(true);
-    console.log('BlogDetail - id:', id); // log id
+    console.log('BlogDetail - id:', id); 
     axios.get(`/api/blog/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })

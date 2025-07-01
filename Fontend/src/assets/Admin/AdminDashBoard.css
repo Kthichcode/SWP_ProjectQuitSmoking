@@ -1,4 +1,4 @@
-/* AdminDashboard.css */
+
 
 
 body, html {
@@ -13,7 +13,7 @@ body, html {
   background: #f6f8fa;
 }
 
-/* Sidebar */
+
 .sidebar {
   position: fixed;
   min-width: 260px;
@@ -136,25 +136,7 @@ body, html {
   background: #b91c1c;
 }
 
-@media (max-width: 900px) {
-  .dashboard {
-    flex-direction: column;
-  }
-  .sidebar {
-    min-width: 100%;
-    border-radius: 0 0 24px 24px;
-    box-shadow: none;
-    align-items: stretch;
-    position: static;
-  }
-  .main {
-    margin: 0;
-    border-radius: 0 0 24px 24px;
-    padding: 24px 8px;
-  }
-}
 
-/* Main content */
 .main {
   flex: 1;
   padding: 40px 48px;
@@ -231,7 +213,6 @@ body, html {
   border-radius: 6px;
 }
 
-/* User & Feedback */
 .user-feedback {
   display: flex;
   flex-wrap: wrap;

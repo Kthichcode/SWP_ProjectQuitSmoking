@@ -182,7 +182,6 @@ html, body, #root {
     box-shadow: 0 8px 32px rgba(34,197,94,0.10);
   }
 
-  /* Biểu tượng động ủng hộ cai nghiện thuốc lá */
 .home-main-section .quit-smoking-anim {
   position: absolute;
   right: 48px;
@@ -289,7 +288,7 @@ html, body, #root {
     color: #4a5568;
   }
 
-  /* Features */
+ 
   .why-nosmoke {
     padding: 60px 80px;
     background: white;

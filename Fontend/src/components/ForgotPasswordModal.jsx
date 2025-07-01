@@ -27,13 +27,13 @@ const ForgotPasswordModal = ({ show, onClose }) => {
     return Math.floor(100000 + Math.random() * 900000).toString();
   };
 
-  // Hàm kiểm tra và cập nhật lượt gửi OTP
+  
   const canSendOtp = () => {
     const key = `otp_limit_${email}`;
     const data = JSON.parse(localStorage.getItem(key) || '{}');
     const now = Date.now();
     if (!data.firstTime || now - data.firstTime > 24 * 60 * 60 * 1000) {
-      // Reset nếu đã qua 24h hoặc chưa có dữ liệu
+      
       localStorage.setItem(key, JSON.stringify({ count: 0, firstTime: now }));
       return true;
     }
@@ -52,7 +52,6 @@ const ForgotPasswordModal = ({ show, onClose }) => {
     }
   };
 
-  // Gửi email để nhận OTP từ backend
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     if (!email) return setError('Vui lòng nhập email.');
@@ -75,7 +74,6 @@ const ForgotPasswordModal = ({ show, onClose }) => {
     }
   };
 
-  // Xác thực OTP với backend
   const handleOtpSubmit = async (e) => {
     e.preventDefault();
     if (!enteredOtp) return setError('Vui lòng nhập mã OTP.');
@@ -92,7 +90,7 @@ const ForgotPasswordModal = ({ show, onClose }) => {
     }
   };
 
-  // Đổi mật khẩu mới với backend
+  
   const handlePasswordReset = async (e) => {
     e.preventDefault();
     if (!newPassword || !confirmPassword) {
@@ -139,16 +137,16 @@ const ForgotPasswordModal = ({ show, onClose }) => {
     }, 200);
   };
 
-  // Quay lại bước trước trong modal
+ 
   const handleBackStep = () => {
     if (otpSent && !otpVerified) {
-      // Quay lại trang trước (ví dụ: login)
+      
       handleClose();
       setTimeout(() => {
         navigate(-1);
       }, 200);
     } else if (otpVerified) {
-      // Ở bước nhập mật khẩu mới, quay lại trang login
+      
       handleClose();
       setTimeout(() => {
         navigate('/login');

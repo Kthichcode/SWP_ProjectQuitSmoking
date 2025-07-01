@@ -58,7 +58,7 @@ export default function CoachBlog() {
   }, []);
 
   const filteredBlogs = blogs.filter(blog => {
-    // Coach sẽ thấy tất cả bài của mình, nhưng bài chờ duyệt sẽ hiển thị trạng thái "Chờ duyệt" thay vì "Đã xuất bản"
+    
     const matchSearch = blog.title.toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter === "all" ? true : (filter === blog.status);
     return matchSearch && matchFilter;
@@ -78,25 +78,25 @@ export default function CoachBlog() {
     setShowEditModal(true);
   };
 
-  // Xử lý đóng modal
+
   const handleCloseModal = () => {
     setShowEditModal(false);
     setEditBlog(null);
   };
 
-  // Xử lý thay đổi form
+ 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setEditForm(prev => ({ ...prev, [name]: value }));
   };
 
-  // Xử lý thay đổi form thêm
+  
   const handleAddFormChange = (e) => {
     const { name, value } = e.target;
     setAddForm(prev => ({ ...prev, [name]: value }));
   };
 
-  // Xử lý thêm blog mới
+ 
   const handleAddBlog = async (e) => {
     e.preventDefault();
     if (!addForm.title || !addForm.content || !addForm.categoryId) return;
@@ -118,7 +118,7 @@ export default function CoachBlog() {
     }
   };
 
-  // Xử lý lưu chỉnh sửa blog
+  
   const handleEditSave = async (e) => {
     e.preventDefault();
     if (!editBlog) return;
@@ -129,7 +129,7 @@ export default function CoachBlog() {
         label: editForm.label,
         tags: editForm.tags,
         status: editForm.status,
-        // categoryId: editForm.categoryId, // nếu BE cần
+        
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -211,7 +211,7 @@ export default function CoachBlog() {
         ))}
       </div>
 
-      {/* Modal thêm mới */}
+      
       {showAddModal && (
         <div className="modal-overlay" style={{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.18)',zIndex:1000,display:'flex',alignItems:'flex-start',justifyContent:'center'}}>
           <div className="modal-edit-blog" style={{background:'#fff',borderRadius:12,maxWidth:800,width:'100%',marginTop:24,padding:32,boxShadow:'0 4px 32px rgba(0,0,0,0.12)',position:'relative',maxHeight:'90vh',overflowY:'auto'}}>
@@ -250,7 +250,7 @@ export default function CoachBlog() {
         </div>
       )}
 
-      {/* Modal chỉnh sửa */}
+      
       {showEditModal && (
         <div className="modal-overlay" style={{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.18)',zIndex:1000,display:'flex',alignItems:'flex-start',justifyContent:'center'}}>
           <div className="modal-edit-blog" style={{background:'#fff',borderRadius:12,maxWidth:800,width:'100%',marginTop:24,padding:32,boxShadow:'0 4px 32px rgba(0,0,0,0.12)',position:'relative',maxHeight:'90vh',overflowY:'auto'}}>

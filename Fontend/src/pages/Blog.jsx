@@ -16,10 +16,10 @@ export default function Blog() {
 
     useEffect(() => {
         setLoading(true);
-        // Không gửi Authorization nếu là API public
+    
         axios.get('/api/blog/getAllBlog')
             .then(res => {
-                // Chỉ lấy blog đã duyệt
+                
                 const approvedBlogs = (res.data.data || []).filter(blog => blog.status === 'APPROVED');
                 setBlogs(approvedBlogs);
                 setError('');
@@ -44,7 +44,7 @@ export default function Blog() {
         };
     }, []);
 
-    // Tính chỉ số blog để phân trang
+ 
     const indexOfLastBlog = currentPage * blogsPerPage;
     const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
     const currentBlogs = blogs.slice(indexOfFirstBlog, indexOfLastBlog);
@@ -56,7 +56,7 @@ export default function Blog() {
         }
     };
 
-    // Xử lý khi bấm Đọc tiếp
+    
     const handleReadMore = (blog) => {
         const blogId = blog.id || blog._id;
         if (!token) {

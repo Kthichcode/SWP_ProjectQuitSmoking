@@ -1,4 +1,4 @@
-/* CoachDashboard.css */
+
 
 body, html {
   font-family: 'Segoe UI', Arial, sans-serif;
@@ -205,7 +205,7 @@ body, html {
   color: #222;
   font-weight: 500;
 }
-/* User list */
+
 .user-list {
   display: flex;
   flex-direction: column;
@@ -249,33 +249,8 @@ body, html {
 .user-info button:hover {
   background: #16a34a;
 }
-/* Appointments */
+
 .appointment-list {
   margin-top: 24px;
 }
-/* Messages */
-@media (max-width: 900px) {
-  .dashboard-container {
-    flex-direction: column;
-  }
-  .sidebar {
-    min-width: 100%;
-    border-radius: 0 0 24px 24px;
-    box-shadow: none;
-    align-items: stretch;
-  }
-  .main-content {
-    margin: 0;
-    border-radius: 0 0 24px 24px;
-    padding: 24px 8px;
-  }
-  .cards-container {
-    flex-direction: column;
-    gap: 12px;
-  }
-  .user-card {
-    flex-direction: column;
-    gap: 12px;
-    padding: 16px 12px;
-  }
-}
+

@@ -67,7 +67,7 @@ function Register() {
 
   return (
     <div className="register-section" style={{position:'relative', overflow:'hidden'}}>
-      {/* Đám mây động nền, không làm mờ chữ, pointer-events: none, z-index thấp */}
+      
       <div className="register-cloud"></div>
       <div className="register-cloud register-cloud-2"></div>
       <div className="register-container">

@@ -191,35 +191,4 @@
   font-weight: bold;
 }
 
-@media (max-width: 700px) {
-  .contact-box {
-    flex-direction: column;
-    gap: 18px;
-  }
-  .contact-info, .contact-time {
-    min-width: 0;
-    padding: 18px 12px;
-  }
-  .stats {
-    flex-direction: column;
-    gap: 18px;
-    align-items: center;
-  }
-  .stat-card {
-    min-width: 0;
-    width: 100%;
-    padding: 18px 12px;
-  }
-  .mission-vision {
-    flex-direction: column;
-    gap: 18px;
-    align-items: center;
-  }
-  .mission-vision .card {
-    min-width: 0;
-    width: 100%;
-    padding: 18px 12px;
-    align-items: center;
-    text-align: center;
-  }
-}
+

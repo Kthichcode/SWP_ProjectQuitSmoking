@@ -22,7 +22,7 @@ function AdminCoaches() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  // Lấy danh sách coach từ BE (role COACH)
+  
   useEffect(() => {
     async function fetchCoaches() {
       try {
@@ -30,12 +30,12 @@ function AdminCoaches() {
         const res = await axios.get('/api/user/getAll', {
           headers: token ? { Authorization: 'Bearer ' + token } : {}
         });
-        // Lọc user có role COACH
+       
         if (Array.isArray(res.data.data)) {
           setCoaches(res.data.data.filter(u => u.roles && u.roles.includes('COACH')));
         }
       } catch (err) {
-        // Nếu lỗi thì giữ nguyên danh sách mẫu
+        
       }
     }
     fetchCoaches();
@@ -43,9 +43,9 @@ function AdminCoaches() {
 
   const handleAdd = async e => {
     e.preventDefault();
-    // Chuẩn hóa dữ liệu gửi lên BE
+    
     const payload = {
-      username: form.email, // hoặc bạn có thể cho nhập riêng username nếu muốn
+      username: form.email, 
       email: form.email,
       fullName: form.name
     };
@@ -147,7 +147,7 @@ function AdminCoaches() {
                         display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
                         color:'#222',fontSize:'1rem',textAlign:'left',fontWeight:500
                       }}
-                      onClick={() => { /* TODO: handle edit */ setOpenMenu(null); }}
+                      onClick={() => {  setOpenMenu(null); }}
                     >
                       <FaEdit /> <span style={{color:'#222'}}>Chỉnh sửa</span>
                     </button>
@@ -157,7 +157,7 @@ function AdminCoaches() {
                         display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
                         color:'#ef4444',fontSize:'1rem',textAlign:'left',fontWeight:500
                       }}
-                      onClick={() => { /* TODO: handle pause/lock */ setOpenMenu(null); }}
+                      onClick={() => {  setOpenMenu(null); }}
                     >
                       <FaPause /> <span style={{color:'#ef4444'}}>Tạm dừng</span>
                     </button>

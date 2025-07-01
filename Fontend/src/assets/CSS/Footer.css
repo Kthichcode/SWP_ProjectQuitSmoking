@@ -1,4 +1,4 @@
-/* Custom scrollbar for modal content */
+
 .modal-scroll-custom::-webkit-scrollbar {
   width: 8px;
   background: #111;

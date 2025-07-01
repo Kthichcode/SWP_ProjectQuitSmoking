@@ -132,7 +132,7 @@ function AdminNotifications() {
                         display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
                         color:'#222',fontSize:'1rem',textAlign:'left',fontWeight:500
                       }}
-                      onClick={() => { /* TODO: handle edit */ setOpenMenu(null); }}
+                      onClick={() => { setOpenMenu(null); }}
                     >
                       <FaEdit /> <span style={{color:'#222'}}>Chỉnh sửa</span>
                     </button>

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './MakePlans.css';
 
-// Dữ liệu mẫu danh sách khách hàng đã chọn bạn làm tư vấn viên
 const clientsData = [
   {
     id: 1,
@@ -52,7 +51,7 @@ function MakePlans() {
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState('');
 
-  // Khi chọn khách hàng để lập kế hoạch hoặc xem
+  
   const handleSelectClient = (client) => {
     setSelectedClient(client);
     if (client.plan) {
@@ -68,7 +67,7 @@ function MakePlans() {
     }
   };
 
-  // Xử lý thay đổi form kế hoạch
+ 
   const handlePlanChange = (e, idx) => {
     const { name, value } = e.target;
     if (name === 'goal' || name === 'note') {
@@ -80,19 +79,19 @@ function MakePlans() {
     }
   };
 
-  // Thêm bước mới
+  
   const handleAddStep = () => {
     setPlanForm(prev => ({ ...prev, steps: [...prev.steps, ''] }));
   };
 
-  // Xóa bước
+  
   const handleRemoveStep = (idx) => {
     setPlanForm(prev => ({ ...prev, steps: prev.steps.filter((_, i) => i !== idx) }));
   };
 
-  // Lưu kế hoạch cho khách hàng
+  
   const handleSavePlan = () => {
-    // Kiểm tra: phải có goal hoặc ít nhất 1 bước có nội dung
+    
     const hasGoal = planForm.goal.trim() !== '';
     const hasStep = planForm.steps.some(s => s.trim() !== '');
     if (!hasGoal && !hasStep) {
@@ -106,12 +105,12 @@ function MakePlans() {
     setError('');
   };
 
-  // Bắt đầu chỉnh sửa kế hoạch đã có
+  
   const handleEditPlan = () => {
     setIsEditing(true);
   };
 
-  // Hủy chỉnh sửa hoặc xem
+  
   const handleCancel = () => {
     if (selectedClient && selectedClient.plan) {
       setPlanForm({

@@ -3,7 +3,7 @@ import '../assets/CSS/Ranking.css';
 
 const Ranking = () => {
   useEffect(() => {
-  // Reload trang nếu người dùng trở lại từ nút Back (trình duyệt cache)
+  
   window.addEventListener('pageshow', (event) => {
     if (event.persisted) {
       window.location.reload();

@@ -10,7 +10,7 @@ function AdminDashboard() {
   const { logout, user } = useAuth();
   const handleLogout = () => {
     localStorage.removeItem('token');
-    logout(); // Xóa context user
+    logout(); 
     navigate('/login');
   };
   return (

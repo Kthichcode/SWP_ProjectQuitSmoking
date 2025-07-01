@@ -16,14 +16,14 @@ function AdminBlogs() {
   });
   const [loading, setLoading] = useState(false);
 
-  // Lấy danh mục từ API thay vì hardcoded
+  
   useEffect(() => {
     axios.get('/api/blog-categories/getAll')
       .then(res => setCategories(res.data.data || []))
       .catch(() => setCategories([]));
   }, []);
 
-  // Lấy danh sách blog
+  
   const fetchBlogs = () => {
     if (!token) return;
     setLoading(true);
@@ -211,7 +211,7 @@ function AdminBlogs() {
                 >
                   Xóa
                 </button>
-                {/* Thêm nút Duyệt và Từ chối */}
+                
                 {blog.status === 'PENDING' && (
                   <>
                     <button

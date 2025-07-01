@@ -18,10 +18,9 @@ function Login() {
   const [showForgotModal, setShowForgotModal] = useState(false);
   const navigate = useNavigate();
 
-  // 🚫 Nếu đã đăng nhập thì redirect khỏi /login luôn
   useEffect(() => {
     if (user) {
-      // Chuyển hướng đúng theo role khi đã login
+      
       if (user.scope?.toUpperCase() === 'ADMIN') {
         navigate('/admin/dashboard', { replace: true });
       } else if (user.scope?.toUpperCase() === 'COACH') {
@@ -44,7 +43,7 @@ function Login() {
   return () => window.removeEventListener('pageshow', handlePageShow);
 }, [user]);
 
-  // ✅ Login bằng Google
+
   const googleLogin = useGoogleLogin({
     scope: 'openid profile email https://www.googleapis.com/auth/userinfo.profile',
     onSuccess: async (tokenResponse) => {
@@ -72,7 +71,6 @@ function Login() {
     },
   });
 
-  // ✅ Login bằng username + password
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -109,7 +107,7 @@ function Login() {
 
   return (
     <section className="login-section">
-      {/* Đám mây động, pointer-events: none, z-index thấp */}
+     
       <div className="login-cloud"></div>
       <div className="login-cloud login-cloud-2"></div>
       <div className="login-container">

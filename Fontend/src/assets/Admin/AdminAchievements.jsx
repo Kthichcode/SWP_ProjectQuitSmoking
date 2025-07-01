@@ -12,7 +12,7 @@ const initialBadges = [
     condition: '1 ngày',
     achieved: 2547,
     reward: 10,
-    icon: <FaLeaf color="#22c55e" size={32} />, // Lá xanh
+    icon: <FaLeaf color="#22c55e" size={32} />, 
   },
   {
     id: 2,
@@ -23,7 +23,7 @@ const initialBadges = [
     condition: '7 ngày',
     achieved: 1234,
     reward: 50,
-    icon: <FaSeedling color="#16a34a" size={32} />, // Mầm cây
+    icon: <FaSeedling color="#16a34a" size={32} />, 
   },
   {
     id: 3,
@@ -34,7 +34,7 @@ const initialBadges = [
     condition: '30 ngày',
     achieved: 567,
     reward: 200,
-    icon: <FaTree color="#15803d" size={32} />, // Cây lớn
+    icon: <FaTree color="#15803d" size={32} />, 
   },
   {
     id: 4,
@@ -45,7 +45,7 @@ const initialBadges = [
     condition: '90 ngày',
     achieved: 234,
     reward: 500,
-    icon: <FaSun color="#fbbf24" size={32} />, // Mặt trời
+    icon: <FaSun color="#fbbf24" size={32} />, 
   },
   
 ];
@@ -68,12 +68,12 @@ function AdminAchievements() {
   }, []);
 
   const iconOptions = {
-    leaf: <FaLeaf color="#22c55e" size={32} />, // Lá xanh
-    seedling: <FaSeedling color="#16a34a" size={32} />, // Mầm cây
-    tree: <FaTree color="#15803d" size={32} />, // Cây lớn
-    sun: <FaSun color="#fbbf24" size={32} />, // Mặt trời
-    heart: <FaHeart color="#f472b6" size={32} />, // Trái tim
-    smile: <FaSmile color="#fbbf24" size={32} /> // Nụ cười
+    leaf: <FaLeaf color="#22c55e" size={32} />, 
+    seedling: <FaSeedling color="#16a34a" size={32} />, 
+    tree: <FaTree color="#15803d" size={32} />, 
+    sun: <FaSun color="#fbbf24" size={32} />, 
+    heart: <FaHeart color="#f472b6" size={32} />, 
+    smile: <FaSmile color="#fbbf24" size={32} /> 
   };
 
   const handleAdd = e => {
@@ -133,7 +133,7 @@ function AdminAchievements() {
                       display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
                       color:'#222',fontSize:'1rem',textAlign:'left',fontWeight:500
                     }}
-                    onClick={() => { /* TODO: handle edit */ setOpenMenu(null); }}
+                    onClick={() => {  setOpenMenu(null); }}
                   >
                     <FaEdit /> <span style={{color:'#222'}}>Sửa</span>
                   </button>

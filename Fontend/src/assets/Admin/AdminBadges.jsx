@@ -9,14 +9,14 @@ const AdminBadges = () => {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: '', description: '', condition_description: '', score: '', icon: 'leaf', id: null });
   const [editing, setEditing] = useState(false);
-  // Dùng emoji cho dropdown và bảng
+ 
   const iconOptions = {
-    leaf: '🍃', // Lá xanh
-    seedling: '🌱', // Mầm cây
-    tree: '🌳', // Cây lớn
-    sun: '🌞', // Mặt trời
-    heart: '❤️', // Trái tim
-    smile: '😊' // Nụ cười
+    leaf: '🍃', 
+    seedling: '🌱', 
+    tree: '🌳', 
+    sun: '🌞', 
+    heart: '❤️', 
+    smile: '😊' 
   };
   const fetchBadges = async () => {
     setLoading(true);
@@ -35,7 +35,7 @@ const AdminBadges = () => {
 
   useEffect(() => {
     fetchBadges();
-    // eslint-disable-next-line
+    
   }, []);
 
   const handleChange = e => {

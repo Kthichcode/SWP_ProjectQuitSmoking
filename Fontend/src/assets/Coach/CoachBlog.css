@@ -1,9 +1,9 @@
-/* Đảm bảo input, textarea, select trong modal có nền trắng và chữ tối */
+
 input, textarea, select {
   background: #fff !important;
   color: #222 !important;
 }
-/* Reset & base */
+
 body, html {
   font-family: 'Inter', Arial, sans-serif;
   background: #f6f8fa;
@@ -140,11 +140,7 @@ body, html {
   gap: 24px;
 }
 
-@media (max-width: 900px) {
-  .coach-blog-list {
-    grid-template-columns: 1fr;
-  }
-}
+
 
 .coach-blog-card {
   background: #fff;
@@ -259,12 +255,12 @@ body, html {
   color: #3730a3;
 }
 
-/* Hide Lovable watermark */
+
 #lovable-watermark, .lovable-watermark, [aria-label*="Lovable"] {
   display: none !important;
 }
 
-/* Custom scrollbar */
+
 ::-webkit-scrollbar {
   width: 8px;
   background: #f1f5f9;

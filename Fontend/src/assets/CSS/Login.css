@@ -1,4 +1,4 @@
-/* Quote box for login */
+
 .login-quote-box {
   display: flex;
   align-items: center;
@@ -47,7 +47,6 @@ body {
 
 
 
-/* Đám mây chỉ nằm dưới background, không làm mờ chữ */
 .login-cloud {
   position: absolute;
   top: 10%;

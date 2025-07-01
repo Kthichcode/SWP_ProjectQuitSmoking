@@ -8,7 +8,6 @@ const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
 
-  // Chuyển hướng nếu là ADMIN hoặc COACH
   useEffect(() => {
     if (!user) return;
     const scope = user.scope?.toUpperCase();
@@ -22,7 +21,6 @@ const Header = () => {
     }
   }, [user, navigate]);
 
-  // Hàm kiểm tra active
   const isActive = (path) => window.location.pathname === path;
 
   return (

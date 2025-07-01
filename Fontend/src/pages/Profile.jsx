@@ -1,4 +1,4 @@
-// Profile.jsx
+
 import React, { useState, useRef, useEffect } from "react";
 import "../assets/CSS/Profile.css";
 import { useAuth } from '../contexts/AuthContext';

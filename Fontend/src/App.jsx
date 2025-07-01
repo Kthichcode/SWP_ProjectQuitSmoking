@@ -73,7 +73,7 @@ function App() {
         >
           <Route index element={
             <div>
-              {/* Nội dung tổng quan giữ nguyên như cũ, hoặc chuyển sang component riêng nếu muốn */}
+             
               <h2>Chào mừng trở lại, Coach!</h2>
               <p>Hôm nay bạn có 5 cuộc hẹn và 8 tin nhắn mới</p>
             </div>

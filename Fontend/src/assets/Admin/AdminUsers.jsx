@@ -9,10 +9,10 @@ function AdminUsers() {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [openMenu, setOpenMenu] = useState(null); // user id for dropdown
+  const [openMenu, setOpenMenu] = useState(null); 
   const menuRef = useRef();
 
-  // Đóng dropdown khi click ra ngoài
+  
   useEffect(() => {
     function handleClick(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -115,7 +115,7 @@ function AdminUsers() {
                         display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
                         color:'#222',fontSize:'1rem',textAlign:'left',fontWeight:500
                       }}
-                      onClick={() => { /* TODO: handle edit */ setOpenMenu(null); }}
+                      onClick={() => {  setOpenMenu(null); }}
                     >
                       <FaEdit /> <span style={{color:'#222'}}>Chỉnh sửa</span>
                     </button>
@@ -125,7 +125,7 @@ function AdminUsers() {
                         display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
                         color:'#ef4444',fontSize:'1rem',textAlign:'left',fontWeight:500
                       }}
-                      onClick={() => { /* TODO: handle pause/lock */ setOpenMenu(null); }}
+                      onClick={() => {  setOpenMenu(null); }}
                     >
                       <FaPause /> <span style={{color:'#ef4444'}}>Tạm dừng</span>
                     </button>
