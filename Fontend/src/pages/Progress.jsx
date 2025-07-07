@@ -19,6 +19,8 @@ function Progress() {
   const [selectionId, setSelectionId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('disconnected'); // 'connecting', 'connected', 'disconnected'
+  const [membershipStatus, setMembershipStatus] = useState(null);
+  const [checkingMembership, setCheckingMembership] = useState(true);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -27,6 +29,53 @@ function Progress() {
       return;
     }
 
+    // Kiểm tra membership trước khi cho phép sử dụng tính năng
+    checkUserMembership();
+  }, [user, navigate]);
+
+  const checkUserMembership = async () => {
+    try {
+      setCheckingMembership(true);
+      const currentUserId = user.userId || user.id;
+      console.log('Checking membership for Progress page:', currentUserId);
+      
+      // Sử dụng API check membership
+      const response = await axiosInstance.get(`/api/user-memberships/check-active/${currentUserId}`);
+      
+      console.log('Progress - Membership response:', response.data);
+      
+      // Check response structure từ UserMembershipController (Boolean response)
+      if (response.data && response.data.status === 'success' && response.data.data === true) {
+        // User có membership active
+        const membershipData = {
+          status: 'ACTIVE',
+          hasActiveMembership: true
+        };
+        
+        setMembershipStatus(membershipData);
+        // Nếu có membership active, tiếp tục load coach info
+        loadCoachInfo();
+      } else {
+        console.log('No active membership found for user:', currentUserId);
+        setMembershipStatus(null);
+      }
+    } catch (error) {
+      console.error('Error checking membership:', error);
+      
+      if (error.response?.status === 404) {
+        console.log('No membership found for user:', user.userId || user.id);
+        setMembershipStatus(null);
+      } else {
+        // Cho tất cả các lỗi khác, không cho phép sử dụng tính năng
+        console.log('Error occurred, not allowing Progress access for safety...');
+        setMembershipStatus(null);
+      }
+    } finally {
+      setCheckingMembership(false);
+    }
+  };
+
+  const loadCoachInfo = () => {
     // Lấy thông tin coach từ state hoặc localStorage
     const coach = location.state?.selectedCoach;
     const selectionIdFromState = location.state?.selectionId;
@@ -52,7 +101,7 @@ function Progress() {
         setSelectionId(parseInt(savedSelectionId));
       }
     }
-  }, [user, navigate, location.state]);
+  };
 
   useEffect(() => {
     // Lấy selectionId khi đã có selectedCoach (nếu chưa có từ state/localStorage)
@@ -297,6 +346,74 @@ function Progress() {
       alert('Không thể gửi tin nhắn lúc này. Backend có thể chưa sẵn sàng. Vui lòng thử lại sau.');
     }
   };
+
+  // Loading state khi đang kiểm tra membership
+  if (checkingMembership) {
+    return (
+      <>
+        <Header />
+        <div className="progress-bg">
+          <div className="progress-container">
+            <div className="loading-container" style={{ textAlign: 'center', padding: '50px' }}>
+              <div className="loading-spinner"></div>
+              <p>Đang kiểm tra gói membership...</p>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Không có membership active
+  if (!membershipStatus) {
+    return (
+      <>
+        <Header />
+        <div className="progress-bg">
+          <div className="progress-container">
+            <div className="error-container">
+              <div className="error-message" style={{ textAlign: 'center', padding: '50px' }}>
+                <h3>🔒 Cần có gói membership để theo dõi tiến trình</h3>
+                <p>Bạn cần mua gói membership trước khi có thể sử dụng tính năng theo dõi tiến trình cai thuốc</p>
+                <div style={{ marginTop: '20px' }}>
+                  <button 
+                    className="btn-select-coach-redirect" 
+                    onClick={() => navigate('/payment')}
+                    style={{ marginRight: '10px' }}
+                  >
+                    Mua gói membership ngay
+                  </button>
+                  <button 
+                    className="btn-select-coach-redirect" 
+                    onClick={() => navigate('/home')}
+                    style={{ background: '#6c757d' }}
+                  >
+                    Về trang chủ
+                  </button>
+                </div>
+                <div style={{ 
+                  marginTop: '20px', 
+                  padding: '15px', 
+                  background: '#f8f9fa', 
+                  borderRadius: '8px',
+                  fontSize: '0.9em',
+                  color: '#6c757d'
+                }}>
+                  <p><strong>Với gói membership, bạn sẽ được:</strong></p>
+                  <ul style={{ textAlign: 'left', display: 'inline-block' }}>
+                    <li>📊 Theo dõi tiến trình cai thuốc chi tiết</li>
+                    <li>🎯 Kế hoạch cai thuốc cá nhân hóa</li>
+                    <li>💬 Chat trực tiếp với coach chuyên nghiệp</li>
+                    <li>📈 Báo cáo và thống kê chi tiết</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (!selectedCoach) {
     return (

@@ -35,24 +35,22 @@ function CoachPayment() {
       const currentUserId = user.userId || user.id;
       console.log('Checking membership for user before selecting coach:', currentUserId);
       
-      // API để kiểm tra membership của user cụ thể
-      const response = await axiosInstance.get(`/api/users/members/membership-status/${currentUserId}`);
+      // Sử dụng API check membership cho user cụ thể (tối ưu hơn)
+      const response = await axiosInstance.get(`/api/user-memberships/check-active/${currentUserId}`);
       
-      console.log('Membership response:', response.data);
+      console.log('User membership response:', response.data);
       
-      // Check response structure từ backend mới
-      if (response.data && response.data.status === 'success' && response.data.data) {
-        const membershipData = response.data.data;
+      // Check response structure từ UserMembershipController (Boolean response)
+      if (response.data && response.data.status === 'success' && response.data.data === true) {
+        // User có membership active, tạo object đơn giản để set state
+        const membershipData = {
+          status: 'ACTIVE',
+          hasActiveMembership: true
+        };
         
-        // Kiểm tra membership status
-        if (membershipData.status === 'ACTIVE' && !membershipData.isExpired) {
-          setMembershipStatus(membershipData);
-          // Nếu có membership active, cho phép chọn coach
-          fetchCoaches();
-        } else {
-          console.log('Membership expired or inactive for user:', currentUserId);
-          setMembershipStatus(null);
-        }
+        setMembershipStatus(membershipData);
+        // Nếu có membership active, cho phép chọn coach
+        fetchCoaches();
       } else {
         console.log('No active membership found for user:', currentUserId);
         setMembershipStatus(null);

@@ -31,18 +31,18 @@ const Header = () => {
       </a>
 
       <div className="home-nav">
-        <button className={`nav-btn${isActive('/home') || isActive('/') ? ' active' : ''}`} onClick={() => (window.location.href = '/home')}>Trang chủ</button>
-        <button className={`nav-btn${isActive('/blog') ? ' active' : ''}`} onClick={() => (window.location.href = '/blog')}>Blog</button>
-        <button className={`nav-btn${isActive('/ranking') ? ' active' : ''}`} onClick={() => (window.location.href = '/ranking')}>Bảng xếp hạng</button>
-        <button className={`nav-btn${isActive('/about') ? ' active' : ''}`} onClick={() => (window.location.href = '/about')}>Giới thiệu</button>
-        <button className={`nav-btn${isActive('/process') ? ' active' : ''}`} onClick={() => (window.location.href = '/process')}>Tiến Trình Cai Thuốc</button>
+        <button className={`nav-btn${isActive('/home') || isActive('/') ? ' active' : ''}`} onClick={() => navigate('/home')}>Trang chủ</button>
+        <button className={`nav-btn${isActive('/blog') ? ' active' : ''}`} onClick={() => navigate('/blog')}>Blog</button>
+        <button className={`nav-btn${isActive('/ranking') ? ' active' : ''}`} onClick={() => navigate('/ranking')}>Bảng xếp hạng</button>
+        <button className={`nav-btn${isActive('/about') ? ' active' : ''}`} onClick={() => navigate('/about')}>Giới thiệu</button>
+        <button className={`nav-btn${isActive('/progress') ? ' active' : ''}`} onClick={() => navigate('/progress')}>Tiến Trình Cai Thuốc</button>
       </div>
 
       <div className="home-auth-buttons">
         {!user ? (
           <>
-            <button className="nav-btn" onClick={() => (window.location.href = '/login')}>Đăng Nhập</button>
-            <button className="nav-btn" onClick={() => (window.location.href = '/register')}>Đăng Ký</button>
+            <button className="nav-btn" onClick={() => navigate('/login')}>Đăng Nhập</button>
+            <button className="nav-btn" onClick={() => navigate('/register')}>Đăng Ký</button>
           </>
         ) : (
           <>
