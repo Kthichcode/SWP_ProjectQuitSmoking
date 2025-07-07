@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import CoachCard from '../components/CoachCard';
 import Header from './Header';
-import axiosInstance from '../../../axiosInstance';
+import axiosInstance from '../../axiosInstance';
 import '../assets/CSS/CoachPayment.css';
 
 function CoachPayment() {

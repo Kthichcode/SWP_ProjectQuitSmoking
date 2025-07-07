@@ -5,7 +5,7 @@ import './CoachDashboard.css';
 import { FaUsers, FaCalendarAlt, FaEnvelope, FaStar, FaTachometerAlt, FaSignOutAlt, FaPenNib, FaUserCircle } from 'react-icons/fa';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import axiosInstance from '../../../../axiosInstance';
+import axiosInstance from '../../../axiosInstance';
 
 function CoachDashboard() {
   const location = useLocation();

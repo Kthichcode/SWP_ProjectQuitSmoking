@@ -1,4 +1,4 @@
-import axios from '../../../axiosInstance';
+import axios from '../../axiosInstance';
 
 // Helper function để tạo membership sau khi thanh toán thành công
 export const createMembershipAfterPayment = async (orderInfo, transactionId) => {

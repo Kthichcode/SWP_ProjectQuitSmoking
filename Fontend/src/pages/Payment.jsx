@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import '../assets/CSS/Payment.css';
 import { AiFillHeart, AiFillStar, AiFillCrown, AiOutlineCheck } from 'react-icons/ai';
-import axios from '../../../axiosInstance';
+import axios from '../../axiosInstance';
 
 function Payment() {
   const { user } = useAuth();
