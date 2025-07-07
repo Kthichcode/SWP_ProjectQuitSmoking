@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axiosInstance from '../../../axiosInstance';
+import { processPaymentCallback } from '../services/membershipService';
 import '../assets/CSS/PaymentResult.css';
 import { AiOutlineCheckCircle, AiOutlineCloseCircle, AiOutlineHome } from 'react-icons/ai';
 
@@ -28,30 +29,48 @@ function PaymentResult() {
       payDate
     });
 
-    // Xác định trạng thái thanh toán
-    if (responseCode === '00') {
-      setPaymentStatus('success');
-      // TODO: Gọi API để cập nhật membership cho user
-    } else {
-      setPaymentStatus('failed');
-    }
-    const verifyPayment = async () => {
-    if (responseCode && transactionId) {
-      try {
-        const response = await axiosInstance.get('/api/payment/check-callback', {
-          params: {
-            vnp_TxnRef: transactionId,
-            vnp_ResponseCode: responseCode
+    const verifyAndCreateMembership = async () => {
+      if (responseCode && transactionId && orderInfo) {
+        try {
+          console.log('Processing payment callback:', { transactionId, responseCode, orderInfo });
+          
+          const result = await processPaymentCallback(transactionId, responseCode, orderInfo);
+          console.log('Payment callback result:', result);
+          
+          if (result.paymentVerified) {
+            setPaymentStatus('success');
+            
+            if (result.membershipResult && result.membershipResult.success) {
+              setPaymentInfo(prev => ({
+                ...prev,
+                membershipCreated: true,
+                membershipId: result.membershipResult.data?.data?.membershipId,
+                membershipAction: result.membershipResult.action
+              }));
+              console.log('Membership processed successfully:', result.membershipResult);
+            } else {
+              setPaymentInfo(prev => ({
+                ...prev,
+                membershipError: result.membershipResult?.error || 'Unknown membership error'
+              }));
+              console.error('Membership creation failed:', result.membershipResult);
+            }
+          } else {
+            setPaymentStatus('failed');
+            console.error('Payment verification failed:', result.error);
           }
-        });
-        console.log('Backend verification:', response.data);
-      } catch (error) {
-        console.error('Error verifying payment:', error);
+          
+        } catch (error) {
+          console.error('Error in verifyAndCreateMembership:', error);
+          setPaymentStatus('failed');
+        }
+      } else if (responseCode !== '00') {
+        setPaymentStatus('failed');
+        console.log('Payment failed with response code:', responseCode);
       }
-    }
-  };
-  
-  verifyPayment();
+    };
+
+    verifyAndCreateMembership();
   }, [searchParams]);
 
   const handleGoHome = () => {
@@ -95,10 +114,29 @@ function PaymentResult() {
                 <AiOutlineCheckCircle size={80} />
               </div>
               <h2 className="payment-result-title success">Thanh toán thành công! 🎉</h2>
-              <p className="payment-result-message">
-                Chúc mừng! Bạn đã nâng cấp gói thành viên thành công.<br/>
-                <strong>Bước tiếp theo: Chọn Coach chuyên nghiệp để bắt đầu hành trình cai thuốc!</strong>
-              </p>
+              <div className="payment-result-message">
+                <p>
+                  Chúc mừng! Bạn đã nâng cấp gói thành viên thành công.
+                </p>
+                {paymentInfo.membershipCreated ? (
+                  <p style={{color: '#4caf50', fontWeight: 'bold'}}>
+                    ✅ Gói membership đã được {paymentInfo.membershipAction === 'updated' ? 'cập nhật' : 'kích hoạt'} thành công!
+                    {paymentInfo.membershipId && ` (ID: ${paymentInfo.membershipId})`}
+                  </p>
+                ) : paymentInfo.membershipError ? (
+                  <p style={{color: '#f44336', fontSize: '14px'}}>
+                    ⚠️ Thanh toán thành công nhưng có lỗi khi kích hoạt membership: {paymentInfo.membershipError}
+                    <br/>Vui lòng liên hệ support để được hỗ trợ.
+                  </p>
+                ) : (
+                  <p style={{color: '#ff9800', fontSize: '14px'}}>
+                    🔄 Đang kích hoạt gói membership...
+                  </p>
+                )}
+                <p>
+                  <strong>Bước tiếp theo: Chọn Coach chuyên nghiệp để bắt đầu hành trình cai thuốc!</strong>
+                </p>
+              </div>
             </>
           ) : paymentStatus === 'failed' ? (
             <>
@@ -129,6 +167,12 @@ function PaymentResult() {
                 <span className="detail-label">Mã giao dịch:</span>
                 <span className="detail-value">{paymentInfo.transactionId}</span>
               </div>
+              {paymentInfo.membershipId && (
+                <div className="detail-row">
+                  <span className="detail-label">Membership ID:</span>
+                  <span className="detail-value">{paymentInfo.membershipId}</span>
+                </div>
+              )}
               {paymentInfo.amount > 0 && (
                 <div className="detail-row">
                   <span className="detail-label">Số tiền:</span>

@@ -27,7 +27,7 @@ function AdminCoaches() {
     async function fetchCoaches() {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('/api/user/getAll', {
+        const res = await axios.get('/api/users/getAll', {
           headers: token ? { Authorization: 'Bearer ' + token } : {}
         });
        

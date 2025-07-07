@@ -36,6 +36,7 @@ import AdminBadges from './assets/Admin/AdminBadges';
 import Checkout from './pages/Checkout';
 import PaymentResult from './pages/PaymentResult';
 import VNPayCallback from './pages/VNPayCallback';
+import MembershipDebug from './components/MembershipDebug';
 
 function RequireRole({ role, children }) {
   const { user } = useAuth();
@@ -121,6 +122,7 @@ function App() {
                 <Route path="/payment" element={<Payment />} />
                 <Route path="/payment-result" element={<PaymentResult />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/debug-membership" element={<MembershipDebug />} />
                 <Route path="/login/oauth2/code/google" element={<Navigate to="/login" />} />
                 <Route path="/blog/:id" element={<BlogDetail />} />
                 <Route path="/" element={<Navigate to="/home" replace />} />

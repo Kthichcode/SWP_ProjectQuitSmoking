@@ -158,3 +158,25 @@
   background: #6d1b7b;
 }
 
+.btn-current {
+  background: #4caf50;
+  color: #fff;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.btn-current:hover {
+  background: #4caf50;
+  cursor: not-allowed;
+}
+
+.package-current {
+  border-color: #4caf50 !important;
+  box-shadow: 0 8px 32px rgba(76, 175, 80, 0.15);
+}
+
+.package-current .package-label {
+  background: #4caf50;
+  color: white;
+}
+
