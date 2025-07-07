@@ -29,7 +29,10 @@ function AdminUsers() {
     axios.get('/api/users/getAll', {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     })
-      .then(res => setUsers(res.data))
+      .then(res => {
+        const members = res.data.filter(u => !(u.roles && u.roles.includes('COACH')));
+        setUsers(members);
+      })
       .catch(err => {
         setError('Lỗi khi tải danh sách người dùng!');
         setUsers([]);

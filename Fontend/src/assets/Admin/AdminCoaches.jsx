@@ -31,11 +31,12 @@ function AdminCoaches() {
           headers: token ? { Authorization: 'Bearer ' + token } : {}
         });
        
-        if (Array.isArray(res.data.data)) {
-          setCoaches(res.data.data.filter(u => u.roles && u.roles.includes('COACH')));
+        if (Array.isArray(res.data)) {
+          const coaches = res.data.filter(u => u.roles && u.roles.includes('COACH'));
+          setCoaches(coaches);
         }
       } catch (err) {
-        
+        console.error('Error fetching coaches:', err);
       }
     }
     fetchCoaches();
