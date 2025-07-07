@@ -10,13 +10,15 @@ import Blog from './pages/Blog';
 import Ranking from './pages/Ranking';
 import Payment from './pages/Payment';
 import CoachPayment from './pages/CoachPayment';
-import CoachProfile from './pages/CoachProfile';
+import CoachProfilePage from './pages/CoachProfile';
+import Progress from './pages/Progress';
 import AdminDashboard from './assets/Admin/AdminDashBoard';
 import { useAuth } from './contexts/AuthContext';
 import CoachDashboard from './assets/Coach/CoachDashboard';
 import Users from './assets/Coach/Users';
 import MakePlans from './assets/Coach/MakePlans';
 import Messages from './assets/Coach/Messages';
+import CoachProfile from './assets/Coach/CoachProfile';
 import AdminAchievements from './assets/Admin/AdminAchievements';
 import AdminUsers from './assets/Admin/AdminUsers';
 import AdminCoaches from './assets/Admin/AdminCoaches';
@@ -27,10 +29,13 @@ import AdminSystem from './assets/Admin/AdminSystem';
 import AdminFeedback from './assets/Admin/AdminFeedback';
 import CoachBlog from './assets/Coach/CoachBlog';
 import AdminBlogs from './assets/Admin/AdminBlogs';
+import AdminBlogCategories from './assets/Admin/AdminBlogCategories';
 import BlogDetail from './pages/BlogDetail';
 import Profile from './pages/Profile';
 import AdminBadges from './assets/Admin/AdminBadges';
 import Checkout from './pages/Checkout';
+import PaymentResult from './pages/PaymentResult';
+import VNPayCallback from './pages/VNPayCallback';
 
 function RequireRole({ role, children }) {
   const { user } = useAuth();
@@ -61,6 +66,7 @@ function App() {
           <Route path="system" element={<AdminSystem />} />
           <Route path="feedback" element={<AdminFeedback />} />
           <Route path="blogs" element={<AdminBlogs />} />
+          <Route path="blog-categories" element={<AdminBlogCategories />} />
           <Route path="badges" element={<AdminBadges />} />
         </Route>
         <Route
@@ -82,10 +88,23 @@ function App() {
           <Route path="plans" element={<MakePlans />} />
           <Route path="messages" element={<Messages />} />
           <Route path="blog" element={<CoachBlog />} />
+          <Route path="profile" element={<CoachProfile />} />
         </Route>
         <Route
           path="/coach-payment"
           element={<CoachPayment />}
+        />
+        <Route
+          path="/coach/:id"
+          element={<CoachProfilePage />}
+        />
+        <Route
+          path="/progress"
+          element={<Progress />}
+        />
+        <Route
+          path="/api/payment/*"
+          element={<VNPayCallback />}
         />
         <Route
           path="*"
@@ -100,8 +119,8 @@ function App() {
                 <Route path="/ranking" element={<Ranking />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/payment" element={<Payment />} />
+                <Route path="/payment-result" element={<PaymentResult />} />
                 <Route path="/checkout" element={<Checkout />} />
-                <Route path="/coach/:id" element={<CoachProfile />} />
                 <Route path="/login/oauth2/code/google" element={<Navigate to="/login" />} />
                 <Route path="/blog/:id" element={<BlogDetail />} />
                 <Route path="/" element={<Navigate to="/home" replace />} />

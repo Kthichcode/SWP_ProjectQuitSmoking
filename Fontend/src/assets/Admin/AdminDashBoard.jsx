@@ -64,6 +64,11 @@ function AdminDashboard() {
             </NavLink>
           </li>
           <li>
+            <NavLink to="/admin/dashboard/blog-categories" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
+              <FaClipboardList size={20} /> Quản lý Thể Loại
+            </NavLink>
+          </li>
+          <li>
             <NavLink to="/admin/dashboard/badges" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
               <MdEmojiEvents size={20} /> Quản lý Huy Hiệu
             </NavLink>

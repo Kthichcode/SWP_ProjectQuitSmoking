@@ -19,7 +19,7 @@ export default function BlogDetail() {
     }
     setLoading(true);
     console.log('BlogDetail - id:', id); 
-    axios.get(`/api/blog/${id}`, {
+    axios.get(`/api/blog/getBlogById/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -32,7 +32,10 @@ export default function BlogDetail() {
           setError('');
         }
       })
-      .catch(() => setError('Không tìm thấy bài viết hoặc có lỗi xảy ra.'))
+      .catch(err => {
+        console.error('BlogDetail - API error:', err);
+        setError('Không tìm thấy bài viết hoặc có lỗi xảy ra.');
+      })
       .finally(() => setLoading(false));
   }, [id, token, navigate]);
 
@@ -41,14 +44,46 @@ export default function BlogDetail() {
   if (!blog) return null;
 
   return (
-    <div className="blog-detail-container">
-      <h2 className="blog-detail-title">{blog.title}</h2>
-      {blog.coverImage && <img src={blog.coverImage} alt={blog.title} className="blog-detail-img" />}
-      <div className="blog-detail-meta">
-        <span>Danh mục: {blog.categoryName}</span> | <span>Ngày đăng: {blog.date || ''}</span>
-      </div>
-      <div className="blog-detail-content">
-        {blog.content}
+    <div className="blog-detail-wrapper">
+      <div className="blog-detail-container">
+        <div className="blog-detail-header">
+          <button 
+            className="blog-back-btn" 
+            onClick={() => navigate(-1)}
+          >
+            ← Quay lại
+          </button>
+          <div className="blog-detail-category">
+            <span className="category-tag">{blog.categoryName}</span>
+          </div>
+        </div>
+        
+        <h1 className="blog-detail-title">{blog.title}</h1>
+        
+        <div className="blog-detail-meta">
+          {blog.author && (
+            <div className="meta-item">
+              <span className="meta-label">✍️ Tác giả:</span>
+              <span className="meta-value">{blog.author}</span>
+            </div>
+          )}
+        </div>
+
+        {blog.coverImage && (
+          <div className="blog-detail-image-wrapper">
+            <img 
+              src={blog.coverImage} 
+              alt={blog.title} 
+              className="blog-detail-img" 
+            />
+          </div>
+        )}
+        
+        <div className="blog-detail-content">
+          <div className="content-wrapper">
+            {blog.content}
+          </div>
+        </div>
       </div>
     </div>
   );

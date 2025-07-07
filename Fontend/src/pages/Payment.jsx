@@ -40,11 +40,74 @@ function Payment() {
     fetchPackages();
   }, [user]);
 
-  const handleBuy = (id) => {
+  const handleBuy = async (packageId) => {
     if (!user) {
       navigate('/login');
-    } else {
-      navigate(`/checkout?package=${id}`);
+      return;
+    }
+
+    // Debug: Log user object và tất cả fields
+    console.log('User object:', user);
+    console.log('User keys:', Object.keys(user));
+    console.log('User ID (user.id):', user.id);
+    console.log('User ID (user.userId):', user.userId);
+    console.log('User ID (user.sub):', user.sub);
+    console.log('User ID (user.memberId):', user.memberId);
+
+    try {
+      // Lấy thông tin user profile để có user ID chính xác
+      const config = {
+        headers: { Authorization: `Bearer ${user.token}` }
+      };
+      
+      const profileResponse = await axios.get('/api/users/getMyInfo', config);
+      const userProfile = profileResponse.data;
+      console.log('User profile from API:', userProfile);
+      
+      const userId = userProfile.id || userProfile.userId || userProfile.memberId;
+      
+      if (!userId) {
+        console.error('Không tìm thấy user ID trong profile:', userProfile);
+        alert('Lỗi: Không tìm thấy thông tin người dùng. Vui lòng thử lại.');
+        return;
+      }
+
+      // Tìm package để lấy thông tin
+      const selectedPackage = apiPackages.find(pkg => pkg.id === packageId);
+      if (!selectedPackage) {
+        alert('Không tìm thấy gói dịch vụ');
+        return;
+      }
+
+      // Nếu là gói miễn phí thì không cần thanh toán
+      if (selectedPackage.price === 0) {
+        // TODO: Xử lý đăng ký gói miễn phí
+        alert('Đã đăng ký gói miễn phí thành công!');
+        return;
+      }
+
+      // Gọi API tạo URL thanh toán VNPay
+      const orderInfo = `USER_ID:${userId}|PACKAGE_ID:${selectedPackage.id}|PACKAGE_NAME:${selectedPackage.name}`;
+      console.log('Order info being sent:', orderInfo);
+      console.log('Using userId from profile:', userId);
+      
+      const response = await axios.get('/api/payment/create-vnpay', {
+        ...config,
+        params: {
+          amount: selectedPackage.price,
+          orderInfo: orderInfo
+        }
+      });
+
+      if (response.data) {
+        // Chuyển hướng đến URL thanh toán VNPay
+        window.location.href = response.data;
+      } else {
+        alert('Không thể tạo liên kết thanh toán');
+      }
+    } catch (error) {
+      console.error('Lỗi tạo thanh toán:', error);
+      alert('Có lỗi xảy ra khi tạo thanh toán. Vui lòng thử lại!');
     }
   };
 
