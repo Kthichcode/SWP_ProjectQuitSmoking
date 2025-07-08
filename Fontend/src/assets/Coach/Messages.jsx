@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../../axiosInstance';
+import WebSocketService from '../../services/websocketService';
 import './Messages.css';
 
 function Messages() {
@@ -12,49 +13,117 @@ function Messages() {
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
 
+  const messagesEndRef = useRef(null);
+
   useEffect(() => {
     if (user) {
       fetchConversations();
-      
-      // Auto-refresh conversations every 30 seconds
+
       const conversationInterval = setInterval(() => {
         fetchConversations();
       }, 30000);
-      
+
       return () => clearInterval(conversationInterval);
     }
   }, [user]);
 
   useEffect(() => {
     if (selectedConversation) {
-      // Auto-refresh messages every 10 seconds
-      const messageInterval = setInterval(() => {
-        fetchMessages(selectedConversation.selectionId);
-      }, 10000);
-      
-      return () => clearInterval(messageInterval);
+      fetchMessages(selectedConversation.selectionId);
+      connectWebSocket(selectedConversation.selectionId);
+      return () => {
+        WebSocketService.unsubscribe(`/user/queue/messages/${selectedConversation.selectionId}`);
+      };
     }
   }, [selectedConversation]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const connectWebSocket = async (selectionId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('Token not found for WebSocket');
+        return;
+      }
+
+      await WebSocketService.connect(token);
+
+      WebSocketService.subscribe(
+        `/user/queue/messages/${selectionId}`,
+        (message) => {
+          try {
+            const receivedMessage = JSON.parse(message.body);
+            console.log('📥 COACH RECEIVED WS MESSAGE:', receivedMessage);
+
+            const formattedMessage = {
+              id: receivedMessage.messageId || Date.now(),
+              senderId: receivedMessage.senderType === 'MEMBER' 
+                ? selectedConversation?.userId 
+                : user.id,
+              senderType: receivedMessage.senderType,
+              content: receivedMessage.content,
+              timestamp: new Date().toISOString(),
+              senderName: receivedMessage.senderType === 'MEMBER'
+                ? selectedConversation?.userFullName
+                : (user.fullName || 'Coach')
+            };
+
+            setMessages(prev => {
+              const exists = prev.some(m => m.id === formattedMessage.id);
+              return exists ? prev : [...prev, formattedMessage];
+            });
+
+          } catch (err) {
+            console.error('Error parsing WebSocket message on coach side:', err);
+          }
+        }
+      );
+
+      console.log('Coach subscribed to WebSocket topic:', `/user/queue/messages/${selectionId}`);
+    } catch (e) {
+      console.error('Error connecting coach WebSocket:', e);
+    }
+  };
 
   const fetchConversations = async () => {
     try {
       setLoading(true);
-      // API để lấy danh sách conversations của coach
-      const response = await axiosInstance.get('/api/coach/conversations');
-      
-      if (response.data.status === 'success') {
-        setConversations(response.data.data);
-        // Auto-select first conversation if exists
-        if (response.data.data.length > 0) {
-          selectConversation(response.data.data[0]);
+      const currentCoachId = user.userId || user.id;
+      if (!currentCoachId) {
+        setConversations([]);
+        return;
+      }
+
+      const response = await axiosInstance.get(`/api/users/coaches/${currentCoachId}/selections`);
+
+      if (response.data.status === 'success' && response.data.data) {
+        const formattedConversations = response.data.data.map(selection => ({
+          id: selection.selectionId,
+          selectionId: selection.selectionId,
+          userId: selection.member?.userId || selection.member?.id,
+          userFullName: selection.member?.fullName || selection.member?.user?.fullName || 'Unknown User',
+          userOnline: false,
+          lastMessage: 'Bắt đầu cuộc trò chuyện...',
+          lastMessageTime: new Date(selection.selectedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+          unreadCount: 0
+        }));
+
+        setConversations(formattedConversations);
+        if (formattedConversations.length > 0) {
+          selectConversation(formattedConversations[0]);
         }
       } else {
-        console.warn('Failed to fetch conversations from API');
         setConversations([]);
       }
     } catch (error) {
       console.error('Error fetching conversations:', error);
-      console.log('API not available, starting with empty conversations');
       setConversations([]);
     } finally {
       setLoading(false);
@@ -64,56 +133,56 @@ function Messages() {
   const selectConversation = async (conversation) => {
     setSelectedConversation(conversation);
     await fetchMessages(conversation.selectionId);
-    // Mark conversation as read
-    markAsRead(conversation.id);
+    markAsReadLocally(conversation.id);
   };
 
   const fetchMessages = async (selectionId) => {
     try {
-      // API để lấy tin nhắn trong conversation
-      const response = await axiosInstance.get(`/api/chat/${selectionId}`);
-      
-      if (response.data.status === 'success') {
+      const response = await axiosInstance.get(`/api/chat/history/${selectionId}`);
+
+      if (response.data.status === 'success' && response.data.data) {
         const formattedMessages = response.data.data.map(msg => ({
           id: msg.messageId,
-          senderId: msg.senderType === 'USER' ? selectedConversation?.userId : user.id,
+          senderId: msg.senderType === 'MEMBER' ? selectedConversation?.userId : user.id,
           senderType: msg.senderType,
           content: msg.content,
           timestamp: msg.sentAt,
-          senderName: msg.senderType === 'USER' ? selectedConversation?.userFullName : user.fullName
+          senderName: msg.senderType === 'MEMBER'
+            ? selectedConversation?.userFullName
+            : (user.fullName || 'Coach')
         }));
-        setMessages(formattedMessages);
+
+        setMessages((prev) => {
+          if (prev.length === formattedMessages.length) {
+            const changed = formattedMessages.some(
+              (m, i) => m.id !== prev[i].id || m.content !== prev[i].content
+            );
+            return changed ? formattedMessages : prev;
+          }
+          return formattedMessages;
+        });
       } else {
-        console.warn('Failed to fetch messages from API');
         setMessages([]);
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
-      console.log('API not available, starting with empty messages');
       setMessages([]);
     }
   };
 
-  const markAsRead = async (conversationId) => {
-    try {
-      await axiosInstance.post(`/api/coach/conversations/${conversationId}/mark-read`);
-      // Update unread count in local state
-      setConversations(prev => 
-        prev.map(conv => 
-          conv.id === conversationId 
-            ? { ...conv, unreadCount: 0 }
-            : conv
-        )
-      );
-    } catch (error) {
-      console.error('Error marking as read:', error);
-    }
+  const markAsReadLocally = (conversationId) => {
+    setConversations(prev => 
+      prev.map(conv => 
+        conv.id === conversationId 
+          ? { ...conv, unreadCount: 0 }
+          : conv
+      )
+    );
   };
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation || sendingMessage) return;
 
-    // Optimistic update - thêm tin nhắn vào UI ngay lập tức
     const optimisticMessage = {
       id: Date.now(),
       senderId: user.id,
@@ -122,7 +191,7 @@ function Messages() {
       timestamp: new Date().toISOString(),
       senderName: user.fullName || 'Coach'
     };
-    
+
     setMessages(prev => [...prev, optimisticMessage]);
     const originalMessage = newMessage;
     setNewMessage('');
@@ -132,13 +201,14 @@ function Messages() {
       const messageData = {
         selectionId: selectedConversation.selectionId,
         content: originalMessage.trim(),
-        senderType: 'COACH'
+        senderType: 'COACH',
+        userId: selectedConversation.userId,
+        coachId: user.userId || user.id
       };
 
-      const response = await axiosInstance.post('/api/coach/messages', messageData);
-      
+      const response = await axiosInstance.post('/api/chat/send', messageData);
+
       if (response.data.status === 'success') {
-        // Cập nhật message với ID từ server
         setMessages(prev => 
           prev.map(msg => 
             msg.id === optimisticMessage.id 
@@ -146,8 +216,7 @@ function Messages() {
               : msg
           )
         );
-        
-        // Update last message in conversations list
+
         setConversations(prev =>
           prev.map(conv =>
             conv.selectionId === selectedConversation.selectionId
@@ -160,16 +229,21 @@ function Messages() {
               : conv
           )
         );
+
+        if (WebSocketService.isConnectedToServer()) {
+          WebSocketService.sendMessage('/app/chat.send', {
+            ...messageData,
+            messageId: response.data.data?.messageId,
+            selectionId: response.data.data?.selectionId || selectedConversation.selectionId
+          });
+        }
       } else {
         throw new Error('API returned non-success status');
       }
     } catch (error) {
-      console.error('Error sending message:', error);
-      
-      // Rollback optimistic update
+      console.error('Error sending coach message:', error);
       setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id));
       setNewMessage(originalMessage);
-      
       alert('Không thể gửi tin nhắn lúc này. Vui lòng thử lại.');
     } finally {
       setSendingMessage(false);
@@ -288,6 +362,7 @@ function Messages() {
                   </div>
                 ))
               )}
+              <div ref={messagesEndRef}></div>
             </div>
 
             <div className="messages-chat-footer">
