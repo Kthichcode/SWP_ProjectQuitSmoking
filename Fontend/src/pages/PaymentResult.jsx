@@ -104,8 +104,19 @@ function PaymentResult() {
     return `${day}/${month}/${year} ${hour}:${minute}:${second}`;
   };
 
+  // Add margin top to avoid header overlap
+  // Extract package name from orderInfo if possible
+  let packageName = '';
+  if (paymentInfo.orderInfo) {
+    // Try to extract PACKAGE_NAME:<name> from orderInfo string
+    const match = paymentInfo.orderInfo.match(/PACKAGE_NAME:([^|]+)/);
+    if (match && match[1]) {
+      packageName = match[1].trim();
+    }
+  }
+
   return (
-    <div className="payment-result-bg">
+    <div className="payment-result-bg" style={{ minHeight: '100vh', marginTop: 0, paddingTop: 80, boxSizing: 'border-box' }}>
       <div className="payment-result-container">
         <div className="payment-result-card">
           {paymentStatus === 'success' ? (
@@ -119,9 +130,19 @@ function PaymentResult() {
                   Chúc mừng! Bạn đã nâng cấp gói thành viên thành công.
                 </p>
                 {paymentInfo.membershipCreated ? (
-                  <p style={{color: '#4caf50', fontWeight: 'bold'}}>
-                    ✅ Gói membership đã được {paymentInfo.membershipAction === 'updated' ? 'cập nhật' : 'kích hoạt'} thành công!
-                    {paymentInfo.membershipId && ` (ID: ${paymentInfo.membershipId})`}
+                  <p style={{fontWeight: 'bold'}}>
+                    ✅ Gói membership
+                    {packageName && (
+                      <span> <span style={{
+                        color:'red',
+                        fontWeight:'bold',
+                        textTransform:'uppercase',
+                        fontSize:'1.3em',
+                        letterSpacing:'0.1px',
+                        margin:'0 1px'
+                      }}>{packageName}</span></span>
+                    )}
+                    {` đã được ${paymentInfo.membershipAction === 'updated' ? 'cập nhật' : 'kích hoạt'} thành công!`}
                   </p>
                 ) : paymentInfo.membershipError ? (
                   <p style={{color: '#f44336', fontSize: '14px'}}>
@@ -133,8 +154,19 @@ function PaymentResult() {
                     🔄 Đang kích hoạt gói membership...
                   </p>
                 )}
-                <p>
-                  <strong>Bước tiếp theo: Chọn Coach chuyên nghiệp để bắt đầu hành trình cai thuốc!</strong>
+                <p style={{
+                  background: '#e3fcec',
+                  color: '#219150',
+                  fontWeight: 'bold',
+                  fontSize: '1.1em',
+                  borderRadius: 8,
+                  padding: '10px 16px',
+                  margin: '18px 0 0 0',
+                  boxShadow: '0 2px 8px #e0f2e9',
+                  display: 'inline-block',
+                  letterSpacing: '0.2px'
+                }}>
+                  <span style={{textTransform: 'uppercase', color: '#1b7f3a'}}>Bước tiếp theo:</span> Hãy chọn Coach chuyên nghiệp cho bạn để bắt đầu hành trình cai thuốc!
                 </p>
               </div>
             </>
@@ -167,6 +199,12 @@ function PaymentResult() {
                 <span className="detail-label">Mã giao dịch:</span>
                 <span className="detail-value">{paymentInfo.transactionId}</span>
               </div>
+              {packageName && (
+                <div className="detail-row">
+                  <span className="detail-label">Tên gói:</span>
+                  <span className="detail-value">{packageName}</span>
+                </div>
+              )}
               {paymentInfo.membershipId && (
                 <div className="detail-row">
                   <span className="detail-label">Membership ID:</span>

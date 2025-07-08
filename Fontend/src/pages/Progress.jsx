@@ -347,18 +347,17 @@ function Progress() {
         <Header />
         <div className="progress-bg">
           <div className="progress-container">
-            <div className="error-container">
-              <div className="error-message">
-                <h3>🔒 Cần có gói membership để theo dõi tiến trình</h3>
-                <p>Bạn cần mua gói membership trước khi sử dụng tính năng này.</p>
-                <div style={{ marginTop: '20px' }}>
-                  <button className="btn-select-coach-redirect" onClick={() => navigate('/payment')} style={{ marginRight: '10px' }}>
-                    Mua gói membership ngay
-                  </button>
-                  <button className="btn-select-coach-redirect" onClick={() => navigate('/home')} style={{ background: '#6c757d' }}>
-                    Về trang chủ
-                  </button>
-                </div>
+            <div className="notify-card">
+              <div className="notify-icon">🔒</div>
+              <h2>Chưa có gói thành viên</h2>
+              <p>Bạn cần mua gói membership để sử dụng các tính năng theo dõi tiến trình và nhận hỗ trợ từ coach.</p>
+              <div className="notify-actions">
+                <button className="btn-main" onClick={() => navigate('/payment')}>
+                  Mua gói membership
+                </button>
+                <button className="btn-secondary" onClick={() => navigate('/home')}>
+                  Về trang chủ
+                </button>
               </div>
             </div>
           </div>
@@ -373,12 +372,15 @@ function Progress() {
         <Header />
         <div className="progress-bg">
           <div className="progress-container">
-            <div className="no-coach-message">
-              <h3>🔍 Chưa chọn coach</h3>
-              <p>Bạn cần chọn coach trước khi sử dụng tính năng này.</p>
-              <button className="btn-select-coach-redirect" onClick={() => navigate('/coach-payment')}>
-                Chọn Coach ngay
-              </button>
+            <div className="notify-card">
+              <div className="notify-icon">👤</div>
+              <h2>Chưa chọn coach</h2>
+              <p>Bạn cần chọn coach để bắt đầu hành trình cùng chuyên gia đồng hành.</p>
+              <div className="notify-actions">
+                <button className="btn-main" onClick={() => navigate('/coach-payment')}>
+                  Chọn Coach ngay
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -99,10 +99,7 @@ function App() {
           path="/coach/:id"
           element={<CoachProfilePage />}
         />
-        <Route
-          path="/progress"
-          element={<Progress />}
-        />
+        
         <Route
           path="/api/payment/*"
           element={<VNPayCallback />}
@@ -127,6 +124,7 @@ function App() {
                 <Route path="/blog/:id" element={<BlogDetail />} />
                 <Route path="/" element={<Navigate to="/home" replace />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/progress" element={<Progress />} />
               </Routes>
               <Footer />
             </>

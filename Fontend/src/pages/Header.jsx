@@ -31,11 +31,11 @@ const Header = () => {
       </a>
 
       <div className="home-nav">
-        <button className={`nav-btn${isActive('/home') || isActive('/') ? ' active' : ''}`} onClick={() => navigate('/home')}>Trang chủ</button>
-        <button className={`nav-btn${isActive('/blog') ? ' active' : ''}`} onClick={() => navigate('/blog')}>Blog</button>
-        <button className={`nav-btn${isActive('/ranking') ? ' active' : ''}`} onClick={() => navigate('/ranking')}>Bảng xếp hạng</button>
-        <button className={`nav-btn${isActive('/about') ? ' active' : ''}`} onClick={() => navigate('/about')}>Giới thiệu</button>
-        <button className={`nav-btn${isActive('/progress') ? ' active' : ''}`} onClick={() => navigate('/progress')}>Tiến Trình Cai Thuốc</button>
+        <button className={`nav-btn${isActive('/home') || isActive('/') ? ' active' : ''}`} onClick={() => { navigate('/home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Trang chủ</button>
+        <button className={`nav-btn${isActive('/blog') ? ' active' : ''}`} onClick={() => { navigate('/blog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Blog</button>
+        <button className={`nav-btn${isActive('/ranking') ? ' active' : ''}`} onClick={() => { navigate('/ranking'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Bảng xếp hạng</button>
+        <button className={`nav-btn${isActive('/about') ? ' active' : ''}`} onClick={() => { navigate('/about'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Giới thiệu</button>
+        <button className={`nav-btn${isActive('/progress') ? ' active' : ''}`} onClick={() => { navigate('/progress'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Tiến Trình Cai Thuốc</button>
       </div>
 
       <div className="home-auth-buttons">

@@ -1,12 +1,82 @@
+
+/* Thông báo khi chưa có membership hoặc coach */
+.notify-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(102,126,234,0.10);
+  padding: 48px 32px 36px 32px;
+  max-width: 420px;
+  margin: 60px auto 0 auto;
+  text-align: center;
+  animation: fadeInNotify 0.6s;
+}
+
+@keyframes fadeInNotify {
+  from { opacity: 0; transform: translateY(40px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+.notify-icon {
+  font-size: 3.2rem;
+  margin-bottom: 18px;
+}
+
+.notify-card h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1976d2;
+  margin-bottom: 10px;
+}
+
+.notify-card p {
+  color: #444;
+  font-size: 1.08rem;
+  margin-bottom: 28px;
+}
+
+.notify-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.btn-main {
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.08rem;
+  padding: 12px 28px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-main:hover {
+  background: #15803d;
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #222;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.08rem;
+  padding: 12px 28px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #cfd8dc;
+}
 .progress-bg {
-  background: 
-    linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #ff6b6b 75%, #4ecdc4 100%);
-  background-size: 400% 400%;
+  background: #e0f7e9;
   min-height: 100vh;
   padding: 80px 0 20px 0;
   position: relative;
   overflow-x: hidden;
-  animation: etherealGradient 20s ease-in-out infinite;
 }
 
 @keyframes etherealGradient {
@@ -32,22 +102,7 @@
   }
 }
 
-.progress-bg::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.25) 0%, transparent 60%),
-    radial-gradient(circle at 80% 20%, rgba(240, 147, 251, 0.3) 0%, transparent 60%),
-    radial-gradient(circle at 40% 40%, rgba(255, 107, 107, 0.2) 0%, transparent 60%),
-    radial-gradient(circle at 60% 80%, rgba(78, 205, 196, 0.25) 0%, transparent 60%),
-    radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-  pointer-events: none;
-  animation: magicalBubbles 25s ease-in-out infinite;
-}
+
 
 @keyframes magicalBubbles {
   0%, 100% {
