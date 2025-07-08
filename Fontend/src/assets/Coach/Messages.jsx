@@ -38,11 +38,15 @@ function Messages() {
   }, [selectedConversation]);
 
   useEffect(() => {
-    scrollToBottom();
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
   }, [messages]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 100);
   };
 
   const connectWebSocket = async (selectionId) => {
@@ -76,8 +80,13 @@ function Messages() {
             };
 
             setMessages(prev => {
-              const exists = prev.some(m => m.id === formattedMessage.id);
-              return exists ? prev : [...prev, formattedMessage];
+              const exists = prev.some(msg => msg.id === formattedMessage.id || (msg.content === formattedMessage.content && msg.senderType === formattedMessage.senderType));
+              if (!exists) {
+                const newMessages = [...prev, formattedMessage];
+                setTimeout(() => scrollToBottom(), 50);
+                return newMessages;
+              }
+              return prev;
             });
 
           } catch (err) {
@@ -155,7 +164,7 @@ function Messages() {
         setMessages((prev) => {
           if (prev.length === formattedMessages.length) {
             const changed = formattedMessages.some(
-              (m, i) => m.id !== prev[i].id || m.content !== prev[i].content
+              (m, i) => m.id !== prev[i]?.id || m.content !== prev[i]?.content
             );
             return changed ? formattedMessages : prev;
           }
@@ -183,6 +192,17 @@ function Messages() {
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation || sendingMessage) return;
 
+    const currentUserId = selectedConversation.userId;
+    const currentCoachId = user.userId || user.id;
+
+    const messageData = {
+      selectionId: selectedConversation.selectionId,
+      content: newMessage.trim(),
+      senderType: 'COACH',
+      userId: currentUserId,
+      coachId: currentCoachId
+    };
+
     const optimisticMessage = {
       id: Date.now(),
       senderId: user.id,
@@ -195,27 +215,24 @@ function Messages() {
     setMessages(prev => [...prev, optimisticMessage]);
     const originalMessage = newMessage;
     setNewMessage('');
+    
+    // Scroll to bottom after adding optimistic message
+    setTimeout(() => scrollToBottom(), 50);
 
     setSendingMessage(true);
     try {
-      const messageData = {
-        selectionId: selectedConversation.selectionId,
-        content: originalMessage.trim(),
-        senderType: 'COACH',
-        userId: selectedConversation.userId,
-        coachId: user.userId || user.id
-      };
-
       const response = await axiosInstance.post('/api/chat/send', messageData);
 
       if (response.data.status === 'success') {
-        setMessages(prev => 
-          prev.map(msg => 
-            msg.id === optimisticMessage.id 
-              ? { ...msg, id: response.data.data.messageId || optimisticMessage.id }
-              : msg
-          )
-        );
+        if (response.data.data?.messageId) {
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === optimisticMessage.id 
+                ? { ...msg, id: response.data.data.messageId }
+                : msg
+            )
+          );
+        }
 
         setConversations(prev =>
           prev.map(conv =>
