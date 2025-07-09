@@ -575,6 +575,7 @@ function Progress() {
               )}
             </div>
             <div>
+              
               <h2>Hành trình cai thuốc cùng {selectedCoach.fullName}</h2>
               <p>Coach đã đồng hành: {selectedCoach.yearsOfExperience || 'N/A'} năm kinh nghiệm</p>
               {existingReview && (

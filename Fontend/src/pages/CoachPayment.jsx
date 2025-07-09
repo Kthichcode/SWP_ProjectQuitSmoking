@@ -121,6 +121,18 @@ function CoachPayment() {
 
   const stats = calculateStats();
 
+  // Xử lý chọn coach với xác nhận
+  const handleSelectCoach = (coach) => {
+    if (window.confirm(`Bạn có chắc chắn muốn chọn coach "${coach.fullName}" để đồng hành không?\nSau khi chọn, bạn sẽ bắt đầu hành trình cùng coach này.`)) {
+      navigate('/progress', {
+        state: {
+          selectedCoach: coach,
+          coachId: coach.userId || coach.id
+        }
+      });
+    }
+  };
+
   if (checkingMembership) {
     return (
       <>
@@ -222,7 +234,7 @@ function CoachPayment() {
       <div className="coach-payment-bg">
         <div className="coach-payment-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-            <img src="/logo192.png" alt="Coach" style={{ width: 60, height: 60, borderRadius: '50%', objectFit: 'cover', background: '#fff', border: '2px solid #1abc9c' }} />
+            
             <div>
               <h2>Chọn <span style={{ color: '#1abc9c' }}>Coach</span> phù hợp</h2>
               <p style={{ margin: 0 }}>Tìm chuyên gia tư vấn phù hợp nhất cho hành trình cai thuốc lá của bạn.<br />Tất cả coach đều được kiểm định chuyên môn.</p>
@@ -266,9 +278,20 @@ function CoachPayment() {
                   <div className="coach-payment-rating">Đánh giá: {coach.rating || 0} ⭐</div>
                   <div className="coach-payment-success">Tỷ lệ thành công: {coach.successRate || 0}%</div>
                   <div className="coach-payment-fee">Phí: {coach.paymentAmount ? coach.paymentAmount + ' VNĐ' : 'Miễn phí'}</div>
-                  <button className="coach-payment-detail-btn" onClick={() => navigate(`/coach/${coach.id || coach.userId}`)}>
-                    Xem chi tiết
-                  </button>
+                  <div className="coach-payment-btns-row">
+                    <button
+                      className="coach-payment-select-btn"
+                      onClick={() => handleSelectCoach(coach)}
+                    >
+                      Chọn Coach
+                    </button>
+                    <button
+                      className="coach-payment-detail-btn"
+                      onClick={() => navigate(`/coach/${coach.id || coach.userId}`)}
+                    >
+                      Xem chi tiết
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
