@@ -8,6 +8,9 @@ import coachReviewService from '../services/coachReviewService';
 import CoachRatingModal from '../components/CoachRatingModal';
 import '../assets/CSS/Progress.css';
 
+// Helper: lưu selectionId riêng cho từng user
+const getSelectionStorageKey = (userId) => `selectionId_${userId}`;
+
 function Progress() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -67,11 +70,13 @@ function Progress() {
       localStorage.setItem('selectedCoach', JSON.stringify(coach));
       if (selectionIdFromState) {
         setSelectionId(selectionIdFromState);
-        localStorage.setItem('selectionId', selectionIdFromState.toString());
+        const currentUserId = user.userId || user.id;
+        localStorage.setItem(getSelectionStorageKey(currentUserId), selectionIdFromState.toString());
       }
     } else {
       const savedCoach = localStorage.getItem('selectedCoach');
-      const savedSelectionId = localStorage.getItem('selectionId');
+      const currentUserId = user.userId || user.id;
+      const savedSelectionId = localStorage.getItem(getSelectionStorageKey(currentUserId));
       if (savedCoach) setSelectedCoach(JSON.parse(savedCoach));
       if (savedSelectionId) setSelectionId(parseInt(savedSelectionId));
     }
@@ -167,14 +172,15 @@ function Progress() {
       if (response.data?.status === 'success' && response.data.data?.selectionId) {
         const realSelectionId = response.data.data.selectionId;
         setSelectionId(realSelectionId);
-        localStorage.setItem('selectionId', realSelectionId.toString());
+        localStorage.setItem(getSelectionStorageKey(currentUserId), realSelectionId.toString());
       } else {
         await createDummyMessage(currentUserId, currentCoachId);
       }
     } catch {
       const fallbackId = Date.now();
       setSelectionId(fallbackId);
-      localStorage.setItem('selectionId', fallbackId.toString());
+      const currentUserId = user.userId || user.id;
+      localStorage.setItem(getSelectionStorageKey(currentUserId), fallbackId.toString());
     }
   };
 
@@ -191,12 +197,12 @@ function Progress() {
       if (createResponse.data?.status === 'success' && createResponse.data.data?.selectionId) {
         const newSelectionId = createResponse.data.data.selectionId;
         setSelectionId(newSelectionId);
-        localStorage.setItem('selectionId', newSelectionId.toString());
+        localStorage.setItem(getSelectionStorageKey(currentUserId), newSelectionId.toString());
       }
     } catch {
       const fallbackId = Date.now();
       setSelectionId(fallbackId);
-      localStorage.setItem('selectionId', fallbackId.toString());
+      localStorage.setItem(getSelectionStorageKey(currentUserId), fallbackId.toString());
     }
   };
 
@@ -233,8 +239,8 @@ function Progress() {
           : new Date().toLocaleTimeString(),
         senderName:
           msg.senderType === 'MEMBER' ||
-          msg.senderType === 'USER' ||
-          msg.sender === 'user'
+            msg.senderType === 'USER' ||
+            msg.sender === 'user'
             ? user.fullName
             : selectedCoach?.fullName
       }));
@@ -249,7 +255,7 @@ function Progress() {
               p.text === f.text &&
               p.sender === f.sender &&
               Math.abs(new Date(`1970/01/01 ${p.timestamp}`).getTime() -
-                       new Date(`1970/01/01 ${f.timestamp}`).getTime()) < 3000
+                new Date(`1970/01/01 ${f.timestamp}`).getTime()) < 3000
             )
           );
           if (!exists) {
@@ -310,7 +316,7 @@ function Progress() {
                   msg.text === formattedMessage.text &&
                   msg.sender === formattedMessage.sender &&
                   Math.abs(new Date(`1970/01/01 ${msg.timestamp}`).getTime() -
-                           new Date(`1970/01/01 ${formattedMessage.timestamp}`).getTime()) < 3000
+                    new Date(`1970/01/01 ${formattedMessage.timestamp}`).getTime()) < 3000
                 )
               );
               if (exists) {
@@ -325,8 +331,8 @@ function Progress() {
               setChatHistoryLoaded(true);
             }
 
-          } catch (error) {
-            // no log
+          } catch {
+            // ignore parse error
           }
         }
       );
@@ -334,7 +340,7 @@ function Progress() {
       setConnectionStatus('connected');
       reconnectAttempts.current = 0;
       return subscription;
-    } catch (error) {
+    } catch {
       setConnectionStatus('disconnected');
       retryConnect();
       return null;
@@ -361,29 +367,16 @@ function Progress() {
   const getCompletedPhases = () => {
     const { days } = calculateProgress();
     const phases = [];
-    
-    // Thay đổi tạm thời để test: 1 phút = 1 ngày (uncomment dòng dưới để test)
-    // const testDays = Math.floor((new Date() - new Date(quitDate)) / (1000 * 60)); // 1 phút = 1 ngày
-    
-    if (days >= 7) phases.push(1);  // Hoặc testDays >= 1 để test nhanh
-    if (days >= 14) phases.push(2); // Hoặc testDays >= 2 để test nhanh
-    if (days >= 21) phases.push(3); // Hoặc testDays >= 3 để test nhanh
-    
+
+    if (days >= 7) phases.push(1);
+    if (days >= 14) phases.push(2);
+    if (days >= 21) phases.push(3);
+
     return phases;
   };
 
   const canShowRating = () => {
     const completedPhases = getCompletedPhases();
-    const { days } = calculateProgress();
-    
-    // Debug info - có thể remove sau khi test xong
-    console.log('Debug Rating:', {
-      days,
-      completedPhases,
-      canShow: completedPhases.length > 0,
-      quitDate
-    });
-    
     return completedPhases.length > 0;
   };
 
@@ -391,11 +384,10 @@ function Progress() {
     try {
       const coachId = selectedCoach?.coachId || selectedCoach?.userId || selectedCoach?.id;
       if (!coachId) return;
-      
+
       const review = await coachReviewService.getReviewForCoach(coachId);
       setExistingReview(review);
-    } catch (error) {
-      console.error('Error checking existing review:', error);
+    } catch {
       setExistingReview(null);
     }
   };
@@ -403,14 +395,12 @@ function Progress() {
   const handleSubmitReview = async (reviewData) => {
     try {
       if (existingReview) {
-        // Update existing review
         const response = await coachReviewService.updateReview(existingReview.reviewId, reviewData);
         if (response?.message === 'Review updated successfully') {
           alert('Đánh giá đã được cập nhật thành công!');
           checkExistingReview();
         }
       } else {
-        // Create new review
         const response = await coachReviewService.createReview(reviewData);
         if (response?.message === 'Review submitted successfully') {
           alert('Đánh giá đã được gửi thành công!');
@@ -419,7 +409,7 @@ function Progress() {
       }
       setShowRatingModal(false);
     } catch (error) {
-      console.error('Error submitting review:', error);
+      alert('Lỗi khi gửi đánh giá. Vui lòng thử lại sau.');
       throw error;
     }
   };
@@ -470,7 +460,7 @@ function Progress() {
           const newSelectionId = response.data.data.selectionId;
           if (!selectionId || selectionId !== newSelectionId) {
             setSelectionId(newSelectionId);
-            localStorage.setItem('selectionId', newSelectionId.toString());
+            localStorage.setItem(getSelectionStorageKey(currentUserId), newSelectionId.toString());
           }
         }
 
@@ -563,36 +553,35 @@ function Progress() {
         <div className="progress-container">
           <div className="progress-header">
             <div className="coach-info">
-            <div className="coach-avatar">
-              {selectedCoach.imageUrl ? (
-                <img
-                  src={`data:image/jpeg;base64,${selectedCoach.imageUrl}`}
-                  alt="avatar"
-                  style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '50%', border: '1.5px solid #fff', background: '#fff' }}
-                />
-              ) : (
-                selectedCoach.fullName?.charAt(0)?.toUpperCase() || 'C'
-              )}
-            </div>
-            <div>
-              
-              <h2>Hành trình cai thuốc cùng {selectedCoach.fullName}</h2>
-              <p>Coach đã đồng hành: {selectedCoach.yearsOfExperience || 'N/A'} năm kinh nghiệm</p>
-              {existingReview && (
-                <div className="existing-review-info">
-                  <span>Đã đánh giá: {Array.from({length: existingReview.rating}, (_, i) => '⭐').join('')}</span>
-                </div>
-              )}
-            </div>
+              <div className="coach-avatar">
+                {selectedCoach.imageUrl ? (
+                  <img
+                    src={`data:image/jpeg;base64,${selectedCoach.imageUrl}`}
+                    alt="avatar"
+                    style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '50%', border: '1.5px solid #fff', background: '#fff' }}
+                  />
+                ) : (
+                  selectedCoach.fullName?.charAt(0)?.toUpperCase() || 'C'
+                )}
+              </div>
+              <div>
+                <h2>Hành trình cai thuốc cùng {selectedCoach.fullName}</h2>
+                <p>Coach đã đồng hành: {selectedCoach.yearsOfExperience || 'N/A'} năm kinh nghiệm</p>
+                {existingReview && (
+                  <div className="existing-review-info">
+                    <span>Đã đánh giá: {Array.from({ length: existingReview.rating }, (_, i) => '⭐').join('')}</span>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="header-actions">
               <div className="quit-date-input">
                 <label>Ngày bắt đầu cai thuốc:</label>
                 <input type="date" value={quitDate} onChange={(e) => setQuitDate(e.target.value)} max={new Date().toISOString().split('T')[0]} />
               </div>
-              
+
               {/* Button test - xóa sau khi test xong */}
-              <button 
+              <button
                 className="test-btn"
                 onClick={() => {
                   const testDate = new Date();
@@ -611,9 +600,9 @@ function Progress() {
               >
                 🧪 Test (8 ngày)
               </button>
-              
+
               {canShowRating() && (
-                <button 
+                <button
                   className="rating-btn"
                   onClick={() => setShowRatingModal(true)}
                 >
@@ -625,13 +614,15 @@ function Progress() {
 
           <div className="progress-stats">
             <div className="stat-card"><h3>{progress.days}</h3><p>Ngày không khói thuốc</p></div>
-            
-            
+            <div className="stat-card"><h3>{progress.hours}</h3><p>Giờ sạch phổi</p></div>
+            <div className="stat-card"><h3>{progress.minutes}</h3><p>Phút tích cực</p></div>
+            <div className="stat-card highlight"><h3>{progress.money.toLocaleString()}₫</h3><p>Tiền đã tiết kiệm</p></div>
+
             {/* Debug card - xóa sau khi test xong */}
-            <div className="stat-card debug-card" style={{border: '2px dashed #f39c12', backgroundColor: '#fff9e6'}}>
+            <div className="stat-card debug-card" style={{ border: '2px dashed #f39c12', backgroundColor: '#fff9e6' }}>
               <h3>{getCompletedPhases().length}</h3>
               <p>Giai đoạn hoàn thành</p>
-              <small style={{fontSize: '0.8rem', color: '#666'}}>
+              <small style={{ fontSize: '0.8rem', color: '#666' }}>
                 Rating: {canShowRating() ? 'Có thể' : 'Chưa thể'}
               </small>
             </div>
@@ -667,16 +658,16 @@ function Progress() {
                       <div className="phase-title">
                         <h4>Giai đoạn 1: Khởi đầu (0-7 ngày)</h4>
                         <p className="phase-status">
-                          {getCompletedPhases().includes(1) ? 'Hoàn thành' : 
-                           progress.days < 7 ? `Còn ${7 - progress.days} ngày` : 'Sẵn sàng hoàn thành'}
+                          {getCompletedPhases().includes(1) ? 'Hoàn thành' :
+                            progress.days < 7 ? `Còn ${7 - progress.days} ngày` : 'Sẵn sàng hoàn thành'}
                         </p>
                       </div>
                     </div>
                     <div className="phase-progress">
                       <div className="progress-bar">
-                        <div 
-                          className="progress-fill" 
-                          style={{width: `${Math.min((progress.days / 7) * 100, 100)}%`}}
+                        <div
+                          className="progress-fill"
+                          style={{ width: `${Math.min((progress.days / 7) * 100, 100)}%` }}
                         ></div>
                       </div>
                       <span className="progress-text">{Math.min(progress.days, 7)}/7 ngày</span>
@@ -709,17 +700,17 @@ function Progress() {
                       <div className="phase-title">
                         <h4>Giai đoạn 2: Vượt qua cơn thèm (7-14 ngày)</h4>
                         <p className="phase-status">
-                          {getCompletedPhases().includes(2) ? 'Hoàn thành' : 
-                           progress.days < 7 ? 'Chưa mở khóa' :
-                           progress.days < 14 ? `Còn ${14 - progress.days} ngày` : 'Sẵn sàng hoàn thành'}
+                          {getCompletedPhases().includes(2) ? 'Hoàn thành' :
+                            progress.days < 7 ? 'Chưa mở khóa' :
+                              progress.days < 14 ? `Còn ${14 - progress.days} ngày` : 'Sẵn sàng hoàn thành'}
                         </p>
                       </div>
                     </div>
                     <div className="phase-progress">
                       <div className="progress-bar">
-                        <div 
-                          className="progress-fill" 
-                          style={{width: progress.days >= 7 ? `${Math.min(((progress.days - 7) / 7) * 100, 100)}%` : '0%'}}
+                        <div
+                          className="progress-fill"
+                          style={{ width: progress.days >= 7 ? `${Math.min(((progress.days - 7) / 7) * 100, 100)}%` : '0%' }}
                         ></div>
                       </div>
                       <span className="progress-text">
@@ -754,17 +745,17 @@ function Progress() {
                       <div className="phase-title">
                         <h4>Giai đoạn 3: Tạo thói quen mới (14-21 ngày)</h4>
                         <p className="phase-status">
-                          {getCompletedPhases().includes(3) ? 'Hoàn thành' : 
-                           progress.days < 14 ? 'Chưa mở khóa' :
-                           progress.days < 21 ? `Còn ${21 - progress.days} ngày` : 'Sẵn sàng hoàn thành'}
+                          {getCompletedPhases().includes(3) ? 'Hoàn thành' :
+                            progress.days < 14 ? 'Chưa mở khóa' :
+                              progress.days < 21 ? `Còn ${21 - progress.days} ngày` : 'Sẵn sàng hoàn thành'}
                         </p>
                       </div>
                     </div>
                     <div className="phase-progress">
                       <div className="progress-bar">
-                        <div 
-                          className="progress-fill" 
-                          style={{width: progress.days >= 14 ? `${Math.min(((progress.days - 14) / 7) * 100, 100)}%` : '0%'}}
+                        <div
+                          className="progress-fill"
+                          style={{ width: progress.days >= 14 ? `${Math.min(((progress.days - 14) / 7) * 100, 100)}%` : '0%' }}
                         ></div>
                       </div>
                       <span className="progress-text">
@@ -798,7 +789,7 @@ function Progress() {
                         <h4>Chúc mừng bạn!</h4>
                         <p>Bạn đã hoàn thành {getCompletedPhases().length} giai đoạn. Hãy đánh giá coach để chia sẻ trải nghiệm!</p>
                       </div>
-                      <button 
+                      <button
                         className="achievement-btn"
                         onClick={() => setShowRatingModal(true)}
                       >
