@@ -520,16 +520,24 @@
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 500px;
+  height: 520px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 4px 32px rgba(22,163,74,0.08);
+  border: 1.5px solid #bbf7d0;
+  margin-bottom: 32px;
 }
 
 .messages-list {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
-  background: #f9fafb;
-  border-radius: 12px;
-  margin-bottom: 20px;
+  padding: 28px 24px 12px 24px;
+  background: #fff;
+  border-radius: 18px 18px 0 0;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .no-messages {
@@ -539,8 +547,9 @@
 }
 
 .message {
-  margin-bottom: 15px;
+  margin-bottom: 0;
   display: flex;
+  align-items: flex-end;
 }
 
 .message.user {
@@ -548,42 +557,54 @@
 }
 
 .message-content {
-  max-width: 70%;
+  max-width: 60%;
   background: white;
-  padding: 12px 16px;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 12px 18px;
+  border-radius: 18px 18px 18px 4px;
+  box-shadow: 0 2px 8px rgba(22,163,74,0.07);
+  font-size: 16px;
+  word-break: break-word;
+  margin-bottom: 2px;
 }
 
 .message.user .message-content {
-  background: #16a34a;
-  color: white;
+  
+  color: black;
+  border-radius: 18px 18px 4px 18px;
+  box-shadow: 0 2px 12px rgba(22,163,74,0.10);
 }
 
 .message-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
 }
 
 .message-header strong {
   font-size: 14px;
+  color: #16a34a;
+  font-weight: 700;
 }
 
 .timestamp {
   font-size: 12px;
   opacity: 0.7;
+  margin-left: 8px;
 }
 
 .message-content p {
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .message-input {
   display: flex;
   gap: 10px;
+  background: #f8fafc;
+  border-radius: 0 0 18px 18px;
+  padding: 16px 18px 16px 18px;
+  border-top: 1.5px solid #bbf7d0;
 }
 
 .message-input input {
@@ -592,6 +613,8 @@
   border: 2px solid #e5e7eb;
   border-radius: 12px;
   font-size: 16px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(22,163,74,0.04);
 }
 
 .message-input input:focus {
@@ -600,14 +623,16 @@
 }
 
 .message-input button {
-  padding: 12px 24px;
+  padding: 12px 28px;
   background: #16a34a;
-  color: white;
+  color: #fff;
   border: none;
   border-radius: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 16px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  box-shadow: 0 2px 8px rgba(22,163,74,0.07);
+  transition: background 0.2s cubic-bezier(.4,0,.2,1);
 }
 
 .message-input button:hover:not(:disabled) {
@@ -616,6 +641,7 @@
 
 .message-input button:disabled {
   background: #d1d5db;
+  color: #fff;
   cursor: not-allowed;
 }
 

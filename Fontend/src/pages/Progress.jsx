@@ -625,9 +625,7 @@ function Progress() {
 
           <div className="progress-stats">
             <div className="stat-card"><h3>{progress.days}</h3><p>Ngày không khói thuốc</p></div>
-            <div className="stat-card"><h3>{progress.hours}</h3><p>Giờ sạch phổi</p></div>
-            <div className="stat-card"><h3>{progress.minutes}</h3><p>Phút tích cực</p></div>
-            <div className="stat-card highlight"><h3>{progress.money.toLocaleString()}₫</h3><p>Tiền đã tiết kiệm</p></div>
+            
             
             {/* Debug card - xóa sau khi test xong */}
             <div className="stat-card debug-card" style={{border: '2px dashed #f39c12', backgroundColor: '#fff9e6'}}>
