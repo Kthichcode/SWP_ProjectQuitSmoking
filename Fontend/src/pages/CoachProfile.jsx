@@ -136,7 +136,15 @@ function CoachProfile() {
         <div className="coach-profile-container">
           <div className="coach-profile-header">
             <div className="coach-profile-avatar">
-              {coach.fullName ? coach.fullName.charAt(0).toUpperCase() : 'C'}
+              {coach.imageUrl ? (
+                <img
+                  src={`data:image/jpeg;base64,${coach.imageUrl}`}
+                  alt="avatar"
+                  style={{ width: 90, height: 90, objectFit: 'cover', borderRadius: '50%', border: '1px solid #fff', background: '#fff' }}
+                />
+              ) : (
+                coach.fullName ? coach.fullName.charAt(0).toUpperCase() : 'C'
+              )}
             </div>
             <div style={{ flex: 1 }}>
               <div className="coach-profile-title">{coach.qualification || 'Coach'} {coach.fullName}</div>

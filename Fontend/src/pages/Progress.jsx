@@ -563,18 +563,26 @@ function Progress() {
         <div className="progress-container">
           <div className="progress-header">
             <div className="coach-info">
-              <div className="coach-avatar">
-                {selectedCoach.fullName?.charAt(0)?.toUpperCase() || 'C'}
-              </div>
-              <div>
-                <h2>Hành trình cai thuốc cùng {selectedCoach.fullName}</h2>
-                <p>Coach đã đồng hành: {selectedCoach.yearsOfExperience || 'N/A'} năm kinh nghiệm</p>
-                {existingReview && (
-                  <div className="existing-review-info">
-                    <span>Đã đánh giá: {Array.from({length: existingReview.rating}, (_, i) => '⭐').join('')}</span>
-                  </div>
-                )}
-              </div>
+            <div className="coach-avatar">
+              {selectedCoach.imageUrl ? (
+                <img
+                  src={`data:image/jpeg;base64,${selectedCoach.imageUrl}`}
+                  alt="avatar"
+                  style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '50%', border: '1.5px solid #fff', background: '#fff' }}
+                />
+              ) : (
+                selectedCoach.fullName?.charAt(0)?.toUpperCase() || 'C'
+              )}
+            </div>
+            <div>
+              <h2>Hành trình cai thuốc cùng {selectedCoach.fullName}</h2>
+              <p>Coach đã đồng hành: {selectedCoach.yearsOfExperience || 'N/A'} năm kinh nghiệm</p>
+              {existingReview && (
+                <div className="existing-review-info">
+                  <span>Đã đánh giá: {Array.from({length: existingReview.rating}, (_, i) => '⭐').join('')}</span>
+                </div>
+              )}
+            </div>
             </div>
             <div className="header-actions">
               <div className="quit-date-input">

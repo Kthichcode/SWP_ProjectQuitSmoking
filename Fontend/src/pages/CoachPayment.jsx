@@ -221,8 +221,13 @@ function CoachPayment() {
       <Header />
       <div className="coach-payment-bg">
         <div className="coach-payment-header">
-          <h2>Chọn <span style={{ color: '#1abc9c' }}>Coach</span> phù hợp</h2>
-          <p>Tìm chuyên gia tư vấn phù hợp nhất cho hành trình cai thuốc lá của bạn.<br />Tất cả coach đều được kiểm định chuyên môn.</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            <img src="/logo192.png" alt="Coach" style={{ width: 60, height: 60, borderRadius: '50%', objectFit: 'cover', background: '#fff', border: '2px solid #1abc9c' }} />
+            <div>
+              <h2>Chọn <span style={{ color: '#1abc9c' }}>Coach</span> phù hợp</h2>
+              <p style={{ margin: 0 }}>Tìm chuyên gia tư vấn phù hợp nhất cho hành trình cai thuốc lá của bạn.<br />Tất cả coach đều được kiểm định chuyên môn.</p>
+            </div>
+          </div>
           <div className="coach-payment-stats">
             <div><div>{stats.totalCoaches}</div><span>Chuyên gia</span></div>
             <div><div>{stats.avgRating}</div><span>Đánh giá TB</span></div>
@@ -241,11 +246,31 @@ function CoachPayment() {
         ) : (
           <div className="coach-payment-list">
             {coaches.map((coach, index) => (
-              <CoachCard
-                key={coach.id || coach.userId || index}
-                coach={coach}
-                onViewDetail={(id) => navigate(`/coach/${id}`)}
-              />
+              <div className="coach-payment-card" key={coach.id || coach.userId || index}>
+                <div className="coach-payment-avatar">
+                  {coach.imageUrl ? (
+                    <img
+                      src={`data:image/jpeg;base64,${coach.imageUrl}`}
+                      alt="avatar"
+                      style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: '50%', border: '2px solid #ccc' }}
+                    />
+                  ) : (
+                    <div className="avatar-placeholder" style={{ width: 80, height: 80, borderRadius: '50%', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: 32, color: '#bbb' }}>👤</span>
+                    </div>
+                  )}
+                </div>
+                <div className="coach-payment-info">
+                  <div className="coach-payment-name">{coach.fullName}</div>
+                  <div className="coach-payment-specialization">{coach.specialization}</div>
+                  <div className="coach-payment-rating">Đánh giá: {coach.rating || 0} ⭐</div>
+                  <div className="coach-payment-success">Tỷ lệ thành công: {coach.successRate || 0}%</div>
+                  <div className="coach-payment-fee">Phí: {coach.paymentAmount ? coach.paymentAmount + ' VNĐ' : 'Miễn phí'}</div>
+                  <button className="coach-payment-detail-btn" onClick={() => navigate(`/coach/${coach.id || coach.userId}`)}>
+                    Xem chi tiết
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         )}
