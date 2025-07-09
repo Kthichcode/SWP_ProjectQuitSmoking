@@ -12,10 +12,14 @@ function Users() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get('/api/users/getAll');
-        setUsers(res.data);
+        // Lấy token nếu cần, ví dụ từ localStorage
+        const token = localStorage.getItem('token');
+        const res = await axios.get('/api/coach-members/my-members', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        setUsers(res.data.data || []);
       } catch (err) {
-        setError('Không thể tải danh sách người dùng');
+        setError('Không thể tải danh sách thành viên');
       } finally {
         setLoading(false);
       }
@@ -39,8 +43,7 @@ function Users() {
                 <span className="user-name">{user.fullName || user.name}</span>
               </div>
               <div className="user-contact">Email: <b>{user.email}</b> | SĐT: <b>{user.phone || user.phoneNumber || '-'}</b></div>
-              {/* Các trường dưới đây có thể cần chỉnh lại tuỳ theo API trả về */}
-              <div className="user-dates">Tham gia: {user.joinDate || '-'} | Phiên gần nhất: <b>{user.lastSession || '-'}</b></div>
+              {/* Đã xoá các trường tham gia, phiên gần nhất */}
               <div className="user-progress-container">
                 <div className="user-progress-bar">
                   <div className="user-progress" style={{width:(user.progress || 0)+'%'}}></div>

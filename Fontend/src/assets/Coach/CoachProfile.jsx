@@ -9,10 +9,10 @@ const CoachProfile = () => {
     fullName: '',
     email: '',
     phoneNumber: '',
-    qualification: '',
-    experience: '',
+    yearsOfExperience: '',
     specialization: '',
-    bio: ''
+    bio: '',
+    imageUrl: ''
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -80,13 +80,14 @@ const CoachProfile = () => {
       setError('');
       
       const token = localStorage.getItem('token');
+
       const updateData = {
         fullName: coachData.fullName.trim(),
         phoneNumber: coachData.phoneNumber.trim(),
-        qualification: coachData.qualification.trim(),
-        experience: coachData.experience.trim(),
+        yearsOfExperience: coachData.yearsOfExperience !== '' ? parseInt(coachData.yearsOfExperience, 10) : null,
         specialization: coachData.specialization.trim(),
-        bio: coachData.bio.trim()
+        bio: coachData.bio.trim(),
+        imageUrl: coachData.imageUrl // gửi base64 vào imageUrl
       };
 
       const response = await axios.put(`${API_BASE_URL}/update`, updateData, {
@@ -241,6 +242,17 @@ const CoachProfile = () => {
     }));
   };
 
+  // Xử lý chọn file ảnh và chuyển sang base64, lưu vào imageUrl
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setCoachData(prev => ({ ...prev, imageUrl: reader.result.split(',')[1] })); // chỉ lấy phần base64
+    };
+    reader.readAsDataURL(file);
+  };
+
   const togglePasswordVisibility = (field) => {
     setShowPasswords(prev => ({
       ...prev,
@@ -297,9 +309,17 @@ const CoachProfile = () => {
 
       <div className="profile-content">
         <div className="profile-avatar">
-          <div className="avatar-placeholder">
-            <FaUser size={60} />
-          </div>
+          {coachData.imageUrl ? (
+            <img
+              src={`data:image/jpeg;base64,${coachData.imageUrl}`}
+              alt="avatar"
+              style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: '50%', border: '2px solid #ccc' }}
+            />
+          ) : (
+            <div className="avatar-placeholder">
+              <FaUser size={60} />
+            </div>
+          )}
           <h3>{coachData.fullName}</h3>
           <p className="coach-title">Coach Chuyên Nghiệp</p>
         </div>
@@ -333,34 +353,42 @@ const CoachProfile = () => {
               <label>Số điện thoại</label>
               <input
                 type="tel"
-                value={coachData.phoneNumber}
+                value={coachData.phoneNumber || ''}
                 onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
                 disabled={!isEditing}
                 placeholder="Nhập số điện thoại"
+                style={{ background: '#fff', color: '#222' }}
               />
             </div>
             <div className="form-group">
               <label>Kinh nghiệm (năm)</label>
               <input
-                type="text"
-                value={coachData.experience}
-                onChange={(e) => handleInputChange('experience', e.target.value)}
+                type="number"
+                min="0"
+                value={coachData.yearsOfExperience}
+                onChange={(e) => handleInputChange('yearsOfExperience', e.target.value)}
                 disabled={!isEditing}
-                placeholder="Ví dụ: 5 năm"
+                placeholder="Ví dụ: 5"
               />
             </div>
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label>Bằng cấp</label>
+              <label>Ảnh đại diện</label>
               <input
-                type="text"
-                value={coachData.qualification}
-                onChange={(e) => handleInputChange('qualification', e.target.value)}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
                 disabled={!isEditing}
-                placeholder="Ví dụ: Bác sĩ, Chuyên gia tâm lý..."
               />
+              {coachData.imageUrl && (
+                <img
+                  src={`data:image/jpeg;base64,${coachData.imageUrl}`}
+                  alt="avatar preview"
+                  style={{ width: 80, height: 80, objectFit: 'cover', marginTop: 8, borderRadius: '50%' }}
+                />
+              )}
             </div>
             <div className="form-group">
               <label>Chuyên môn</label>
