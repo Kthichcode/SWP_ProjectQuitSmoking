@@ -18,121 +18,152 @@ function Messages() {
   useEffect(() => {
     if (user) {
       fetchConversations();
-
-      const conversationInterval = setInterval(() => {
-        fetchConversations();
-      }, 30000);
-
-      return () => clearInterval(conversationInterval);
     }
   }, [user]);
 
   useEffect(() => {
-    if (selectedConversation) {
-      fetchMessages(selectedConversation.selectionId);
-      connectWebSocket(selectedConversation.selectionId);
-      return () => {
-        WebSocketService.unsubscribe(`/user/queue/messages/${selectedConversation.selectionId}`);
-      };
-    }
-  }, [selectedConversation]);
+    if (!selectedConversation) return;
+
+    const initWebSocket = async () => {
+      const subscription = await connectWebSocket(selectedConversation.selectionId);
+      return subscription;
+    };
+
+    const subscriptionPromise = initWebSocket();
+
+    return () => {
+      subscriptionPromise.then(subscription => {
+        if (subscription) {
+          subscription.unsubscribe();
+        }
+      });
+    };
+  }, [selectedConversation?.selectionId]);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      scrollToBottom();
-    }
+    scrollToBottom();
   }, [messages]);
 
   const scrollToBottom = () => {
     setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-    }, 100);
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 0);
   };
 
   const connectWebSocket = async (selectionId) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        console.error('Token not found for WebSocket');
-        return;
+        console.log('No token found');
+        return null;
       }
 
+      console.log('Connecting to WebSocket for Messages.jsx, selectionId:', selectionId);
       await WebSocketService.connect(token);
 
-      WebSocketService.subscribe(
+      const subscription = WebSocketService.subscribe(
         `/user/queue/messages/${selectionId}`,
         (message) => {
+          console.log('Messages.jsx received WebSocket message:', message);
           try {
             const receivedMessage = JSON.parse(message.body);
-            console.log('📥 COACH RECEIVED WS MESSAGE:', receivedMessage);
-
+            console.log('Parsed message:', receivedMessage);
+            
+            // Bỏ qua tin nhắn do chính mình gửi (tránh duplicate với optimistic message)
+            if (receivedMessage.senderType === 'COACH') {
+              console.log('Skipping own COACH message in Messages.jsx');
+              return;
+            }
+            
             const formattedMessage = {
               id: receivedMessage.messageId || Date.now(),
-              senderId: receivedMessage.senderType === 'MEMBER' 
-                ? selectedConversation?.userId 
-                : user.id,
+              senderId:
+                receivedMessage.senderType === 'MEMBER'
+                  ? selectedConversation?.userId
+                  : user.id,
               senderType: receivedMessage.senderType,
               content: receivedMessage.content,
-              timestamp: new Date().toISOString(),
-              senderName: receivedMessage.senderType === 'MEMBER'
-                ? selectedConversation?.userFullName
-                : (user.fullName || 'Coach')
+              timestamp: receivedMessage.sentAt || new Date().toISOString(),
+              senderName:
+                receivedMessage.senderType === 'MEMBER'
+                  ? selectedConversation?.userFullName
+                  : user.fullName || 'Coach',
             };
 
-            setMessages(prev => {
-              const exists = prev.some(msg => msg.id === formattedMessage.id || (msg.content === formattedMessage.content && msg.senderType === formattedMessage.senderType));
-              if (!exists) {
-                const newMessages = [...prev, formattedMessage];
-                setTimeout(() => scrollToBottom(), 50);
-                return newMessages;
+            console.log('Adding formatted message:', formattedMessage);
+            setMessages((prev) => {
+              console.log('Current messages before adding:', prev.length);
+              // Kiểm tra duplicate theo ID và content
+              const exists = prev.some((m) => 
+                m.id === formattedMessage.id || 
+                (m.content === formattedMessage.content && 
+                 m.senderType === formattedMessage.senderType &&
+                 Math.abs(new Date(m.timestamp).getTime() - new Date(formattedMessage.timestamp).getTime()) < 3000)
+              );
+              console.log('Message exists by ID or content:', exists);
+              if (exists) {
+                console.log('Message already exists, skipping');
+                return prev;
               }
-              return prev;
+              console.log('Adding new message to state');
+              return [...prev, formattedMessage];
             });
-
           } catch (err) {
-            console.error('Error parsing WebSocket message on coach side:', err);
+            console.error('Lỗi parse WebSocket message:', err);
           }
         }
       );
 
-      console.log('Coach subscribed to WebSocket topic:', `/user/queue/messages/${selectionId}`);
+      console.log('WebSocket subscription created for Messages.jsx:', subscription);
+      return subscription;
     } catch (e) {
-      console.error('Error connecting coach WebSocket:', e);
+      console.error('Lỗi connectWebSocket:', e);
+      return null;
     }
   };
 
   const fetchConversations = async () => {
     try {
-      setLoading(true);
       const currentCoachId = user.userId || user.id;
       if (!currentCoachId) {
         setConversations([]);
         return;
       }
 
-      const response = await axiosInstance.get(`/api/users/coaches/${currentCoachId}/selections`);
+      const res = await axiosInstance.get(
+        `/api/users/coaches/${currentCoachId}/selections`
+      );
 
-      if (response.data.status === 'success' && response.data.data) {
-        const formattedConversations = response.data.data.map(selection => ({
-          id: selection.selectionId,
-          selectionId: selection.selectionId,
-          userId: selection.member?.userId || selection.member?.id,
-          userFullName: selection.member?.fullName || selection.member?.user?.fullName || 'Unknown User',
+      if (res.data.status === 'success' && res.data.data) {
+        const formatted = res.data.data.map((sel) => ({
+          id: sel.selectionId,
+          selectionId: sel.selectionId,
+          userId: sel.member?.userId || sel.member?.id,
+          userFullName:
+            sel.member?.fullName ||
+            sel.member?.user?.fullName ||
+            'Người dùng',
           userOnline: false,
           lastMessage: 'Bắt đầu cuộc trò chuyện...',
-          lastMessageTime: new Date(selection.selectedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-          unreadCount: 0
+          lastMessageTime: new Date(sel.selectedAt).toLocaleTimeString('vi-VN', {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          unreadCount: 0,
         }));
 
-        setConversations(formattedConversations);
-        if (formattedConversations.length > 0) {
-          selectConversation(formattedConversations[0]);
+        setConversations(formatted);
+
+        if (formatted.length > 0 && !selectedConversation) {
+          selectConversation(formatted[0]);
         }
       } else {
         setConversations([]);
       }
     } catch (error) {
-      console.error('Error fetching conversations:', error);
+      console.error('Lỗi tải danh sách hội thoại:', error);
       setConversations([]);
     } finally {
       setLoading(false);
@@ -140,6 +171,8 @@ function Messages() {
   };
 
   const selectConversation = async (conversation) => {
+    if (selectedConversation?.id === conversation.id) return;
+
     setSelectedConversation(conversation);
     await fetchMessages(conversation.selectionId);
     markAsReadLocally(conversation.id);
@@ -147,44 +180,40 @@ function Messages() {
 
   const fetchMessages = async (selectionId) => {
     try {
-      const response = await axiosInstance.get(`/api/chat/history/${selectionId}`);
+      const res = await axiosInstance.get(`/api/chat/history/${selectionId}`);
+      const history = res.data?.data || [];
 
-      if (response.data.status === 'success' && response.data.data) {
-        const formattedMessages = response.data.data.map(msg => ({
-          id: msg.messageId,
-          senderId: msg.senderType === 'MEMBER' ? selectedConversation?.userId : user.id,
-          senderType: msg.senderType,
-          content: msg.content,
-          timestamp: msg.sentAt,
-          senderName: msg.senderType === 'MEMBER'
+      const formatted = history.map((msg) => ({
+        id: msg.messageId,
+        senderId:
+          msg.senderType === 'MEMBER'
+            ? selectedConversation?.userId
+            : user.id,
+        senderType: msg.senderType,
+        content: msg.content,
+        timestamp: msg.sentAt,
+        senderName:
+          msg.senderType === 'MEMBER'
             ? selectedConversation?.userFullName
-            : (user.fullName || 'Coach')
-        }));
+            : user.fullName || 'Coach',
+        isOptimistic: false,
+      }));
 
-        setMessages((prev) => {
-          if (prev.length === formattedMessages.length) {
-            const changed = formattedMessages.some(
-              (m, i) => m.id !== prev[i]?.id || m.content !== prev[i]?.content
-            );
-            return changed ? formattedMessages : prev;
-          }
-          return formattedMessages;
-        });
-      } else {
-        setMessages([]);
-      }
-    } catch (error) {
-      console.error('Error fetching messages:', error);
+      // Bảo tồn các optimistic messages (tin nhắn đang gửi)
+      setMessages((prev) => {
+        const optimisticMessages = prev.filter(msg => msg.isOptimistic);
+        return [...formatted, ...optimisticMessages];
+      });
+    } catch (err) {
+      console.error('Lỗi tải tin nhắn:', err);
       setMessages([]);
     }
   };
 
   const markAsReadLocally = (conversationId) => {
-    setConversations(prev => 
-      prev.map(conv => 
-        conv.id === conversationId 
-          ? { ...conv, unreadCount: 0 }
-          : conv
+    setConversations((prev) =>
+      prev.map((conv) =>
+        conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
       )
     );
   };
@@ -192,82 +221,71 @@ function Messages() {
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation || sendingMessage) return;
 
-    const currentUserId = selectedConversation.userId;
-    const currentCoachId = user.userId || user.id;
-
-    const messageData = {
-      selectionId: selectedConversation.selectionId,
-      content: newMessage.trim(),
-      senderType: 'COACH',
-      userId: currentUserId,
-      coachId: currentCoachId
-    };
+    const messageContent = newMessage.trim();
+    const messageTimestamp = new Date().toISOString();
+    const optimisticId = `optimistic-${Date.now()}-${Math.random()}`;
 
     const optimisticMessage = {
-      id: Date.now(),
+      id: optimisticId,
       senderId: user.id,
       senderType: 'COACH',
-      content: newMessage.trim(),
-      timestamp: new Date().toISOString(),
-      senderName: user.fullName || 'Coach'
+      content: messageContent,
+      timestamp: messageTimestamp,
+      senderName: user.fullName || 'Coach',
+      isOptimistic: true, // Đánh dấu tin nhắn tạm thời
     };
 
-    setMessages(prev => [...prev, optimisticMessage]);
-    const originalMessage = newMessage;
+    setMessages((prev) => [...prev, optimisticMessage]);
     setNewMessage('');
-    
-    // Scroll to bottom after adding optimistic message
-    setTimeout(() => scrollToBottom(), 50);
-
     setSendingMessage(true);
+
     try {
-      const response = await axiosInstance.post('/api/chat/send', messageData);
+      const payload = {
+        selectionId: selectedConversation.selectionId,
+        content: messageContent,
+        senderType: 'COACH',
+        userId: selectedConversation.userId,
+        coachId: user.userId || user.id,
+      };
 
-      if (response.data.status === 'success') {
-        if (response.data.data?.messageId) {
-          setMessages(prev => 
-            prev.map(msg => 
-              msg.id === optimisticMessage.id 
-                ? { ...msg, id: response.data.data.messageId }
-                : msg
-            )
-          );
-        }
+      const res = await axiosInstance.post('/api/chat/send', payload);
 
-        setConversations(prev =>
-          prev.map(conv =>
-            conv.selectionId === selectedConversation.selectionId
+      if (res.data.status === 'success') {
+        console.log('Message sent successfully, server response:', res.data);
+        // Cập nhật tin nhắn optimistic thành tin nhắn thật
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === optimisticId
               ? { 
-                  ...conv, 
-                  lastMessage: originalMessage.trim(), 
-                  lastMessageTime: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-                  unreadCount: 0 
+                  ...msg, 
+                  id: res.data.data.messageId || optimisticId,
+                  isOptimistic: false,
+                  timestamp: res.data.data.sentAt || messageTimestamp,
+                  // Đánh dấu đây là tin nhắn từ server để tránh duplicate
+                  fromServer: true
                 }
-              : conv
+              : msg
           )
         );
 
-        if (WebSocketService.isConnectedToServer()) {
-          WebSocketService.sendMessage('/app/chat.send', {
-            ...messageData,
-            messageId: response.data.data?.messageId,
-            selectionId: response.data.data?.selectionId || selectedConversation.selectionId
-          });
-        }
+        // Server sẽ tự động broadcast tin nhắn qua WebSocket
+        // Không cần gửi manual nữa
       } else {
-        throw new Error('API returned non-success status');
+        throw new Error('Gửi tin nhắn thất bại');
       }
-    } catch (error) {
-      console.error('Error sending coach message:', error);
-      setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id));
-      setNewMessage(originalMessage);
-      alert('Không thể gửi tin nhắn lúc này. Vui lòng thử lại.');
+    } catch (e) {
+      console.error('Lỗi gửi tin nhắn:', e);
+      // Xóa tin nhắn optimistic khi gửi thất bại
+      setMessages((prev) =>
+        prev.filter((msg) => msg.id !== optimisticId)
+      );
+      setNewMessage(messageContent); // Khôi phục nội dung tin nhắn
     } finally {
       setSendingMessage(false);
     }
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
@@ -275,14 +293,14 @@ function Messages() {
   };
 
   const formatTime = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString('vi-VN', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return new Date(timestamp).toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
   const getInitials = (name) => {
-    return name?.split(' ').map(w => w[0]).join('').toUpperCase() || 'U';
+    return name?.split(' ').map((w) => w[0]).join('').toUpperCase() || 'U';
   };
 
   if (loading) {
@@ -300,23 +318,19 @@ function Messages() {
       <div className="messages-list">
         <div className="messages-list-header">
           <h4>Cuộc trò chuyện ({conversations.length})</h4>
-          <div className="total-unread">
-            {conversations.reduce((total, conv) => total + (conv.unreadCount || 0), 0)} tin nhắn chưa đọc
-          </div>
         </div>
         {conversations.length === 0 ? (
           <div className="no-conversations">
             <p>Chưa có cuộc trò chuyện nào</p>
-            <small style={{ color: '#666', fontSize: '0.9em' }}>
-              Cuộc trò chuyện sẽ xuất hiện khi users chọn bạn làm coach và bắt đầu nhắn tin
-            </small>
           </div>
         ) : (
           conversations.map((conv) => (
-            <div 
-              key={conv.id} 
-              onClick={() => selectConversation(conv)} 
-              className={`messages-list-item ${selectedConversation?.id === conv.id ? 'selected' : ''}`}
+            <div
+              key={conv.id}
+              onClick={() => selectConversation(conv)}
+              className={`messages-list-item ${
+                selectedConversation?.id === conv.id ? 'selected' : ''
+              }`}
             >
               <div className="messages-avatar">
                 {getInitials(conv.userFullName)}
@@ -324,7 +338,13 @@ function Messages() {
               <div className="conversation-info">
                 <div className="conversation-name">
                   {conv.userFullName}
-                  {conv.userOnline && <span className="online-indicator">●</span>}
+                  <span
+                    className={`status ${
+                      conv.userOnline ? 'online' : 'offline'
+                    }`}
+                  >
+                    {conv.userOnline ? ' ●' : ' ○'}
+                  </span>
                 </div>
                 <div className="last-message">
                   {conv.lastMessage?.slice(0, 40)}...
@@ -349,8 +369,14 @@ function Messages() {
                 </div>
                 <div>
                   <h4>{selectedConversation.userFullName}</h4>
-                  <span className={`status ${selectedConversation.userOnline ? 'online' : 'offline'}`}>
-                    {selectedConversation.userOnline ? '● Đang online' : '○ Offline'}
+                  <span
+                    className={`status ${
+                      selectedConversation.userOnline ? 'online' : 'offline'
+                    }`}
+                  >
+                    {selectedConversation.userOnline
+                      ? '● Đang online'
+                      : '○ Offline'}
                   </span>
                 </div>
               </div>
@@ -360,20 +386,24 @@ function Messages() {
               {messages.length === 0 ? (
                 <div className="no-messages">
                   <p>Chưa có tin nhắn nào. Hãy bắt đầu cuộc trò chuyện!</p>
-                  <small style={{ color: '#666', fontSize: '0.9em' }}>
-                    Tin nhắn với {selectedConversation.userFullName} sẽ hiển thị ở đây
-                  </small>
                 </div>
               ) : (
                 messages.map((message) => (
-                  <div 
-                    key={message.id} 
-                    className={`message ${message.senderType === 'COACH' ? 'coach' : 'user'}`}
+                  <div
+                    key={message.id}
+                    className={`message ${
+                      message.senderType === 'COACH'
+                        ? 'coach-right'
+                        : 'member-left'
+                    } ${message.isOptimistic ? 'optimistic' : ''}`}
                   >
                     <div className="message-content">
                       <div className="message-text">{message.content}</div>
                       <div className="message-time">
                         {formatTime(message.timestamp)}
+                        {message.isOptimistic && (
+                          <span className="sending-indicator"> ⏳</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -383,15 +413,15 @@ function Messages() {
             </div>
 
             <div className="messages-chat-footer">
-              <input 
-                type="text" 
-                placeholder="Nhập tin nhắn..." 
+              <input
+                type="text"
+                placeholder="Nhập tin nhắn..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 disabled={sendingMessage}
               />
-              <button 
+              <button
                 onClick={sendMessage}
                 disabled={!newMessage.trim() || sendingMessage}
               >

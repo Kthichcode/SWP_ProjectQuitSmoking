@@ -78,14 +78,29 @@ function Progress() {
   }, [selectedCoach, selectionId]);
 
   useEffect(() => {
-    if (selectionId && activeTab === 'chat' && !chatHistoryLoaded) {
-      fetchChatHistory();
-      connectWebSocket();
-      setChatHistoryLoaded(true);
+    if (selectionId) {
+      // Always connect WebSocket when selectionId is available, regardless of active tab
+      const initWebSocket = async () => {
+        const subscription = await connectWebSocket();
+        return subscription;
+      };
+
+      const subscriptionPromise = initWebSocket();
 
       return () => {
-        WebSocketService.unsubscribe(`/user/queue/messages/${selectionId}`);
+        subscriptionPromise.then(sub => {
+          if (sub) {
+            sub.unsubscribe();
+          }
+        });
       };
+    }
+  }, [selectionId]);
+
+  useEffect(() => {
+    if (selectionId && activeTab === 'chat' && !chatHistoryLoaded) {
+      fetchChatHistory();
+      setChatHistoryLoaded(true);
     }
   }, [selectionId, activeTab, chatHistoryLoaded]);
 
@@ -206,34 +221,65 @@ function Progress() {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
+        console.log('No token found in Progress.jsx');
         setConnectionStatus('disconnected');
-        return;
+        return null;
       }
+      console.log('Connecting to WebSocket for Progress.jsx, selectionId:', selectionId);
       setConnectionStatus('connecting');
       await WebSocketService.connect(token);
 
       const subscription = WebSocketService.subscribe(`/user/queue/messages/${selectionId}`, (message) => {
+        console.log('Progress.jsx received WebSocket message:', message);
         try {
           const receivedMessage = JSON.parse(message.body);
+          console.log('Progress.jsx parsed message:', receivedMessage);
+          
+          // Chỉ nhận tin nhắn từ COACH (bỏ qua tin nhắn USER để tránh duplicate)
+          if (receivedMessage.senderType !== 'COACH') {
+            console.log('Progress.jsx skipping non-COACH message');
+            return;
+          }
+          
           const formattedMessage = {
             id: receivedMessage.messageId || Date.now(),
             text: receivedMessage.content,
-            sender: receivedMessage.senderType === 'MEMBER' ? 'user' : (receivedMessage.senderType === 'COACH' ? 'coach' : receivedMessage.senderType?.toLowerCase()),
+            sender: 'coach',
             timestamp: new Date().toLocaleTimeString(),
-            senderName: (receivedMessage.senderType === 'MEMBER' || receivedMessage.senderType === 'USER') ? user.fullName : selectedCoach?.fullName
+            senderName: selectedCoach?.fullName || 'Coach'
           };
 
+          console.log('Progress.jsx adding formatted message:', formattedMessage);
           setMessages(prev => {
-            const exists = prev.some(msg => msg.id === formattedMessage.id || (msg.text === formattedMessage.text && msg.sender === formattedMessage.sender));
-            return exists ? prev : [...prev, formattedMessage];
+            console.log('Progress.jsx current messages before adding:', prev.length);
+            // Kiểm tra duplicate theo ID và content
+            const exists = prev.some(msg => 
+              msg.id === formattedMessage.id || 
+              (msg.text === formattedMessage.text && 
+               msg.sender === formattedMessage.sender &&
+               Math.abs(new Date().getTime() - new Date().getTime()) < 3000)
+            );
+            console.log('Progress.jsx message exists by ID or content:', exists);
+            if (exists) {
+              console.log('Progress.jsx message already exists, skipping');
+              return prev;
+            }
+            console.log('Progress.jsx adding new message to state');
+            return [...prev, formattedMessage];
           });
 
-        } catch {}
+        } catch (error) {
+          console.error('Error parsing WebSocket message in Progress.jsx:', error);
+        }
       });
 
+      console.log('WebSocket subscription created for Progress.jsx:', subscription);
       setConnectionStatus(subscription ? 'connected' : 'disconnected');
-    } catch {
+      return subscription;
+    } catch (error) {
+      console.error('Error connecting WebSocket in Progress.jsx:', error);
       setConnectionStatus('disconnected');
+      return null;
     }
   };
 
@@ -308,13 +354,8 @@ function Progress() {
           );
         }
 
-        if (WebSocketService.isConnectedToServer()) {
-          WebSocketService.sendMessage('/app/chat.send', {
-            ...messageData,
-            messageId: response.data.data?.messageId,
-            selectionId: response.data.data?.selectionId || selectionId
-          });
-        }
+        // Server sẽ tự động broadcast tin nhắn qua WebSocket
+        // Không cần gửi manual nữa
       } else {
         throw new Error();
       }

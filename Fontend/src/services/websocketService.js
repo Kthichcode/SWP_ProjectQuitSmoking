@@ -5,7 +5,8 @@ class WebSocketService {
   constructor() {
     this.stompClient = null;
     this.isConnected = false;
-    this.subscriptions = new Map();
+    this.subscriptions = new Map(); // destination -> subscription object
+    this.callbacks = new Map(); // destination -> Set of callbacks
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
   }
@@ -72,6 +73,7 @@ class WebSocketService {
         subscription.unsubscribe();
       });
       this.subscriptions.clear();
+      this.callbacks.clear();
       
       this.stompClient.deactivate();
       this.isConnected = false;
@@ -87,22 +89,76 @@ class WebSocketService {
     }
 
     try {
-      const subscription = this.stompClient.subscribe(destination, callback);
-      this.subscriptions.set(destination, subscription);
-      return subscription;
+      // If no callbacks exist for this destination, create new subscription
+      if (!this.callbacks.has(destination)) {
+        this.callbacks.set(destination, new Set());
+        
+        const subscription = this.stompClient.subscribe(destination, (message) => {
+          // Call all callbacks for this destination
+          const callbackSet = this.callbacks.get(destination);
+          if (callbackSet) {
+            callbackSet.forEach(cb => {
+              try {
+                cb(message);
+              } catch (error) {
+                console.error('Error in callback:', error);
+              }
+            });
+          }
+        });
+        
+        this.subscriptions.set(destination, subscription);
+        console.log('Created new subscription for:', destination);
+      }
+      
+      // Add callback to the set
+      this.callbacks.get(destination).add(callback);
+      console.log('Added callback for:', destination, 'Total callbacks:', this.callbacks.get(destination).size);
+      
+      return {
+        unsubscribe: () => this.removeCallback(destination, callback)
+      };
     } catch (error) {
       console.error('Error subscribing to', destination, error);
       return null;
     }
   }
 
+  removeCallback(destination, callback) {
+    if (this.callbacks.has(destination)) {
+      this.callbacks.get(destination).delete(callback);
+      console.log('Removed callback for:', destination, 'Remaining callbacks:', this.callbacks.get(destination).size);
+      
+      // If no more callbacks, unsubscribe from the destination
+      if (this.callbacks.get(destination).size === 0) {
+        this.callbacks.delete(destination);
+        
+        if (this.subscriptions.has(destination)) {
+          try {
+            this.subscriptions.get(destination).unsubscribe();
+            this.subscriptions.delete(destination);
+            console.log('Unsubscribed from:', destination);
+          } catch (error) {
+            console.error('Error unsubscribing from', destination, error);
+          }
+        }
+      }
+    }
+  }
+
   unsubscribe(destination) {
-    if (this.subscriptions.has(destination)) {
-      try {
-        this.subscriptions.get(destination).unsubscribe();
-        this.subscriptions.delete(destination);
-      } catch (error) {
-        console.error('Error unsubscribing from', destination, error);
+    if (this.callbacks.has(destination)) {
+      // Remove all callbacks for this destination
+      this.callbacks.delete(destination);
+      
+      if (this.subscriptions.has(destination)) {
+        try {
+          this.subscriptions.get(destination).unsubscribe();
+          this.subscriptions.delete(destination);
+          console.log('Unsubscribed from:', destination);
+        } catch (error) {
+          console.error('Error unsubscribing from', destination, error);
+        }
       }
     }
   }

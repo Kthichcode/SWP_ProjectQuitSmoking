@@ -1,102 +1,425 @@
-
+/* CSS Reset và Isolation cho Messages component */
 .messages-container {
+  /* Reset toàn bộ để tránh conflict */
+  all: initial;
+  /* Thiết lập lại các thuộc tính cần thiết */
   display: flex;
-  height: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  box-sizing: border-box;
+  background: #fff;
+  color: #333;
 }
-.messages-list {
+
+.messages-container *,
+.messages-container *::before,
+.messages-container *::after {
+  box-sizing: border-box;
+}
+
+.messages-container h1,
+.messages-container h2,
+.messages-container h3,
+.messages-container h4,
+.messages-container h5,
+.messages-container h6,
+.messages-container p,
+.messages-container span,
+.messages-container div {
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+/* Phần sidebar danh sách hội thoại */
+.messages-container .messages-list {
   width: 300px;
-  background: #f3f4f6;
-  padding: 16px;
-  border-radius: 8px;
-  margin-right: 16px;
-}
-.messages-list h4 {
-  margin-bottom: 12px;
-}
-.messages-list-item {
-  padding: 8px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  background: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background 0.2s;
-}
-.messages-list-item.selected, .messages-list-item:hover {
-  background: #e5f9ee;
-}
-.messages-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #22c55e;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
-.messages-list-item .unread {
-  background: #ef4444;
-  color: #fff;
-  border-radius: 12px;
-  padding: 2px 8px;
-  font-size: 12px;
-}
-.messages-chat {
-  flex: 1;
-  background: #fff;
-  padding: 16px;
-  border-radius: 8px;
+  min-width: 300px;
+  border-right: 1px solid #e0e0e0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
-.messages-chat-header {
-  font-weight: bold;
-  margin-bottom: 8px;
+
+.messages-container .messages-list-header {
+  padding: 15px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  flex-shrink: 0;
 }
-.messages-chat-body {
-  flex: 1;
-  overflow-y: auto;
-  margin-bottom: 8px;
+
+.messages-container .messages-list-header h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
 }
-.messages-chat-message {
-  margin: 8px 0;
-}
-.messages-chat-message .bubble {
-  display: inline-block;
-  padding: 8px 12px;
-  border-radius: 16px;
-  max-width: 320px;
-}
-.messages-chat-message.client .bubble {
-  background: #f3f4f6;
-  color: #222;
-}
-.messages-chat-message.coach {
-  text-align: right;
-}
-.messages-chat-message.coach .bubble {
-  background: #22c55e;
-  color: #fff;
-}
-.messages-chat-footer {
-  display: flex;
-  gap: 8px;
-}
-.messages-chat-footer input {
-  flex: 1;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #eee;
-}
-.messages-chat-footer button {
-  background: #22c55e;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
+
+.messages-container .messages-list-item {
+  padding: 12px 15px;
   cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+}
+
+.messages-container .messages-list-item.selected {
+  background-color: #e9f5ff;
+}
+
+.messages-container .messages-list-item:hover {
+  background-color: #f5f5f5;
+}
+
+.messages-container .messages-avatar, 
+.messages-container .chat-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #6c757d;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-weight: bold;
+}
+
+.messages-container .conversation-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.messages-container .conversation-name {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+  font-size: 14px;
+  color: #333;
+}
+
+.messages-container .last-message {
+  font-size: 0.9em;
+  color: #6c757d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.messages-container .last-time {
+  font-size: 0.8em;
+  color: #adb5bd;
+  white-space: nowrap;
+}
+
+.messages-container .status {
+  font-size: 0.8em;
+  margin-left: 5px;
+}
+
+.messages-container .status.online {
+  color: #28a745;
+}
+
+.messages-container .status.offline {
+  color: #6c757d;
+}
+
+.messages-container .unread-badge {
+  background-color: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7em;
+}
+
+/* Phần chat chính */
+.messages-container .messages-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.messages-container .messages-chat-header {
+  padding: 15px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  flex-shrink: 0;
+}
+
+.messages-container .chat-user-info {
+  display: flex;
+  align-items: center;
+}
+
+.messages-container .chat-user-info h4 {
+  margin: 0;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.messages-container .messages-chat-body {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  background-color: #f5f5f5;
+}
+
+/* Quan trọng: Định nghĩa vị trí tin nhắn cho coach - giống Progress page */
+.messages-container .message {
+  margin-bottom: 15px;
+  display: flex;
+  clear: both;
+}
+
+.messages-container .message.coach-right {
+  justify-content: flex-end;
+}
+
+.messages-container .message.member-left {
+  justify-content: flex-start;
+}
+
+/* Reset specificity cho messages */
+.messages-container .message-content {
+  max-width: 70%;
+  background: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  position: relative;
+  z-index: 10;
+}
+
+.messages-container .message.coach-right .message-content {
+  background: #007bff;
+  color: white;
+}
+
+.messages-container .message.member-left .message-content {
+  background: white;
+  color: #333;
+}
+
+.messages-container .message-text {
+  line-height: 1.4;
+  margin: 0;
+  font-size: 14px;
+  color: inherit;
+  display: block;
+  visibility: visible;
+  opacity: 1;
+}
+
+.messages-container .message-time {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 4px;
+  text-align: right;
+  white-space: nowrap;
+  color: inherit;
+}
+
+/* Force display text - highest priority */
+.messages-container .message-text,
+.messages-container .message-time {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: inherit !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  position: relative !important;
+  z-index: 999 !important;
+}
+
+.messages-container .message.coach-right .message-text {
+  color: white !important;
+}
+
+.messages-container .message.member-left .message-text {
+  color: #333 !important;
+}
+
+.messages-container .message-time {
+  font-size: 11px !important;
+  opacity: 0.7 !important;
+  margin-top: 4px !important;
+  text-align: right !important;
+}
+
+/* Phần nhập tin nhắn */
+.messages-container .messages-chat-footer {
+  padding: 15px;
+  border-top: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  display: flex;
+  flex-shrink: 0;
+}
+
+.messages-container .messages-chat-footer input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid #ced4da;
+  border-radius: 20px;
+  outline: none;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.messages-container .messages-chat-footer input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.messages-container .messages-chat-footer button {
+  margin-left: 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+  min-width: 60px;
+}
+
+.messages-container .messages-chat-footer button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.messages-container .messages-chat-footer button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Các trạng thái đặc biệt */
+.messages-container .no-conversations,
+.messages-container .no-messages,
+.messages-container .no-conversation-selected,
+.messages-container .loading-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  font-size: 16px;
+}
+
+.messages-container .no-conversations p,
+.messages-container .no-messages p,
+.messages-container .no-conversation-selected p,
+.messages-container .loading-state p {
+  font-size: 16px;
+  color: #6c757d;
+  margin: 0;
+}
+
+.messages-container .no-conversation-selected {
+  height: 100%;
+}
+
+/* Debug styles - remove if not needed */
+.messages-container .message * {
+  position: relative;
+  z-index: 1;
+}
+
+.messages-container .message-text {
+  background: transparent !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Clear fix for floating messages */
+.messages-container .messages-chat-body::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .messages-container .messages-list {
+    width: 250px;
+    min-width: 250px;
+  }
+  
+  .messages-container .message-content {
+    max-width: 85%;
+  }
+  
+  .messages-container .messages-chat-footer {
+    padding: 10px;
+  }
+  
+  .messages-container .messages-chat-footer input {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}
+
+@media (max-width: 480px) {
+  .messages-container {
+    flex-direction: column;
+  }
+  
+  .messages-container .messages-list {
+    width: 100%;
+    height: 200px;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .messages-container .messages-chat {
+    flex: 1;
+  }
+}
+
+/* Optimistic message styles */
+.messages-container .message.optimistic {
+  opacity: 0.7;
+}
+
+.messages-container .message.optimistic .message-content {
+  background: rgba(0, 123, 255, 0.8) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.5);
+}
+
+.messages-container .message.optimistic.member-left .message-content {
+  background: rgba(248, 249, 250, 0.8) !important;
+  border: 1px dashed rgba(0, 0, 0, 0.2);
+}
+
+.messages-container .sending-indicator {
+  font-size: 10px;
+  margin-left: 5px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
