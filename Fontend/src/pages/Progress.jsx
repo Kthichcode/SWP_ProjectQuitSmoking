@@ -24,6 +24,8 @@ function Progress() {
   const [chatHistoryLoaded, setChatHistoryLoaded] = useState(false);
 
   const messagesEndRef = useRef(null);
+  const reconnectAttempts = useRef(0);
+  const hasNewMessageRef = useRef(false);
 
   useEffect(() => {
     if (!user) {
@@ -78,24 +80,52 @@ function Progress() {
   }, [selectedCoach, selectionId]);
 
   useEffect(() => {
-    if (selectionId) {
-      // Always connect WebSocket when selectionId is available, regardless of active tab
-      const initWebSocket = async () => {
-        const subscription = await connectWebSocket();
-        return subscription;
-      };
+    if (!selectionId) return;
 
-      const subscriptionPromise = initWebSocket();
+    let subscription;
+    let isMounted = true;
 
-      return () => {
-        subscriptionPromise.then(sub => {
-          if (sub) {
-            sub.unsubscribe();
-          }
-        });
-      };
-    }
+    const connect = async () => {
+      subscription = await connectWebSocket();
+      if (subscription && isMounted) {
+        setConnectionStatus('connected');
+      } else {
+        setConnectionStatus('disconnected');
+        retryConnect();
+      }
+    };
+
+    connect();
+
+    return () => {
+      isMounted = false;
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
   }, [selectionId]);
+
+  const retryConnect = () => {
+    if (reconnectAttempts.current >= 5) return;
+    reconnectAttempts.current += 1;
+    setTimeout(() => {
+      connectWebSocket();
+    }, 3000);
+  };
+
+  useEffect(() => {
+    if (!selectionId) return;
+
+    if (activeTab === 'chat') {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      fetchChatHistory();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [selectionId, activeTab]);
 
   useEffect(() => {
     if (selectionId && activeTab === 'chat' && !chatHistoryLoaded) {
@@ -105,8 +135,11 @@ function Progress() {
   }, [selectionId, activeTab, chatHistoryLoaded]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (activeTab === 'chat' && hasNewMessageRef.current) {
+      scrollToBottom();
+      hasNewMessageRef.current = false;
+    }
+  }, [messages, activeTab]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -116,7 +149,7 @@ function Progress() {
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const fetchSelectionId = async () => {
@@ -180,6 +213,8 @@ function Progress() {
         messagesData = response.data.messages;
       }
 
+      let hasNew = false;
+
       const formatted = messagesData.map(msg => ({
         id: msg.messageId || msg.id || Date.now(),
         text: msg.content || msg.message || '',
@@ -187,8 +222,8 @@ function Progress() {
           msg.senderType === 'MEMBER'
             ? 'user'
             : msg.senderType === 'COACH'
-            ? 'coach'
-            : (msg.senderType || msg.sender || 'user').toLowerCase(),
+              ? 'coach'
+              : (msg.senderType || msg.sender || 'user').toLowerCase(),
         timestamp: msg.sentAt
           ? new Date(msg.sentAt).toLocaleTimeString()
           : new Date().toLocaleTimeString(),
@@ -201,14 +236,32 @@ function Progress() {
       }));
 
       setMessages(prev => {
-        if (prev.length === formatted.length) {
-          const changed = formatted.some(
-            (msg, i) => msg.id !== prev[i].id || msg.text !== prev[i].text
+        const combined = [...prev];
+
+        formatted.forEach(f => {
+          const exists = combined.some(p =>
+            p.id === f.id ||
+            (
+              p.text === f.text &&
+              p.sender === f.sender &&
+              Math.abs(new Date(`1970/01/01 ${p.timestamp}`).getTime() -
+                       new Date(`1970/01/01 ${f.timestamp}`).getTime()) < 3000
+            )
           );
-          return changed ? formatted : prev;
+          if (!exists) {
+            combined.push(f);
+            hasNew = true;
+          }
+        });
+
+        if (!hasNew) {
+          return prev;
         }
-        return formatted;
+
+        return combined;
       });
+
+      hasNewMessageRef.current = hasNew;
 
     } catch {
       setMessages([]);
@@ -221,64 +274,65 @@ function Progress() {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        console.log('No token found in Progress.jsx');
         setConnectionStatus('disconnected');
         return null;
       }
-      console.log('Connecting to WebSocket for Progress.jsx, selectionId:', selectionId);
+
       setConnectionStatus('connecting');
       await WebSocketService.connect(token);
 
-      const subscription = WebSocketService.subscribe(`/user/queue/messages/${selectionId}`, (message) => {
-        console.log('Progress.jsx received WebSocket message:', message);
-        try {
-          const receivedMessage = JSON.parse(message.body);
-          console.log('Progress.jsx parsed message:', receivedMessage);
-          
-          // Chỉ nhận tin nhắn từ COACH (bỏ qua tin nhắn USER để tránh duplicate)
-          if (receivedMessage.senderType !== 'COACH') {
-            console.log('Progress.jsx skipping non-COACH message');
-            return;
-          }
-          
-          const formattedMessage = {
-            id: receivedMessage.messageId || Date.now(),
-            text: receivedMessage.content,
-            sender: 'coach',
-            timestamp: new Date().toLocaleTimeString(),
-            senderName: selectedCoach?.fullName || 'Coach'
-          };
+      const subscription = WebSocketService.subscribe(
+        `/user/queue/messages/${selectionId}`,
+        (message) => {
+          try {
+            const receivedMessage = JSON.parse(message.body);
 
-          console.log('Progress.jsx adding formatted message:', formattedMessage);
-          setMessages(prev => {
-            console.log('Progress.jsx current messages before adding:', prev.length);
-            // Kiểm tra duplicate theo ID và content
-            const exists = prev.some(msg => 
-              msg.id === formattedMessage.id || 
-              (msg.text === formattedMessage.text && 
-               msg.sender === formattedMessage.sender &&
-               Math.abs(new Date().getTime() - new Date().getTime()) < 3000)
-            );
-            console.log('Progress.jsx message exists by ID or content:', exists);
-            if (exists) {
-              console.log('Progress.jsx message already exists, skipping');
-              return prev;
+            if (receivedMessage.senderType !== 'COACH') {
+              return;
             }
-            console.log('Progress.jsx adding new message to state');
-            return [...prev, formattedMessage];
-          });
 
-        } catch (error) {
-          console.error('Error parsing WebSocket message in Progress.jsx:', error);
+            const formattedMessage = {
+              id: receivedMessage.messageId || Date.now(),
+              text: receivedMessage.content,
+              sender: 'coach',
+              timestamp: new Date().toLocaleTimeString(),
+              senderName: selectedCoach?.fullName || 'Coach'
+            };
+
+            setMessages(prev => {
+              const exists = prev.some(msg =>
+                msg.id === formattedMessage.id ||
+                (
+                  msg.text === formattedMessage.text &&
+                  msg.sender === formattedMessage.sender &&
+                  Math.abs(new Date(`1970/01/01 ${msg.timestamp}`).getTime() -
+                           new Date(`1970/01/01 ${formattedMessage.timestamp}`).getTime()) < 3000
+                )
+              );
+              if (exists) {
+                return prev;
+              }
+              hasNewMessageRef.current = true;
+              return [...prev, formattedMessage];
+            });
+
+            if (!chatHistoryLoaded) {
+              fetchChatHistory();
+              setChatHistoryLoaded(true);
+            }
+
+          } catch (error) {
+            // no log
+          }
         }
-      });
+      );
 
-      console.log('WebSocket subscription created for Progress.jsx:', subscription);
-      setConnectionStatus(subscription ? 'connected' : 'disconnected');
+      setConnectionStatus('connected');
+      reconnectAttempts.current = 0;
       return subscription;
     } catch (error) {
-      console.error('Error connecting WebSocket in Progress.jsx:', error);
       setConnectionStatus('disconnected');
+      retryConnect();
       return null;
     }
   };
@@ -353,9 +407,6 @@ function Progress() {
             )
           );
         }
-
-        // Server sẽ tự động broadcast tin nhắn qua WebSocket
-        // Không cần gửi manual nữa
       } else {
         throw new Error();
       }
