@@ -11,9 +11,31 @@ const initialNotifications = [];
 function AdminNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ title: '', content: '', time: '', target: 'Tất cả' });
+  const [form, setForm] = useState({ title: '', content: '', time: '', target: 'Tất cả', userId: '', coachId: '' });
+  const [targetType, setTargetType] = useState('all'); // 'all', 'user', 'coach'
+  const [users, setUsers] = useState([]);
+  const [coaches, setCoaches] = useState([]);
   const [openMenu, setOpenMenu] = useState(null);
   const menuRef = useRef();
+  // Fetch users and coaches for dropdowns
+  useEffect(() => {
+    if (showAdd) {
+      axiosInstance.get('/api/users/getAll')
+        .then(res => {
+          if (Array.isArray(res.data)) {
+            setUsers(res.data.filter(u => u.roles && u.roles.includes('MEMBER')));
+            setCoaches(res.data.filter(u => u.roles && u.roles.includes('COACH')));
+          } else {
+            setUsers([]);
+            setCoaches([]);
+          }
+        })
+        .catch(() => {
+          setUsers([]);
+          setCoaches([]);
+        });
+    }
+  }, [showAdd]);
 
 
   // Fetch notifications from API
@@ -24,7 +46,7 @@ function AdminNotifications() {
         // Map API data to table format
         if (Array.isArray(res.data)) {
           setNotifications(res.data.map(n => ({
-            id: n.id,
+            id: Number(n.notificationId),
             title: n.title || '',
             content: n.content,
             time: n.createdAt ? new Date(n.createdAt).toLocaleDateString('vi-VN') : '',
@@ -50,19 +72,45 @@ function AdminNotifications() {
   const handleAdd = async e => {
     e.preventDefault();
     try {
-      const res = await axiosInstance.post('/api/notifications', {
-        title: form.title,
-        content: form.content,
-        target: form.target
-      });
+      let notificationId = null;
+      if (targetType === 'all') {
+        // Tạo notification chung
+        const res = await axiosInstance.post('/api/notifications', {
+          title: form.title,
+          content: form.content,
+          isActive: true
+        });
+        // Lấy notificationId vừa tạo để dùng cho gửi cá nhân hóa nếu cần
+        if (res && res.data && res.data.notificationId) {
+          notificationId = res.data.notificationId;
+        }
+      } else {
+        // Luôn tạo notification trước, lấy id
+        const res = await axiosInstance.post('/api/notifications', {
+          title: form.title,
+          content: form.content,
+          isActive: true
+        });
+        if (res && res.data && res.data.notificationId) {
+          notificationId = res.data.notificationId;
+        } else {
+          throw new Error('Không lấy được notificationId');
+        }
+        // Gửi cho user hoặc coach
+        await axiosInstance.post('/api/notifications/send', {
+          userId: targetType === 'user' ? form.userId : form.coachId,
+          notificationId: notificationId,
+          personalizedReason: ''
+        });
+      }
       // Sau khi tạo thành công, reload lại danh sách
-      setForm({ title: '', content: '', time: '', target: 'Tất cả' });
+      setForm({ title: '', content: '', time: '', target: 'Tất cả', userId: '', coachId: '' });
       setShowAdd(false);
       // Gọi lại API để lấy danh sách mới
       const res2 = await axiosInstance.get('/api/notifications');
       if (Array.isArray(res2.data)) {
         setNotifications(res2.data.map(n => ({
-          id: n.id,
+          id: Number(n.notificationId),
           title: n.title || '',
           content: n.content,
           time: n.createdAt ? new Date(n.createdAt).toLocaleDateString('vi-VN') : '',
@@ -74,8 +122,19 @@ function AdminNotifications() {
     }
   };
 
-  const handleDelete = id => {
-    setNotifications(notifications.filter(n => n.id !== id));
+  // Xóa thông báo qua API
+  const handleDelete = async id => {
+    if (!id || isNaN(Number(id))) {
+      alert('ID thông báo không hợp lệ!');
+      setOpenMenu(null);
+      return;
+    }
+    try {
+      await axiosInstance.delete(`/api/notifications/${id}`);
+      setNotifications(notifications.filter(n => n.id !== id));
+    } catch (e) {
+      alert('Xóa thông báo thất bại!');
+    }
     setOpenMenu(null);
   };
 
@@ -88,6 +147,11 @@ function AdminNotifications() {
           <form className="admin-modal-content admin-notification-form" onSubmit={handleAdd}>
             <button className="admin-modal-close admin-notification-close" onClick={() => setShowAdd(false)} type="button">×</button>
             <h3 className="admin-notification-title">Tạo Thông Báo mới</h3>
+            <div style={{display:'flex', gap:8, marginBottom:12}}>
+              <button type="button" className={targetType==='all'?"admin-btn admin-btn-menu":"admin-btn"} onClick={()=>setTargetType('all')}>Tất cả</button>
+              <button type="button" className={targetType==='user'?"admin-btn admin-btn-menu":"admin-btn"} onClick={()=>setTargetType('user')}>User</button>
+              <button type="button" className={targetType==='coach'?"admin-btn admin-btn-menu":"admin-btn"} onClick={()=>setTargetType('coach')}>Coach</button>
+            </div>
             <label className="admin-notification-label">Tiêu đề</label>
             <input
               className="admin-notification-input"
@@ -105,16 +169,64 @@ function AdminNotifications() {
               onChange={e => setForm(f => ({ ...f, content: e.target.value }))} 
             />
             <div className="admin-notification-row">
-
-              <div className="admin-notification-col">
-                <label className="admin-notification-label">Đối tượng</label>
-                <input 
-                  className="admin-notification-input"
-                  placeholder="Tất cả hoặc tên user" 
-                  value={form.target} 
-                  onChange={e => setForm(f => ({ ...f, target: e.target.value }))} 
-                />
-              </div>
+              {targetType === 'user' && (
+                <div className="admin-notification-col">
+                  <label className="admin-notification-label">Chọn User</label>
+                  <select className="admin-notification-input" value={form.userId || ''} onChange={e => setForm(f => ({ ...f, userId: e.target.value }))} required>
+                    <option value="">-- Chọn user --</option>
+                    {users.map(u => (
+                      <option key={u.id} value={u.id}>
+                        {u.fullName || u.name || u.email || u.username} {u.email ? `(${u.email})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Hiển thị thông tin user đã chọn */}
+                  {form.userId && (
+                    <div style={{marginTop:8, fontSize:'0.95rem', color:'#444', background:'#f3f4f6', padding:'8px', borderRadius:'6px'}}>
+                      {(() => {
+                        const user = users.find(u => String(u.id) === String(form.userId));
+                        if (!user) return null;
+                        return (
+                          <>
+                            <div><b>Họ tên:</b> {user.fullName || user.name}</div>
+                            <div><b>Email:</b> {user.email}</div>
+                            <div><b>Username:</b> {user.username}</div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+              )}
+              {targetType === 'coach' && (
+                <div className="admin-notification-col">
+                  <label className="admin-notification-label">Chọn Coach</label>
+                  <select className="admin-notification-input" value={form.coachId || ''} onChange={e => setForm(f => ({ ...f, coachId: e.target.value }))} required>
+                    <option value="">-- Chọn coach --</option>
+                    {coaches.map(u => (
+                      <option key={u.id} value={u.id}>
+                        {u.name || u.email || u.username} {u.email ? `(${u.email})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Hiển thị thông tin coach đã chọn */}
+                  {form.coachId && (
+                    <div style={{marginTop:8, fontSize:'0.95rem', color:'#444', background:'#f3f4f6', padding:'8px', borderRadius:'6px'}}>
+                      {(() => {
+                        const coach = coaches.find(u => String(u.id) === String(form.coachId));
+                        if (!coach) return null;
+                        return (
+                          <>
+                            <div><b>Họ tên:</b> {coach.fullName || coach.name}</div>
+                            <div><b>Email:</b> {coach.email}</div>
+                            <div><b>Username:</b> {coach.username}</div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <button className="admin-btn admin-notification-submit" type="submit">Tạo</button>
           </form>
