@@ -321,8 +321,8 @@ function AdminCoaches() {
             <button className="admin-modal-close" style={{top: 8, right: 12, fontSize: 28}} onClick={() => setSelected(null)} type="button">×</button>
             <h3>Thông tin Coach</h3>
             <div><b>Họ tên:</b> {selected.name}</div>
+            <div><b>Username:</b> {selected.username}</div>
             <div><b>Email:</b> {selected.email}</div>
-            <div><b>Số điện thoại:</b> {selected.phone}</div>
             <div><b>Kinh nghiệm:</b> {selected.exp}</div>
             <div><b>Kế hoạch hỗ trợ:</b> {selected.plans}</div>
             <div><b>Đánh giá:</b> {selected.rating}</div>

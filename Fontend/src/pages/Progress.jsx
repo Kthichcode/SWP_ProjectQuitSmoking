@@ -61,24 +61,44 @@ function Progress() {
     }
   };
 
+  /**
+   * Sửa ở đây:
+   * Load coach info từ selectionId
+   */
   const loadCoachInfo = () => {
-    const coach = location.state?.selectedCoach;
     const selectionIdFromState = location.state?.selectionId;
-
-    if (coach) {
-      setSelectedCoach(coach);
-      localStorage.setItem('selectedCoach', JSON.stringify(coach));
-      if (selectionIdFromState) {
-        setSelectionId(selectionIdFromState);
-        const currentUserId = user.userId || user.id;
-        localStorage.setItem(getSelectionStorageKey(currentUserId), selectionIdFromState.toString());
-      }
+    if (selectionIdFromState) {
+      setSelectionId(selectionIdFromState);
+      const currentUserId = user.userId || user.id;
+      localStorage.setItem(getSelectionStorageKey(currentUserId), selectionIdFromState.toString());
     } else {
-      const savedCoach = localStorage.getItem('selectedCoach');
       const currentUserId = user.userId || user.id;
       const savedSelectionId = localStorage.getItem(getSelectionStorageKey(currentUserId));
-      if (savedCoach) setSelectedCoach(JSON.parse(savedCoach));
-      if (savedSelectionId) setSelectionId(parseInt(savedSelectionId));
+      if (savedSelectionId) {
+        setSelectionId(parseInt(savedSelectionId));
+      }
+    }
+  };
+
+  // NEW: Load coach từ API backend
+  useEffect(() => {
+    if (selectionId) {
+      fetchCoachBySelectionId(selectionId);
+    }
+  }, [selectionId]);
+
+  const fetchCoachBySelectionId = async (selectionId) => {
+    try {
+      const res = await axiosInstance.get(`/api/coach/getCoachBySelectionId/${selectionId}`);
+      if (res.data?.status === 'success' && res.data.data) {
+        setSelectedCoach(res.data.data);
+      } else {
+        console.error('Không tìm thấy coach từ selectionId');
+        setSelectedCoach(null);
+      }
+    } catch (error) {
+      console.error('Lỗi khi gọi API getCoachBySelectionId:', error);
+      setSelectedCoach(null);
     }
   };
 
