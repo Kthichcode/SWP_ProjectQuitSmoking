@@ -1,6 +1,60 @@
-
-
 import React, { useState, useEffect } from 'react';
+import MembersBarChart from '../../components/MembersBarChart';
+import MembersMonthChart from '../../components/MembersMonthChart';
+// Modal hiển thị đánh giá
+function ReviewsModal({ open, onClose, reviews }) {
+  if (!open) return null;
+  return (
+    <div className="modal-overlay" style={{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.3)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div className="modal-content" style={{background:'#fff',padding:24,borderRadius:8,minWidth:350,maxWidth:500,position:'relative'}}>
+        <h3>Đánh giá của bạn</h3>
+        <button style={{position:'absolute',top:10,right:20}} onClick={onClose}>Đóng</button>
+        {(!reviews || reviews.length === 0) ? (
+          <p>Chưa có đánh giá nào.</p>
+        ) : (
+          <ul style={{listStyle:'none',padding:0}}>
+            {reviews.map((r, idx) => (
+              <li key={r.reviewId || idx} style={{borderBottom:'1px solid #eee',marginBottom:8,paddingBottom:8}}>
+                <div><b>Điểm:</b> {r.rating} ⭐</div>
+                <div><b>Nội dung:</b> {(!r.comment || r.comment === 'string') ? 'Không có comment' : r.comment}</div>
+                <div style={{fontSize:12,color:'#888'}}>{r.createdAt ? new Date(r.createdAt).toLocaleDateString('vi-VN') : ''}</div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Modal hiển thị danh sách thành viên
+function MembersModal({ open, onClose, members }) {
+  if (!open) return null;
+  return (
+    <div className="modal-overlay" style={{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.3)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div className="modal-content" style={{background:'#fff',padding:32,borderRadius:16,minWidth:350,maxWidth:480,position:'relative',boxShadow:'0 8px 32px rgba(0,0,0,0.18)'}}>
+        <h3 style={{marginBottom:20,fontWeight:600,fontSize:22,textAlign:'center',color:'#2d6cdf'}}>Danh sách thành viên đang kết nối</h3>
+        <button style={{position:'absolute',top:16,right:24,background:'#f5f5f5',border:'none',borderRadius:4,padding:'4px 12px',fontWeight:500,cursor:'pointer',color:'#2d6cdf'}} onClick={onClose}>Đóng</button>
+        {(!members || members.length === 0) ? (
+          <p style={{textAlign:'center',color:'#888'}}>Chưa có thành viên nào.</p>
+        ) : (
+          <>
+            <ul style={{listStyle:'none',padding:0,margin:0}}>
+              {members.map((m, idx) => (
+                <li key={m.id || idx} style={{display:'flex',alignItems:'center',gap:12,background:'#f6f8fa',borderRadius:8,padding:'12px 16px',marginBottom:10,boxShadow:'0 1px 4px rgba(44,108,223,0.04)'}}>
+                  <div style={{width:36,height:36,borderRadius:'50%',background:'#e3eefd',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:600,color:'#2d6cdf',fontSize:18}}>
+                    {(m.full_name || m.fullName || 'Ẩn danh').charAt(0).toUpperCase()}
+                  </div>
+                  <div style={{fontSize:17,fontWeight:500,color:'#2d6cdf'}}>{m.full_name || m.fullName || 'Ẩn danh'}</div>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 import './CoachDashboard.css';
 import { FaUsers, FaCalendarAlt, FaEnvelope, FaStar, FaTachometerAlt, FaSignOutAlt, FaPenNib, FaUserCircle } from 'react-icons/fa';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -15,27 +69,52 @@ function CoachDashboard() {
 
   // State cho dữ liệu dashboard
   const [dashboardData, setDashboardData] = useState({
-    totalClients: 0,
-    activeClients: 0,
-    attentionClients: 0,
-    completedClients: 0,
-    appointmentsToday: 0,
-    appointmentsThisWeek: 0,
-    pendingAppointments: 0,
-    completionRate: 0,
-    unreadMessages: 0,
-    onlineClients: 0,
-    avgResponse: 0,
-    rating: 0,
-    performance: {
-      success: 0,
-      fiveStar: 0,
-      onTime: 0,
-      fastResponse: 0
-    },
-    recentActivities: []
+    totalMembers: 0,
+    totalQuitPlans: 0,
+    totalReviews: 0,
+    averageRating: 0
   });
   const [loading, setLoading] = useState(true);
+  const [showReviews, setShowReviews] = useState(false);
+  const [myReviews, setMyReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [showMembers, setShowMembers] = useState(false);
+  const [myMembers, setMyMembers] = useState([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  // Hàm lấy danh sách thành viên
+  const fetchMyMembers = async () => {
+    setLoadingMembers(true);
+    try {
+      const res = await axiosInstance.get('/api/coach-members/my-members');
+      if (res.data && Array.isArray(res.data)) {
+        setMyMembers(res.data);
+      } else if (res.data && res.data.data && Array.isArray(res.data.data)) {
+        setMyMembers(res.data.data);
+      } else {
+        setMyMembers([]);
+      }
+    } catch (e) {
+      setMyMembers([]);
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+  // Hàm lấy đánh giá của tôi
+  const fetchMyReviews = async () => {
+    setLoadingReviews(true);
+    try {
+      const res = await axiosInstance.get('/api/coach-reviews/my-reviews-coach');
+      if (res.data && res.data.data) {
+        setMyReviews(res.data.data);
+      } else {
+        setMyReviews([]);
+      }
+    } catch (e) {
+      setMyReviews([]);
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
 
   useEffect(() => {
     if (user && isOverview) {
@@ -46,10 +125,9 @@ function CoachDashboard() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      // Gọi API để lấy dữ liệu dashboard
-      const response = await axiosInstance.get('/api/coach/dashboard');
-      
-      if (response.data.status === 'success') {
+      // Gọi API mới để lấy dữ liệu dashboard
+      const response = await axiosInstance.get('/api/coach-dashboard');
+      if (response.data && response.data.data) {
         setDashboardData(response.data.data);
       } else {
         console.error('Failed to fetch dashboard data');
@@ -58,29 +136,10 @@ function CoachDashboard() {
       console.error('Error fetching dashboard data:', error);
       // Fallback với dữ liệu mẫu nếu API chưa có
       setDashboardData({
-        totalClients: 47,
-        activeClients: 32,
-        attentionClients: 8,
-        completedClients: 7,
-        appointmentsToday: 0,
-        appointmentsThisWeek: 23,
-        pendingAppointments: 3,
-        completionRate: 96,
-        unreadMessages: 8,
-        onlineClients: 12,
-        avgResponse: 2.5,
-        rating: 4.9,
-        performance: {
-          success: 89,
-          fiveStar: 90,
-          onTime: 96,
-          fastResponse: 100
-        },
-        recentActivities: [
-          { time: '14:00 - 15:00', title: 'Nguyễn Thị B - Tư vấn cai thuốc' },
-          { time: '15:30 - 16:30', title: 'Trần Văn C - Theo dõi tiến độ' },
-          { time: '17:00 - 18:00', title: 'Lê Thị D - Tư vấn ban đầu' }
-        ]
+        totalMembers: 1,
+        totalQuitPlans: 0,
+        totalReviews: 1,
+        averageRating: 4
       });
     } finally {
       setLoading(false);
@@ -144,74 +203,36 @@ function CoachDashboard() {
             ) : (
               <>
                 <div className="welcome-section">
-                  <h2>Chào mừng trở lại, {user?.fullName || 'Coach'}!</h2>
-                  <p>Bạn có {dashboardData.appointmentsThisWeek} lịch hẹn trong tuần, {dashboardData.unreadMessages} tin nhắn chưa đọc.</p>
+                  <h2>Chào mừng bạn trở lại bảng điều khiển huấn luyện viên, {user?.fullName || 'Coach'}!</h2>
                   <div className="rating">
                     <FaStar />
-                    <span>{dashboardData.rating}</span>
-                    <button>Tư vấn viên xuất sắc</button>
+                    <span>{dashboardData.averageRating}</span>
                   </div>
                 </div>
                 <div className="cards-container">
-                  <div className="card">
+                  <div className="card" style={{cursor:'pointer'}} onClick={() => { setShowMembers(true); fetchMyMembers(); }}>
                     <FaUsers />
-                    <h3>{dashboardData.totalClients}</h3>
-                    <p>Tổng khách hàng</p>
+                    <h3>{dashboardData.totalMembers}</h3>
+                    <p>Thành viên</p>
                   </div>
                   <div className="card">
                     <FaCalendarAlt />
-                    <h3>{dashboardData.appointmentsThisWeek}</h3>
-                    <p>Lịch hẹn tuần này</p>
+                    <h3>{dashboardData.totalQuitPlans}</h3>
+                    <p>Kế hoạch cai thuốc</p>
                   </div>
-                  <div className="card">
+                  <div className="card" style={{cursor:'pointer'}} onClick={() => { setShowReviews(true); fetchMyReviews(); }}>
                     <FaEnvelope />
-                    <h3>{dashboardData.unreadMessages}</h3>
-                    <p>Tin nhắn chưa đọc</p>
+                    <h3>{dashboardData.totalReviews}</h3>
+                    <p>Đánh giá</p>
                   </div>
+                  <ReviewsModal open={showReviews} onClose={() => setShowReviews(false)} reviews={myReviews} />
+                  <MembersModal open={showMembers} onClose={() => setShowMembers(false)} members={myMembers} />
                 </div>
-                <div className="performance-container">
-                  <h4>Hiệu suất tư vấn</h4>
-                  <div>
-                    <p>Khách hàng thành công</p>
-                    <div className="progress-bar">
-                      <div className="progress" style={{ width: dashboardData.performance.success + '%' }}></div>
-                    </div>
-                    <p>{Math.round(dashboardData.totalClients * dashboardData.performance.success / 100)}/{dashboardData.totalClients} ({dashboardData.performance.success}%)</p>
-                  </div>
-                  <div>
-                    <p>Đánh giá 5 sao</p>
-                    <div className="progress-bar">
-                      <div className="progress" style={{ width: dashboardData.performance.fiveStar + '%' }}></div>
-                    </div>
-                    <p>{Math.round(dashboardData.completedClients * dashboardData.performance.fiveStar / 100)}/{dashboardData.completedClients} ({dashboardData.performance.fiveStar}%)</p>
-                  </div>
-                  <div>
-                    <p>Hoàn thành đúng hạn</p>
-                    <div className="progress-bar">
-                      <div className="progress" style={{ width: dashboardData.performance.onTime + '%' }}></div>
-                    </div>
-                    <p>{Math.round(dashboardData.totalClients * dashboardData.performance.onTime / 100)}/{dashboardData.totalClients} ({dashboardData.performance.onTime}%)</p>
-                  </div>
-                  <div>
-                    <p>Phản hồi nhanh</p>
-                    <div className="progress-bar">
-                      <div className="progress" style={{ width: dashboardData.performance.fastResponse + '%' }}></div>
-                    </div>
-                    <p>{Math.round(dashboardData.totalClients * dashboardData.performance.fastResponse / 100)}/{dashboardData.totalClients} ({dashboardData.performance.fastResponse}%)</p>
-                  </div>
-                </div>
-                <div className="activity-section">
-                  <h4>Hoạt động gần đây</h4>
-                  {dashboardData.recentActivities.length === 0 ? (
-                    <p>Chưa có hoạt động gần đây</p>
-                  ) : (
-                    dashboardData.recentActivities.map((act, idx) => (
-                      <div className="activity-item" key={idx}>
-                        <span className="activity-time">{act.time}</span>
-                        <div className="activity-title">{act.title}</div>
-                      </div>
-                    ))
-                  )}
+                {/* Biểu đồ thành viên trong tháng với Ant Design Plots */}
+                <div style={{marginTop: 36, background: '#fff', borderRadius: 16, boxShadow: '0 2px 12px rgba(44,108,223,0.06)', padding: 24}}>
+                  <h3 style={{marginBottom: 16, color: '#2d6cdf', fontWeight: 600}}>Số thành viên mới theo tháng</h3>
+                  <MembersMonthChart data={getMembersByMonth(myMembers)} />
+                  <div style={{fontSize:13, color:'#888', marginTop:8}}>Biểu đồ này dựa trên danh sách thành viên bạn đã xem gần nhất.</div>
                 </div>
               </>
             )}
@@ -220,6 +241,32 @@ function CoachDashboard() {
       </div>
     </div>
   );
+}
+
+// Helper: Đếm số thành viên theo tháng (dựa vào trường createdAt hoặc joinDate)
+function getMembersByMonth(members) {
+  if (!Array.isArray(members)) return [];
+  const counts = {};
+  members.forEach(function(m) {
+    let dateStr = m.createdAt || m.joinDate || m.created_at;
+    if (!dateStr) return;
+    const d = new Date(dateStr);
+    if (isNaN(d)) return;
+    const key = (d.getMonth() + 1).toString().padStart(2, '0') + '/' + d.getFullYear();
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  // Sắp xếp theo thời gian tăng dần
+  return Object.entries(counts)
+    .sort(function(a, b) {
+      const am = parseInt(a[0].split('/')[0], 10);
+      const ay = parseInt(a[0].split('/')[1], 10);
+      const bm = parseInt(b[0].split('/')[0], 10);
+      const by = parseInt(b[0].split('/')[1], 10);
+      return ay !== by ? ay - by : am - bm;
+    })
+    .map(function(entry) {
+      return { month: entry[0], count: entry[1] };
+    });
 }
 
 export default CoachDashboard;

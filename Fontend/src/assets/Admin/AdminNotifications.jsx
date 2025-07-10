@@ -1,22 +1,42 @@
 import './AdminPage.css';
 import './AdminNotificationForm.css';
 import { useState, useRef, useEffect } from 'react';
+import axiosInstance from '../../../axiosInstance';
 import { FaEdit, FaTrash, FaEllipsisV } from 'react-icons/fa';
 
-const initialNotifications = [
-  { id: 1, content: 'Chúc mừng bạn đã đạt thành tích mới!', type: 'thanh-tich', time: '10/06/2025', target: 'Tất cả', sendType: 'Khi đạt thành tích' },
-  { id: 2, content: 'Đừng bỏ cuộc, hãy tiếp tục cố gắng nhé!', type: 'login', time: '09/06/2025', target: 'Tất cả', sendType: 'Khi đăng nhập' },
-];
+// initialNotifications chỉ dùng khi chưa có API
+const initialNotifications = [];
 
 
 function AdminNotifications() {
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const [notifications, setNotifications] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ content: '', sendType: 'Khi đăng nhập', time: '', target: 'Tất cả' });
+  const [form, setForm] = useState({ title: '', content: '', time: '', target: 'Tất cả' });
   const [openMenu, setOpenMenu] = useState(null);
   const menuRef = useRef();
 
+
+  // Fetch notifications from API
   useEffect(() => {
+    async function fetchNotifications() {
+      try {
+        const res = await axiosInstance.get('/api/notifications');
+        // Map API data to table format
+        if (Array.isArray(res.data)) {
+          setNotifications(res.data.map(n => ({
+            id: n.id,
+            title: n.title || '',
+            content: n.content,
+            time: n.createdAt ? new Date(n.createdAt).toLocaleDateString('vi-VN') : '',
+            target: n.target || 'Tất cả',
+          })));
+        }
+      } catch (e) {
+        setNotifications([]);
+      }
+    }
+    fetchNotifications();
+
     function handleClick(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setOpenMenu(null);
@@ -26,14 +46,32 @@ function AdminNotifications() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const handleAdd = e => {
+  // Gửi thông báo mới lên API
+  const handleAdd = async e => {
     e.preventDefault();
-    setNotifications([
-      ...notifications,
-      { ...form, id: Date.now(), time: new Date().toLocaleDateString('vi-VN') }
-    ]);
-    setForm({ content: '', sendType: 'Khi đăng nhập', time: '', target: 'Tất cả' });
-    setShowAdd(false);
+    try {
+      const res = await axiosInstance.post('/api/notifications', {
+        title: form.title,
+        content: form.content,
+        target: form.target
+      });
+      // Sau khi tạo thành công, reload lại danh sách
+      setForm({ title: '', content: '', time: '', target: 'Tất cả' });
+      setShowAdd(false);
+      // Gọi lại API để lấy danh sách mới
+      const res2 = await axiosInstance.get('/api/notifications');
+      if (Array.isArray(res2.data)) {
+        setNotifications(res2.data.map(n => ({
+          id: n.id,
+          title: n.title || '',
+          content: n.content,
+          time: n.createdAt ? new Date(n.createdAt).toLocaleDateString('vi-VN') : '',
+          target: n.target || 'Tất cả',
+        })));
+      }
+    } catch (e) {
+      alert('Tạo thông báo thất bại!');
+    }
   };
 
   const handleDelete = id => {
@@ -50,6 +88,14 @@ function AdminNotifications() {
           <form className="admin-modal-content admin-notification-form" onSubmit={handleAdd}>
             <button className="admin-modal-close admin-notification-close" onClick={() => setShowAdd(false)} type="button">×</button>
             <h3 className="admin-notification-title">Tạo Thông Báo mới</h3>
+            <label className="admin-notification-label">Tiêu đề</label>
+            <input
+              className="admin-notification-input"
+              required
+              placeholder="Tiêu đề thông báo"
+              value={form.title}
+              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+            />
             <label className="admin-notification-label">Nội dung thông báo</label>
             <textarea 
               className="admin-notification-textarea"
@@ -59,19 +105,7 @@ function AdminNotifications() {
               onChange={e => setForm(f => ({ ...f, content: e.target.value }))} 
             />
             <div className="admin-notification-row">
-              <div className="admin-notification-col">
-                <label className="admin-notification-label">Loại gửi</label>
-                <select 
-                  className="admin-notification-select"
-                  value={form.sendType} 
-                  onChange={e => setForm(f => ({ ...f, sendType: e.target.value }))}
-                >
-                  <option value="Khi đăng nhập">Gửi khi đăng nhập</option>
-                  <option value="Khi đạt thành tích">Gửi khi đạt thành tích</option>
-                  <option value="Khi đạt huy hiệu">Gửi khi đạt huy hiệu</option>
-                  <option value="Gửi ngay">Gửi ngay</option>
-                </select>
-              </div>
+
               <div className="admin-notification-col">
                 <label className="admin-notification-label">Đối tượng</label>
                 <input 
@@ -89,15 +123,15 @@ function AdminNotifications() {
       <table className="admin-table">
         <thead>
           <tr>
-            <th>Nội dung</th><th>Thời điểm tạo</th><th>Loại gửi</th><th>Đối tượng</th><th>Thao tác</th>
+            <th>Tiêu đề</th><th>Nội dung</th><th>Thời điểm tạo</th><th>Đối tượng</th><th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
           {notifications.map(n => (
             <tr key={n.id}>
+              <td>{n.title}</td>
               <td>{n.content}</td>
               <td>{n.time}</td>
-              <td>{n.sendType}</td>
               <td>{n.target}</td>
               <td style={{position:'relative'}}>
                 <button
@@ -126,16 +160,7 @@ function AdminNotifications() {
                       padding: '6px 0'
                     }}
                   >
-                    <button
-                      className="admin-btn admin-btn-menu"
-                      style={{
-                        display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
-                        color:'#222',fontSize:'1rem',textAlign:'left',fontWeight:500
-                      }}
-                      onClick={() => { setOpenMenu(null); }}
-                    >
-                      <FaEdit /> <span style={{color:'#222'}}>Chỉnh sửa</span>
-                    </button>
+
                     <button
                       className="admin-btn admin-btn-menu"
                       style={{

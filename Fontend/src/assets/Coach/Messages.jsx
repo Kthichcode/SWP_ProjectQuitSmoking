@@ -14,11 +14,39 @@ function Messages() {
   const [sendingMessage, setSendingMessage] = useState(false);
 
   const messagesEndRef = useRef(null);
+  const globalSubscriptionRef = useRef(null);
 
   useEffect(() => {
     if (user) {
       fetchConversations();
+
+      const connectGlobalWS = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        await WebSocketService.connect(token);
+        const globalSub = WebSocketService.subscribe(
+          `/user/queue/messages/global`,
+          (message) => {
+            const receivedMessage = JSON.parse(message.body);
+            console.log('Global subscription received:', receivedMessage);
+            handleIncomingGlobalMessage(receivedMessage);
+          }
+        );
+
+        globalSubscriptionRef.current = globalSub;
+        console.log('Global WebSocket subscription created.');
+      };
+
+      connectGlobalWS();
     }
+
+    return () => {
+      if (globalSubscriptionRef.current) {
+        globalSubscriptionRef.current.unsubscribe();
+        console.log('Global WebSocket unsubscribed.');
+      }
+    };
   }, [user]);
 
   useEffect(() => {
@@ -32,9 +60,10 @@ function Messages() {
     const subscriptionPromise = initWebSocket();
 
     return () => {
-      subscriptionPromise.then(subscription => {
+      subscriptionPromise.then((subscription) => {
         if (subscription) {
           subscription.unsubscribe();
+          console.log(`Unsubscribed WS for selection ${selectedConversation.selectionId}`);
         }
       });
     };
@@ -70,13 +99,12 @@ function Messages() {
           try {
             const receivedMessage = JSON.parse(message.body);
             console.log('Parsed message:', receivedMessage);
-            
-            // Bỏ qua tin nhắn do chính mình gửi (tránh duplicate với optimistic message)
+
             if (receivedMessage.senderType === 'COACH') {
               console.log('Skipping own COACH message in Messages.jsx');
               return;
             }
-            
+
             const formattedMessage = {
               id: receivedMessage.messageId || Date.now(),
               senderId:
@@ -92,24 +120,40 @@ function Messages() {
                   : user.fullName || 'Coach',
             };
 
-            console.log('Adding formatted message:', formattedMessage);
             setMessages((prev) => {
-              console.log('Current messages before adding:', prev.length);
-              // Kiểm tra duplicate theo ID và content
-              const exists = prev.some((m) => 
-                m.id === formattedMessage.id || 
-                (m.content === formattedMessage.content && 
-                 m.senderType === formattedMessage.senderType &&
-                 Math.abs(new Date(m.timestamp).getTime() - new Date(formattedMessage.timestamp).getTime()) < 3000)
+              const exists = prev.some(
+                (m) =>
+                  m.id === formattedMessage.id ||
+                  (m.content === formattedMessage.content &&
+                    m.senderType === formattedMessage.senderType &&
+                    Math.abs(new Date(m.timestamp).getTime() - new Date(formattedMessage.timestamp).getTime()) < 3000)
               );
-              console.log('Message exists by ID or content:', exists);
               if (exists) {
                 console.log('Message already exists, skipping');
                 return prev;
               }
-              console.log('Adding new message to state');
               return [...prev, formattedMessage];
             });
+
+            setConversations((prevConvs) =>
+              prevConvs.map((conv) => {
+                if (conv.selectionId === receivedMessage.selectionId) {
+                  return {
+                    ...conv,
+                    lastMessage: receivedMessage.content,
+                    lastMessageTime: new Date(receivedMessage.sentAt).toLocaleTimeString('vi-VN', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }),
+                    unreadCount:
+                      conv.selectionId === selectedConversation?.selectionId
+                        ? 0
+                        : (conv.unreadCount || 0) + 1,
+                  };
+                }
+                return conv;
+              })
+            );
           } catch (err) {
             console.error('Lỗi parse WebSocket message:', err);
           }
@@ -122,6 +166,35 @@ function Messages() {
       console.error('Lỗi connectWebSocket:', e);
       return null;
     }
+  };
+
+  const handleIncomingGlobalMessage = (receivedMessage) => {
+    if (receivedMessage.senderType === 'COACH') {
+      return;
+    }
+
+    // If the message belongs to the currently selected conversation, do not update unread
+    if (receivedMessage.selectionId === selectedConversation?.selectionId) {
+      console.log('Global message belongs to current conversation → skip updating unread');
+      return;
+    }
+
+    setConversations((prevConvs) =>
+      prevConvs.map((conv) => {
+        if (conv.selectionId === receivedMessage.selectionId) {
+          return {
+            ...conv,
+            lastMessage: receivedMessage.content,
+            lastMessageTime: new Date(receivedMessage.sentAt).toLocaleTimeString('vi-VN', {
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+            unreadCount: (conv.unreadCount || 0) + 1,
+          };
+        }
+        return conv;
+      })
+    );
   };
 
   const fetchConversations = async () => {
@@ -151,7 +224,7 @@ function Messages() {
             hour: '2-digit',
             minute: '2-digit',
           }),
-          unreadCount: 0,
+          unreadCount: sel.unreadCount || 0,
         }));
 
         setConversations(formatted);
@@ -170,11 +243,22 @@ function Messages() {
     }
   };
 
+  const markConversationAsRead = async (selectionId) => {
+    try {
+      await axiosInstance.put(`/api/chat/mark-read/${selectionId}`);
+      console.log(`Marked messages as read for selection ${selectionId}`);
+    } catch (e) {
+      console.error('Lỗi mark messages as read:', e);
+    }
+  };
+
   const selectConversation = async (conversation) => {
     if (selectedConversation?.id === conversation.id) return;
 
     setSelectedConversation(conversation);
     await fetchMessages(conversation.selectionId);
+    await markConversationAsRead(conversation.selectionId);
+    // Mark as read locally immediately when selected
     markAsReadLocally(conversation.id);
   };
 
@@ -199,9 +283,8 @@ function Messages() {
         isOptimistic: false,
       }));
 
-      // Bảo tồn các optimistic messages (tin nhắn đang gửi)
       setMessages((prev) => {
-        const optimisticMessages = prev.filter(msg => msg.isOptimistic);
+        const optimisticMessages = prev.filter((msg) => msg.isOptimistic);
         return [...formatted, ...optimisticMessages];
       });
     } catch (err) {
@@ -232,7 +315,7 @@ function Messages() {
       content: messageContent,
       timestamp: messageTimestamp,
       senderName: user.fullName || 'Coach',
-      isOptimistic: true, // Đánh dấu tin nhắn tạm thời
+      isOptimistic: true,
     };
 
     setMessages((prev) => [...prev, optimisticMessage]);
@@ -252,34 +335,28 @@ function Messages() {
 
       if (res.data.status === 'success') {
         console.log('Message sent successfully, server response:', res.data);
-        // Cập nhật tin nhắn optimistic thành tin nhắn thật
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === optimisticId
-              ? { 
-                  ...msg, 
+              ? {
+                  ...msg,
                   id: res.data.data.messageId || optimisticId,
                   isOptimistic: false,
                   timestamp: res.data.data.sentAt || messageTimestamp,
-                  // Đánh dấu đây là tin nhắn từ server để tránh duplicate
-                  fromServer: true
+                  fromServer: true,
                 }
               : msg
           )
         );
-
-        // Server sẽ tự động broadcast tin nhắn qua WebSocket
-        // Không cần gửi manual nữa
       } else {
         throw new Error('Gửi tin nhắn thất bại');
       }
     } catch (e) {
       console.error('Lỗi gửi tin nhắn:', e);
-      // Xóa tin nhắn optimistic khi gửi thất bại
       setMessages((prev) =>
         prev.filter((msg) => msg.id !== optimisticId)
       );
-      setNewMessage(messageContent); // Khôi phục nội dung tin nhắn
+      setNewMessage(messageContent);
     } finally {
       setSendingMessage(false);
     }
@@ -351,8 +428,9 @@ function Messages() {
                 </div>
                 <div className="last-time">{conv.lastMessageTime}</div>
               </div>
-              {conv.unreadCount > 0 && (
-                <span className="unread-badge">{conv.unreadCount}</span>
+              {/* Show unread dot if there are unread messages and this conversation is NOT selected */}
+              {conv.unreadCount > 0 && selectedConversation?.id !== conv.id && (
+                <span className="unread-dot" style={{ color: 'red', fontSize: 18, marginLeft: 8 }}>●</span>
               )}
             </div>
           ))
