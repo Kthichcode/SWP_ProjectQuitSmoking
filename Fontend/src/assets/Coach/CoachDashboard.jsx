@@ -1,3 +1,166 @@
+// Modal gửi thông báo cho member
+// Modal gửi thông báo cho member (tạo notification mới trước khi gửi)
+function SendNotificationModal({ open, onClose, members, onSend, loading, loadingMembers }) {
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [personalizedReason, setPersonalizedReason] = useState("");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [error, setError] = useState("");
+  const [step, setStep] = useState(1); // 1: tạo notification, 2: gửi cho member
+  const [createdNotificationId, setCreatedNotificationId] = useState(null);
+  const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      setSelectedUserId("");
+      setPersonalizedReason("");
+      setTitle("");
+      setContent("");
+      setError("");
+      setStep(1);
+      setCreatedNotificationId(null);
+      setCreating(false);
+    }
+  }, [open]);
+
+  // Bước 1: Tạo notification mới
+  const handleCreateNotification = async () => {
+    if (!title || !content) {
+      setError("Vui lòng nhập tiêu đề và nội dung thông báo.");
+      return;
+    }
+    setError("");
+    setCreating(true);
+    try {
+      const res = await axiosInstance.post('/api/notifications', {
+        title,
+        content
+      });
+      if (res.data && res.data.notificationId) {
+        setCreatedNotificationId(res.data.notificationId);
+        setStep(2);
+      } else if (res.data && res.data.id) {
+        setCreatedNotificationId(res.data.id);
+        setStep(2);
+      } else {
+        setError("Không lấy được notificationId từ phản hồi API.");
+      }
+    } catch (e) {
+      setError("Tạo thông báo thất bại: " + (e?.response?.data?.message || e?.message || ''));
+      console.error('[SendNotificationModal] Lỗi tạo notification:', e?.response?.data || e);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  // Bước 2: Gửi notification cho member
+  const handleSend = () => {
+    if (!selectedUserId || !personalizedReason) {
+      setError("Vui lòng chọn member và nhập lý do cá nhân hóa.");
+      return;
+    }
+    if (!createdNotificationId || isNaN(Number(createdNotificationId))) {
+      setError("Không có notificationId hợp lệ (null hoặc không phải số).");
+      return;
+    }
+    if (!selectedUserId || isNaN(Number(selectedUserId))) {
+      setError("Không có userId hợp lệ (null hoặc không phải số).");
+      return;
+    }
+    // Log giá trị gửi đi để debug lỗi id null
+    console.log('Gửi notification:', {
+      userId: selectedUserId,
+      notificationId: createdNotificationId,
+      personalizedReason
+    });
+    setError("");
+    onSend({
+      userId: Number(selectedUserId),
+      notificationId: Number(createdNotificationId),
+      personalizedReason
+    });
+  };
+
+  if (!open) return null;
+  return (
+    <div className="modal-overlay" style={{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.3)',zIndex:2001,display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div className="modal-content" style={{background:'#fff',padding:32,borderRadius:16,minWidth:350,maxWidth:420,position:'relative',boxShadow:'0 8px 32px rgba(0,0,0,0.18)'}}>
+        <h3 style={{marginBottom:16,fontWeight:600,fontSize:20}}>Gửi thông báo cho member</h3>
+        <button style={{position:'absolute',top:16,right:24,background:'#f5f5f5',border:'none',borderRadius:4,padding:'4px 12px',fontWeight:500,cursor:'pointer',color:'#2d6cdf'}} onClick={onClose}>Đóng</button>
+        {step === 1 ? (
+          <>
+            <div style={{marginBottom:12}}>
+              <label>Tiêu đề thông báo:</label><br/>
+              <input type="text" value={title} onChange={e => setTitle(e.target.value)} style={{width:'100%',padding:6,borderRadius:4}}/>
+            </div>
+            <div style={{marginBottom:12}}>
+              <label>Nội dung thông báo:</label><br/>
+              <textarea value={content} onChange={e => setContent(e.target.value)} style={{width:'100%',padding:6,borderRadius:4,minHeight:60}}/>
+            </div>
+            {error && <div style={{color:'red',marginBottom:8}}>{error}</div>}
+            <button onClick={handleCreateNotification} disabled={creating} style={{background:'#2d6cdf',color:'#fff',padding:'8px 20px',border:'none',borderRadius:6,fontWeight:600,cursor:'pointer'}}>
+              {creating ? 'Đang tạo...' : 'Tạo thông báo'}
+            </button>
+          </>
+        ) : (
+          <>
+            <div style={{marginBottom:12}}>
+              <label>Chọn member để gửi:</label><br/>
+              {loadingMembers ? (
+                <div style={{color:'#888',margin:'8px 0'}}>Đang tải danh sách thành viên...</div>
+              ) : (!members || members.length === 0) ? (
+                <div style={{color: '#888', margin: '8px 0'}}>Chưa có thành viên nào để gửi thông báo.</div>
+              ) : (
+                <select 
+                  value={selectedUserId} 
+                  onChange={e => {
+                    const val = e.target.value;
+                    setSelectedUserId(val ? String(val) : "");
+                  }} 
+                  style={{width:'100%',padding:6,borderRadius:4}}
+                >
+                  <option value="">-- Chọn member --</option>
+                  {members
+                    .filter(m => m.memberId !== undefined && m.memberId !== null && !isNaN(Number(m.memberId)))
+                    .map(m => {
+                      // Lấy tên từ fullName, fallback sang username nếu không có
+                      let name = m.fullName || m.username || 'Ẩn danh';
+                      let idStr = String(m.memberId);
+                      return (
+                        <option key={idStr} value={idStr}>
+                          {name} (ID: {idStr})
+                        </option>
+                      );
+                    })}
+                </select>
+              )}
+            </div>
+            <div style={{marginBottom:12}}>
+              <label>Lý do cá nhân hóa:</label><br/>
+              <input type="text" value={personalizedReason} onChange={e => setPersonalizedReason(e.target.value)} style={{width:'100%',padding:6,borderRadius:4}}/>
+            </div>
+            {error && <div style={{color:'red',marginBottom:8}}>{error}</div>}
+            <button 
+              onClick={handleSend} 
+              disabled={loading || !selectedUserId || isNaN(Number(selectedUserId))}
+              style={{
+                background: loading || !selectedUserId || isNaN(Number(selectedUserId)) ? '#b0c4de' : '#2d6cdf',
+                color:'#fff',
+                padding:'8px 20px',
+                border:'none',
+                borderRadius:6,
+                fontWeight:600,
+                cursor: loading || !selectedUserId || isNaN(Number(selectedUserId)) ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {loading ? 'Đang gửi...' : 'Gửi thông báo'}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 import React, { useState, useEffect } from 'react';
 import MembersBarChart from '../../components/MembersBarChart';
 import MembersMonthChart from '../../components/MembersMonthChart';
@@ -101,6 +264,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../../axiosInstance';
 
 function CoachDashboard() {
+  // State cho modal gửi thông báo
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [sending, setSending] = useState(false);
+  // State cho danh sách member dùng cho gửi thông báo (luôn fetch mới khi mở modal)
+  const [sendMembers, setSendMembers] = useState([]);
+  const [loadingSendMembers, setLoadingSendMembers] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isOverview = location.pathname === '/coach' || location.pathname === '/coach/';
@@ -109,10 +278,32 @@ function CoachDashboard() {
   // Notification state
   const [showNotification, setShowNotification] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [hasUnread, setHasUnread] = useState(false);
+
+  // Fetch unread notifications for dot (on mount and when user changes)
+  useEffect(() => {
+    const fetchUnread = async () => {
+      if (user && user.token) {
+        try {
+          const res = await axiosInstance.get('/api/notifications/me');
+          if (Array.isArray(res.data)) {
+            setHasUnread(res.data.some(n => !(n.hasBeenRead || n.isRead || n.read)));
+          } else {
+            setHasUnread(false);
+          }
+        } catch (e) {
+          setHasUnread(false);
+        }
+      } else {
+        setHasUnread(false);
+      }
+    };
+    fetchUnread();
+  }, [user]);
+
   // Fetch notifications from API when modal opens
   useEffect(() => {
     const fetchNotifications = async () => {
-      console.log('[CoachDashboard] user context:', user);
       if (showNotification && user && user.token) {
         try {
           const res = await axiosInstance.get('/api/notifications/me');
@@ -124,16 +315,14 @@ function CoachDashboard() {
               isRead: n.hasBeenRead || n.isRead || n.read,
               createdAt: n.sentAt || n.createdAt
             })));
+            setHasUnread(res.data.some(n => !(n.hasBeenRead || n.isRead || n.read)));
           } else {
             setNotifications([]);
+            setHasUnread(false);
           }
         } catch (e) {
-          console.error('[CoachDashboard] Notification API error:', e?.response?.data || e);
           setNotifications([]);
-        }
-      } else {
-        if (showNotification) {
-          console.warn('[CoachDashboard] Không gọi API vì user chưa sẵn sàng:', user);
+          setHasUnread(false);
         }
       }
     };
@@ -170,6 +359,26 @@ function CoachDashboard() {
       setMyMembers([]);
     } finally {
       setLoadingMembers(false);
+    }
+  };
+
+  // Hàm gửi thông báo cho member
+  const handleSendNotification = async (body) => {
+    setSending(true);
+    try {
+      await axiosInstance.post('/api/notifications/send-to-member', body);
+      alert('Gửi thông báo thành công!');
+      setShowSendModal(false);
+    } catch (e) {
+      alert('Gửi thông báo thất bại!');
+      // Log lỗi chi tiết ra console để debug
+      if (e && e.response) {
+        console.error('Lỗi gửi thông báo:', e.response.data);
+      } else {
+        console.error('Lỗi gửi thông báo:', e);
+      }
+    } finally {
+      setSending(false);
     }
   };
   // Hàm lấy đánh giá của tôi
@@ -274,7 +483,7 @@ function CoachDashboard() {
             >
               <FaBell size={20} color="#2d6cdf" style={{marginRight:8}} />
               Thông báo
-              {notifications.some(n => !n.isRead) && (
+              {hasUnread && (
                 <span style={{
                   position: 'absolute',
                   top: 8,
@@ -293,6 +502,15 @@ function CoachDashboard() {
         </ul>
       </div>
       <div className="main-content">
+        {/* Modal gửi thông báo cho member */}
+        <SendNotificationModal
+          open={showSendModal}
+          onClose={() => setShowSendModal(false)}
+          members={sendMembers}
+          onSend={handleSendNotification}
+          loading={sending}
+          loadingMembers={loadingSendMembers}
+        />
         {/* Notification Modal */}
         <NotificationModal
           open={showNotification}
@@ -320,8 +538,35 @@ function CoachDashboard() {
                     <span>{dashboardData.averageRating}</span>
                   </div>
                 </div>
+                <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
+                  <button onClick={() => { setShowMembers(true); fetchMyMembers(); }} style={{marginRight:8,background:'#e3eefd',color:'#2d6cdf',padding:'8px 16px',border:'none',borderRadius:6,fontWeight:600,cursor:'pointer'}}>Xem thành viên</button>
+                  <button
+                    onClick={async () => {
+                      setShowSendModal(true);
+                      setLoadingSendMembers(true);
+                      try {
+                        // Gọi API lấy member của coach này (luôn fetch mới)
+                        const res = await axiosInstance.get('/api/coach-members/my-members');
+                        if (res.data && Array.isArray(res.data)) {
+                          setSendMembers(res.data);
+                        } else if (res.data && res.data.data && Array.isArray(res.data.data)) {
+                          setSendMembers(res.data.data);
+                        } else {
+                          setSendMembers([]);
+                        }
+                      } catch (e) {
+                        setSendMembers([]);
+                      } finally {
+                        setLoadingSendMembers(false);
+                      }
+                    }}
+                    style={{background:'#2d6cdf',color:'#fff',padding:'8px 16px',border:'none',borderRadius:6,fontWeight:600,cursor:'pointer'}}
+                  >
+                    Gửi thông báo cho member
+                  </button>
+                </div>
                 <div className="cards-container">
-                  <div className="card" style={{cursor:'pointer'}} onClick={() => { setShowMembers(true); fetchMyMembers(); }}>
+                  <div className="card">
                     <FaUsers />
                     <h3>{dashboardData.totalMembers}</h3>
                     <p>Thành viên</p>

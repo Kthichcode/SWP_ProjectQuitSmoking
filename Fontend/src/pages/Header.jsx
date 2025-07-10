@@ -10,14 +10,35 @@ const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [hasUnread, setHasUnread] = useState(false);
   const navigate = useNavigate();
+  // Fetch notifications for unread dot (on mount and when user changes)
+  useEffect(() => {
+    const fetchUnread = async () => {
+      if (user) {
+        try {
+          const res = await axiosInstance.get('/api/notifications/me');
+          if (Array.isArray(res.data)) {
+            setHasUnread(res.data.some(n => !(n.hasBeenRead || n.isRead || n.read)));
+          } else {
+            setHasUnread(false);
+          }
+        } catch (e) {
+          setHasUnread(false);
+        }
+      } else {
+        setHasUnread(false);
+      }
+    };
+    fetchUnread();
+  }, [user]);
+
   // Fetch notifications from API when modal opens
   useEffect(() => {
     const fetchNotifications = async () => {
       if (showNotification && user) {
         try {
           const res = await axiosInstance.get('/api/notifications/me');
-          // API trả về mảng UserNotificationResponse
           if (Array.isArray(res.data)) {
             setNotifications(res.data.map(n => ({
               userNotificationId: n.userNotificationId,
@@ -26,11 +47,14 @@ const Header = () => {
               isRead: n.hasBeenRead || n.isRead || n.read,
               createdAt: n.sentAt || n.createdAt
             })));
+            setHasUnread(res.data.some(n => !(n.hasBeenRead || n.isRead || n.read)));
           } else {
             setNotifications([]);
+            setHasUnread(false);
           }
         } catch (e) {
           setNotifications([]);
+          setHasUnread(false);
         }
       }
     };
@@ -74,7 +98,7 @@ const Header = () => {
             title="Thông báo"
           >
             <FaBell size={22} color="#222" />
-            {notifications.some(n => !n.isRead) && (
+            {hasUnread && (
               <span style={{
                 position: 'absolute',
                 top: 6,
@@ -115,6 +139,10 @@ const Header = () => {
                         try {
                           await axiosInstance.put(`/api/notifications/mark-as-read/${n.userNotificationId}`);
                           setNotifications(prev => prev.map(item => item.userNotificationId === n.userNotificationId ? { ...item, isRead: true } : item));
+                          setHasUnread(prev => {
+                            // Nếu tất cả đã đọc thì tắt dot
+                            return prev && notifications.some(item => item.userNotificationId !== n.userNotificationId && !item.isRead);
+                          });
                         } catch (e) {
                           // Xử lý lỗi nếu cần
                         }

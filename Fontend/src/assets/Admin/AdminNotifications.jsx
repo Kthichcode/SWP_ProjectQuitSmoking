@@ -45,13 +45,13 @@ function AdminNotifications() {
         const res = await axiosInstance.get('/api/notifications');
         // Map API data to table format
         if (Array.isArray(res.data)) {
-          setNotifications(res.data.map(n => ({
-            id: Number(n.notificationId),
-            title: n.title || '',
-            content: n.content,
-            time: n.createdAt ? new Date(n.createdAt).toLocaleDateString('vi-VN') : '',
-            target: n.target || 'Tất cả',
-          })));
+        setNotifications(res.data.map(n => ({
+          id: Number(n.notificationId),
+          title: n.title || '',
+          content: n.content,
+          time: n.createdAt ? new Date(n.createdAt).toLocaleDateString('vi-VN') : '',
+          sender: n.createdBy || '',
+        })));
         }
       } catch (e) {
         setNotifications([]);
@@ -109,13 +109,19 @@ function AdminNotifications() {
       // Gọi lại API để lấy danh sách mới
       const res2 = await axiosInstance.get('/api/notifications');
       if (Array.isArray(res2.data)) {
-        setNotifications(res2.data.map(n => ({
-          id: Number(n.notificationId),
-          title: n.title || '',
-          content: n.content,
-          time: n.createdAt ? new Date(n.createdAt).toLocaleDateString('vi-VN') : '',
-          target: n.target || 'Tất cả',
-        })));
+        setNotifications(res2.data.map(n => {
+          let targetLabel = 'Tất cả';
+          if (n.target === 'user' || n.target === 'User' || n.userId) targetLabel = 'User';
+          else if (n.target === 'coach' || n.target === 'Coach' || n.coachId) targetLabel = 'Coach';
+          else if (n.target === 'all' || n.target === 'Tất cả') targetLabel = 'Tất cả';
+          return {
+            id: Number(n.notificationId),
+            title: n.title || '',
+            content: n.content,
+            time: n.createdAt ? new Date(n.createdAt).toLocaleDateString('vi-VN') : '',
+            target: targetLabel,
+          };
+        }));
       }
     } catch (e) {
       alert('Tạo thông báo thất bại!');
@@ -235,7 +241,7 @@ function AdminNotifications() {
       <table className="admin-table">
         <thead>
           <tr>
-            <th>Tiêu đề</th><th>Nội dung</th><th>Thời điểm tạo</th><th>Đối tượng</th><th>Thao tác</th>
+            <th>Tiêu đề</th><th>Nội dung</th><th>Thời điểm tạo</th><th>Người gửi</th><th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -244,7 +250,7 @@ function AdminNotifications() {
               <td>{n.title}</td>
               <td>{n.content}</td>
               <td>{n.time}</td>
-              <td>{n.target}</td>
+              <td>{n.sender}</td>
               <td style={{position:'relative'}}>
                 <button
                   className="admin-btn admin-btn-more"
@@ -272,7 +278,6 @@ function AdminNotifications() {
                       padding: '6px 0'
                     }}
                   >
-
                     <button
                       className="admin-btn admin-btn-menu"
                       style={{
