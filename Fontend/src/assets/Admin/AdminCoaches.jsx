@@ -6,7 +6,7 @@ import axios from 'axios';
 function AdminCoaches() {
   const [coaches, setCoaches] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', exp: '', rating: '' });
+  const [form, setForm] = useState({ name: '', username: '', email: '', phone: '', exp: '', rating: '' });
   const [selected, setSelected] = useState(null);
   const [openMenu, setOpenMenu] = useState(null); // coach id for dropdown
   const [showReviews, setShowReviews] = useState(false);
@@ -174,7 +174,7 @@ function AdminCoaches() {
     e.preventDefault();
     
     const payload = {
-      username: form.email, 
+      username: form.username,
       email: form.email,
       fullName: form.name
     };
@@ -200,7 +200,7 @@ function AdminCoaches() {
         ...coaches,
         { ...form, id: Date.now(), status: 'active', plans: 0 }
       ]);
-      setForm({ name: '', email: '', phone: '', exp: '', rating: '' });
+      setForm({ name: '', username: '', email: '', phone: '', exp: '', rating: '' });
       setShowAdd(false);
     } catch (err) {
       alert('Có lỗi khi tạo coach!');
@@ -224,6 +224,7 @@ function AdminCoaches() {
             <button className="admin-modal-close" style={{top: 8, right: 12, fontSize: 28}} onClick={() => setShowAdd(false)} type="button">×</button>
             <h3>Thêm Coach mới</h3>
             <input required placeholder="Họ tên" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+            <input required placeholder="Username" value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} />
             <input required placeholder="Email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
            <button className="admin-btn" type="submit">Thêm</button>
           </form>
