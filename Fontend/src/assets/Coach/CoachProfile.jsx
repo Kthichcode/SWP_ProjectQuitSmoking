@@ -349,17 +349,7 @@ const CoachProfile = () => {
           </div>
 
           <div className="form-row">
-            <div className="form-group">
-              <label>Số điện thoại</label>
-              <input
-                type="tel"
-                value={coachData.phoneNumber || ''}
-                onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                disabled={!isEditing}
-                placeholder="Nhập số điện thoại"
-                style={{ background: '#fff', color: '#222' }}
-              />
-            </div>
+
             <div className="form-group">
               <label>Kinh nghiệm (năm)</label>
               <input

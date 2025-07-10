@@ -538,6 +538,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  height: 400px; /* Đảm bảo chỉ khung chat có scroll riêng */
+  max-height: 400px;
 }
 
 .no-messages {

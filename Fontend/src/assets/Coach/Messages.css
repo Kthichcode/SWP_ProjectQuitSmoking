@@ -212,8 +212,8 @@
 }
 
 .messages-container .message.coach-right .message-content {
-  background: #007bff;
-  color: white;
+  background: white;
+  color: #333;
 }
 
 .messages-container .message.member-left .message-content {
@@ -254,7 +254,7 @@
 }
 
 .messages-container .message.coach-right .message-text {
-  color: white !important;
+  color: #333 !important;
 }
 
 .messages-container .message.member-left .message-text {

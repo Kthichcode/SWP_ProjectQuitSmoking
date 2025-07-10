@@ -122,15 +122,28 @@ function CoachPayment() {
   const stats = calculateStats();
 
   // Xử lý chọn coach với xác nhận
-  const handleSelectCoach = (coach) => {
-    if (window.confirm(`Bạn có chắc chắn muốn chọn coach "${coach.fullName}" để đồng hành không?\nSau khi chọn, bạn sẽ bắt đầu hành trình cùng coach này.`)) {
-      navigate('/progress', {
-        state: {
-          selectedCoach: coach,
-          coachId: coach.userId || coach.id
-        }
-      });
+  // Sửa: Khi chọn coach, gọi API lấy selectionId (nếu có), rồi navigate với state: { selectionId, coachId }
+  const handleSelectCoach = async (coach) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn chọn coach "${coach.fullName}" để đồng hành không?\nSau khi chọn, bạn sẽ bắt đầu hành trình cùng coach này.`)) return;
+
+    const coachId = coach.userId || coach.id;
+    let selectionId = null;
+    try {
+      // Gọi API lấy selectionId nếu đã từng có
+      const response = await axiosInstance.get(`/api/users/members/selection-with-coach/${coachId}`);
+      if (response.data?.status === 'success' && response.data.data?.selectionId) {
+        selectionId = response.data.data.selectionId;
+      }
+    } catch (e) {
+      // Không có selectionId, sẽ tạo khi vào progress
     }
+
+    navigate('/progress', {
+      state: {
+        selectionId: selectionId || undefined,
+        coachId: coachId
+      }
+    });
   };
 
   if (checkingMembership) {

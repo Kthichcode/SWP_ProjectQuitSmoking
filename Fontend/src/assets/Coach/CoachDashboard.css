@@ -44,9 +44,9 @@ body, html {
   transition: background 0.2s, color 0.2s;
   background: none;
 }
-.sidebar-link.active, .sidebar-link:hover {
-  background: #22c55e;
-  color: #222;
+.sidebar-link.active, .sidebar-link:hover, .sidebar-link:focus {
+  background: #22c55e !important;
+  color: #222 !important;
 }
 .sidebar-link.active svg, .sidebar-link:hover svg {
   color: #222;

@@ -210,21 +210,50 @@ function Messages() {
       );
 
       if (res.data.status === 'success' && res.data.data) {
-        const formatted = res.data.data.map((sel) => ({
-          id: sel.selectionId,
-          selectionId: sel.selectionId,
-          userId: sel.member?.userId || sel.member?.id,
-          userFullName:
-            sel.member?.fullName ||
-            sel.member?.user?.fullName ||
-            'Người dùng',
-          userOnline: false,
-          lastMessage: 'Bắt đầu cuộc trò chuyện...',
-          lastMessageTime: new Date(sel.selectedAt).toLocaleTimeString('vi-VN', {
+        const formatted = await Promise.all(res.data.data.map(async (sel) => {
+          let lastMsg = 'Bắt đầu cuộc trò chuyện...';
+          let lastMsgTime = new Date(sel.selectedAt).toLocaleTimeString('vi-VN', {
             hour: '2-digit',
             minute: '2-digit',
-          }),
-          unreadCount: sel.unreadCount || 0,
+          });
+          // Ưu tiên lấy lastMessage từ API nếu có
+          if (sel.lastMessage && sel.lastMessage.content) {
+            lastMsg = sel.lastMessage.content;
+            lastMsgTime = new Date(sel.lastMessage.sentAt).toLocaleTimeString('vi-VN', {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+          } else {
+            // Nếu API không trả về lastMessage, fetch thủ công tin nhắn cuối cùng
+            try {
+              const resMsg = await axiosInstance.get(`/api/chat/history/${sel.selectionId}`);
+              const history = resMsg.data?.data || [];
+              if (history.length > 0) {
+                const last = history[history.length - 1];
+                lastMsg = last.content;
+                lastMsgTime = new Date(last.sentAt).toLocaleTimeString('vi-VN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
+              }
+            } catch (e) {
+              // Nếu lỗi thì giữ nguyên mặc định
+            }
+          }
+          return {
+            id: sel.selectionId,
+            selectionId: sel.selectionId,
+            userId: sel.member?.userId || sel.member?.id,
+            userName: sel.member?.username || sel.member?.user?.username || '',
+            userFullName:
+              sel.member?.fullName ||
+              sel.member?.user?.fullName ||
+              'Người dùng',
+            userOnline: false,
+            lastMessage: lastMsg,
+            lastMessageTime: lastMsgTime,
+            unreadCount: sel.unreadCount || 0,
+          };
         }));
 
         setConversations(formatted);
@@ -414,14 +443,7 @@ function Messages() {
               </div>
               <div className="conversation-info">
                 <div className="conversation-name">
-                  {conv.userFullName}
-                  <span
-                    className={`status ${
-                      conv.userOnline ? 'online' : 'offline'
-                    }`}
-                  >
-                    {conv.userOnline ? ' ●' : ' ○'}
-                  </span>
+                  {conv.userName || conv.userFullName}
                 </div>
                 <div className="last-message">
                   {conv.lastMessage?.slice(0, 40)}...
@@ -443,19 +465,10 @@ function Messages() {
             <div className="messages-chat-header">
               <div className="chat-user-info">
                 <div className="chat-avatar">
-                  {getInitials(selectedConversation.userFullName)}
+                  {getInitials(selectedConversation?.userName || selectedConversation?.userFullName)}
                 </div>
                 <div>
-                  <h4>{selectedConversation.userFullName}</h4>
-                  <span
-                    className={`status ${
-                      selectedConversation.userOnline ? 'online' : 'offline'
-                    }`}
-                  >
-                    {selectedConversation.userOnline
-                      ? '● Đang online'
-                      : '○ Offline'}
-                  </span>
+                  <h4>{selectedConversation?.userName || selectedConversation?.userFullName}</h4>
                 </div>
               </div>
             </div>
@@ -476,12 +489,21 @@ function Messages() {
                     } ${message.isOptimistic ? 'optimistic' : ''}`}
                   >
                     <div className="message-content">
-                      <div className="message-text">{message.content}</div>
-                      <div className="message-time">
-                        {formatTime(message.timestamp)}
-                        {message.isOptimistic && (
-                          <span className="sending-indicator"> ⏳</span>
-                        )}
+                      <div className="message-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                        <strong style={{ fontSize: 14, color: message.senderType === 'COACH' ? '#16a34a' : '#15803d', fontWeight: 700 }}>
+                          {message.senderType === 'MEMBER'
+                            ? (selectedConversation?.userName || selectedConversation?.userFullName)
+                            : (user.userName || user.fullName || 'Bạn')}
+                        </strong>
+                        <span className="timestamp" style={{ fontSize: 12, opacity: 0.7, marginLeft: 8 }}>
+                          {formatTime(message.timestamp)}
+                          {message.isOptimistic && (
+                            <span className="sending-indicator"> ⏳</span>
+                          )}
+                        </span>
+                      </div>
+                      <div className="message-text" style={{ margin: 0, lineHeight: 1.5 }}>
+                        {message.content}
                       </div>
                     </div>
                   </div>

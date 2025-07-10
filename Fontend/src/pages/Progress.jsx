@@ -163,8 +163,9 @@ function Progress() {
     }
   }, [selectionId, activeTab, chatHistoryLoaded]);
 
+  // Luôn scroll xuống cuối khi có tin nhắn mới ở tab chat
   useEffect(() => {
-    if (activeTab === 'chat' && hasNewMessageRef.current) {
+    if (activeTab === 'chat') {
       scrollToBottom();
       hasNewMessageRef.current = false;
     }
@@ -177,8 +178,14 @@ function Progress() {
     }
   };
 
+  // Scroll chỉ trong khung chat, không scroll toàn trang
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!messagesEndRef.current) return;
+    // Tìm container scroll là .messages-list
+    const container = messagesEndRef.current.parentNode;
+    if (container && container.classList.contains('messages-list')) {
+      container.scrollTop = container.scrollHeight;
+    }
   };
 
   const fetchSelectionId = async () => {
@@ -634,9 +641,7 @@ function Progress() {
 
           <div className="progress-stats">
             <div className="stat-card"><h3>{progress.days}</h3><p>Ngày không khói thuốc</p></div>
-            <div className="stat-card"><h3>{progress.hours}</h3><p>Giờ sạch phổi</p></div>
-            <div className="stat-card"><h3>{progress.minutes}</h3><p>Phút tích cực</p></div>
-            <div className="stat-card highlight"><h3>{progress.money.toLocaleString()}₫</h3><p>Tiền đã tiết kiệm</p></div>
+            
 
             {/* Debug card - xóa sau khi test xong */}
             <div className="stat-card debug-card" style={{ border: '2px dashed #f39c12', backgroundColor: '#fff9e6' }}>
@@ -660,7 +665,7 @@ function Progress() {
                 <h3>🎯 Mục tiêu của bạn</h3>
                 <div className="goals-grid">
                   <div className="goal-item"><span className="goal-icon">🚭</span><div><h4>Hoàn toàn không hút thuốc</h4><p>30 ngày liên tục</p></div></div>
-                  <div className="goal-item"><span className="goal-icon">💰</span><div><h4>Tiết kiệm 1,500,000₫</h4><p>Trong 30 ngày</p></div></div>
+                  
                   <div className="goal-item"><span className="goal-icon">❤️</span><div><h4>Cải thiện sức khỏe</h4><p>Phổi sạch hơn, hơi thở dễ dàng</p></div></div>
                 </div>
               </div>

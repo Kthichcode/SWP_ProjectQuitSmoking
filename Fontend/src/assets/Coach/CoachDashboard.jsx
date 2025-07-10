@@ -468,20 +468,19 @@ function CoachDashboard() {
               <FaUserCircle style={{marginRight:8}}/> Hồ sơ cá nhân
             </NavLink>
           </li>
-          <li>
-            <button className="sidebar-logout" onClick={handleLogout}>
-              <FaSignOutAlt style={{marginRight:8}}/> Đăng xuất
-            </button>
-          </li>
           {/* Notification Icon */}
-          <li style={{marginTop: 16, position: 'relative'}}>
+          <li>
             <button
-              className="sidebar-link"
-              style={{background: 'none', border: 'none', display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'relative'}}
-              onClick={() => setShowNotification(true)}
+              className={`sidebar-link${showNotification ? ' active' : ''}`}
+              style={{width: '100%', background: showNotification ? '#22c55e' : 'none', color: '#222', border: 'none', display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'relative', fontWeight: 500, fontSize: '1rem', padding: '12px 20px', borderRadius: '10px', marginBottom: '8px', transition: 'background 0.2s, color 0.2s'}}
+              onClick={e => { e.preventDefault?.(); setShowNotification(true); }}
+              onMouseEnter={e => e.currentTarget.classList.add('active')}
+              onMouseLeave={e => { if (!showNotification) e.currentTarget.classList.remove('active'); }}
               title="Thông báo"
+              tabIndex={0}
+              type="button"
             >
-              <FaBell size={20} color="#2d6cdf" style={{marginRight:8}} />
+              <FaBell style={{marginRight:12, fontSize:'1.2em'}} />
               Thông báo
               {hasUnread && (
                 <span style={{
@@ -499,6 +498,12 @@ function CoachDashboard() {
               )}
             </button>
           </li>
+          <li>
+            <button className="sidebar-logout" onClick={handleLogout}>
+              <FaSignOutAlt style={{marginRight:8}}/> Đăng xuất
+            </button>
+          </li>
+          
         </ul>
       </div>
       <div className="main-content">
