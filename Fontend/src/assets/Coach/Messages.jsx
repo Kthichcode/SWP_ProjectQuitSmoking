@@ -377,6 +377,19 @@ function Messages() {
               : msg
           )
         );
+        // Cập nhật lastMessage ngay khi gửi thành công
+        setConversations((prevConvs) =>
+          prevConvs.map((conv) =>
+            conv.selectionId === selectedConversation.selectionId
+              ? {
+                  ...conv,
+                  lastMessage: messageContent,
+                  lastMessageTime: formatTime(res.data.data.sentAt || messageTimestamp),
+                  unreadCount: 0,
+                }
+              : conv
+          )
+        );
       } else {
         throw new Error('Gửi tin nhắn thất bại');
       }
@@ -446,7 +459,7 @@ function Messages() {
                   {conv.userName || conv.userFullName}
                 </div>
                 <div className="last-message">
-                  {conv.lastMessage?.slice(0, 40)}...
+                  {conv.lastMessage?.slice(0, 40)}
                 </div>
                 <div className="last-time">{conv.lastMessageTime}</div>
               </div>

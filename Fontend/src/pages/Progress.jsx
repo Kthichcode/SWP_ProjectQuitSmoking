@@ -29,6 +29,7 @@ function Progress() {
   const [chatHistoryLoaded, setChatHistoryLoaded] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [existingReview, setExistingReview] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const messagesEndRef = useRef(null);
   const reconnectAttempts = useRef(0);
@@ -358,6 +359,9 @@ function Progress() {
               setChatHistoryLoaded(true);
             }
 
+            // Khi nhận tin nhắn mới từ coach qua websocket
+            handleWebSocketMessage(formattedMessage);
+
           } catch {
             // ignore parse error
           }
@@ -371,6 +375,12 @@ function Progress() {
       setConnectionStatus('disconnected');
       retryConnect();
       return null;
+    }
+  };
+
+  const handleWebSocketMessage = (message) => {
+    if (message.sender === 'coach' && activeTab !== 'chat') {
+      setUnreadCount((prev) => prev + 1);
     }
   };
 
@@ -509,6 +519,13 @@ function Progress() {
       alert('Không thể gửi tin nhắn lúc này. Vui lòng thử lại sau.');
     }
   };
+
+  // Khi chuyển sang tab chat, reset số tin nhắn chưa đọc
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      setUnreadCount(0);
+    }
+  }, [activeTab]);
 
   if (checkingMembership) {
     return (
@@ -654,9 +671,29 @@ function Progress() {
           </div>
 
           <div className="progress-tabs">
-            <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => handleTabChange('overview')}>📊 Tổng quan</button>
-            <button className={activeTab === 'plan' ? 'active' : ''} onClick={() => handleTabChange('plan')}>📋 Kế hoạch</button>
-            <button className={activeTab === 'chat' ? 'active' : ''} onClick={() => handleTabChange('chat')}>💬 Chat với Coach</button>
+            <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => handleTabChange('overview')}>
+              <span role="img" aria-label="Tổng quan">📊</span> Tổng quan
+            </button>
+            <button className={activeTab === 'plan' ? 'active' : ''} onClick={() => handleTabChange('plan')}>
+              <span role="img" aria-label="Kế hoạch">📋</span> Kế hoạch
+            </button>
+            <button className={activeTab === 'chat' ? 'active' : ''} onClick={() => handleTabChange('chat')} style={{ position: 'relative' }}>
+              <span role="img" aria-label="Chat">💬</span> Chat với Coach
+              {unreadCount > 0 && (
+                <span className="unread-dot" style={{
+                  position: 'absolute',
+                  top: 6,
+                  right: 10,
+                  background: '#e74c3c',
+                  color: '#fff',
+                  borderRadius: '50%',
+                  padding: '2px 7px',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.15)'
+                }}>{unreadCount}</span>
+              )}
+            </button>
           </div>
 
           <div className="tab-content">
