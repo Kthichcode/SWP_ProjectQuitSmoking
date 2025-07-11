@@ -300,21 +300,13 @@ function Progress() {
       setMessages(prev => {
         const combined = [...prev];
 
-        formatted.forEach(f => {
-          const exists = combined.some(p =>
-            p.id === f.id ||
-            (
-              p.text === f.text &&
-              p.sender === f.sender &&
-              Math.abs(new Date(`1970/01/01 ${p.timestamp}`).getTime() -
-                new Date(`1970/01/01 ${f.timestamp}`).getTime()) < 3000
-            )
-          );
-          if (!exists) {
-            combined.push(f);
-            hasNew = true;
-          }
-        });
+            formatted.forEach(f => {
+                const exists = combined.some(p => p.id === f.id);
+                if (!exists) {
+                    combined.push(f);
+                    hasNew = true;
+                }
+            });
 
         if (!hasNew) {
           return prev;
