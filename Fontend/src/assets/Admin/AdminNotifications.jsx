@@ -75,7 +75,7 @@ function AdminNotifications() {
       let notificationId = null;
       if (targetType === 'all') {
         // Tạo notification chung
-        const res = await axiosInstance.post('/api/notifications', {
+        const res = await axiosInstance.post('http://localhost:5175/api/notifications', {
           title: form.title,
           content: form.content,
           isActive: true
@@ -83,10 +83,15 @@ function AdminNotifications() {
         // Lấy notificationId vừa tạo để dùng cho gửi cá nhân hóa nếu cần
         if (res && res.data && res.data.notificationId) {
           notificationId = res.data.notificationId;
+          // Gửi cho tất cả user và coach
+          await axiosInstance.post('http://localhost:5175/api/notifications/send-to-members-and-coaches', {
+            notificationId: notificationId,
+            personalizedReason: ''
+          });
         }
       } else {
         // Luôn tạo notification trước, lấy id
-        const res = await axiosInstance.post('/api/notifications', {
+        const res = await axiosInstance.post('http://localhost:5175/api/notifications', {
           title: form.title,
           content: form.content,
           isActive: true
