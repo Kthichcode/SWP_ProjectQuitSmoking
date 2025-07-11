@@ -212,8 +212,8 @@
 }
 
 .messages-container .message.coach-right .message-content {
-  background: white;
-  color: #333;
+  background: blue;
+  color: white;
 }
 
 .messages-container .message.member-left .message-content {
@@ -254,7 +254,7 @@
 }
 
 .messages-container .message.coach-right .message-text {
-  color: #333 !important;
+  color: white !important;
 }
 
 .messages-container .message.member-left .message-text {
@@ -361,42 +361,6 @@
   clear: both;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .messages-container .messages-list {
-    width: 250px;
-    min-width: 250px;
-  }
-  
-  .messages-container .message-content {
-    max-width: 85%;
-  }
-  
-  .messages-container .messages-chat-footer {
-    padding: 10px;
-  }
-  
-  .messages-container .messages-chat-footer input {
-    font-size: 16px; /* Prevent zoom on iOS */
-  }
-}
-
-@media (max-width: 480px) {
-  .messages-container {
-    flex-direction: column;
-  }
-  
-  .messages-container .messages-list {
-    width: 100%;
-    height: 200px;
-    border-right: none;
-    border-bottom: 1px solid #e0e0e0;
-  }
-  
-  .messages-container .messages-chat {
-    flex: 1;
-  }
-}
 
 /* Optimistic message styles */
 .messages-container .message.optimistic {

@@ -1,3 +1,26 @@
+.custom-file-upload {
+  display: inline-block;
+  padding: 8px 18px;
+  cursor: pointer;
+  background: white;
+  color: black;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  border: none;
+  transition: background 0.2s;
+}
+.custom-file-upload:hover {
+  background: gainsboro;
+}
+.custom-file-upload.disabled,
+.custom-file-upload[disabled] {
+  background: #e0e0e0;
+  color: #888;
+  cursor: not-allowed;
+}
 /* CoachProfile.css */
 
 .coach-profile-container {
@@ -237,7 +260,7 @@
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  color: #2d3748;
+  color: #29539b;
   font-weight: 600;
   font-size: 14px;
 }
@@ -441,10 +464,6 @@
   color: #4a5568;
   line-height: 1.6;
   margin-bottom: 20px;
-}
-
-.reset-step-2 {
-  /* Styling for step 2 specific content */
 }
 
 /* Chỉ đổi màu chữ trong button Choose File */

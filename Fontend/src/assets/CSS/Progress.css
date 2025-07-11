@@ -560,20 +560,26 @@
 
 .message-content {
   max-width: 60%;
-  background: white;
   padding: 12px 18px;
-  border-radius: 18px 18px 18px 4px;
+  border-radius: 18px;
   box-shadow: 0 2px 8px rgba(22,163,74,0.07);
   font-size: 16px;
   word-break: break-word;
   margin-bottom: 2px;
+  
 }
 
-.message.user .message-content {
-  
+.message-content.message-user {
+  background: #1fe0d7;
   color: black;
-  border-radius: 18px 18px 4px 18px;
-  box-shadow: 0 2px 12px rgba(22,163,74,0.10);
+  
+}
+
+.message-content.message-coach {
+  background: #fff;
+  color: black;
+  border-radius: 18px 18px 18px 4px;
+  border: 1.5px solid #e0f7e9;
 }
 
 .message-header {
@@ -585,7 +591,7 @@
 
 .message-header strong {
   font-size: 14px;
-  color: #16a34a;
+  color: black;
   font-weight: 700;
 }
 
@@ -598,6 +604,7 @@
 .message-content p {
   margin: 0;
   line-height: 1.5;
+  color:black;
 }
 
 .message-input {
@@ -1021,41 +1028,4 @@
   transform: translateY(-2px);
 }
 
-/* Responsive Improvements */
-@media (max-width: 768px) {
-  .header-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-    width: 100%;
-  }
-  
-  .rating-btn {
-    width: 100%;
-  }
-  
-  .achievement-banner {
-    flex-direction: column;
-    text-align: center;
-    gap: 16px;
-  }
-  
-  .achievement-btn {
-    width: 100%;
-  }
-  
-  .phase-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .phase-progress {
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .progress-text {
-    text-align: center;
-  }
-}
+

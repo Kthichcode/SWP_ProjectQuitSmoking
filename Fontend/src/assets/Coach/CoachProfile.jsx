@@ -366,12 +366,16 @@ const CoachProfile = () => {
           <div className="form-row">
             <div className="form-group">
               <label>Ảnh đại diện</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                disabled={!isEditing}
-              />
+              <label htmlFor="avatar-upload" className={`custom-file-upload${!isEditing ? ' disabled' : ''}`}>Chọn ảnh...
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  disabled={!isEditing}
+                  style={{ display: 'none' }}
+                />
+              </label>
               {coachData.imageUrl && (
                 <img
                   src={`data:image/jpeg;base64,${coachData.imageUrl}`}

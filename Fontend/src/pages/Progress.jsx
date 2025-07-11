@@ -872,7 +872,7 @@ function Progress() {
                   <div className="messages-list">
                     {messages.map(message => (
                       <div key={message.id} className={`message ${message.sender}`}>
-                        <div className="message-content">
+                        <div className={`message-content ${message.sender === 'user' ? 'message-user' : 'message-coach'}`}> 
                           <div className="message-header">
                             <strong>{message.senderName}</strong>
                             <span className="timestamp">{message.timestamp}</span>
