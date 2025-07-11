@@ -641,8 +641,7 @@ html, body, #root {
   gap: 10px;
   align-items: stretch;
   border: none;
-  right: 0;
-  left: auto;
+  right: auto;
   top: 48px;
   position: absolute;
   z-index: 1000;

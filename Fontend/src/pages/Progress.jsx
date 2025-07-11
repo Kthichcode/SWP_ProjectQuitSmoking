@@ -186,6 +186,7 @@ function Progress() {
 
   useEffect(() => {
     if (activeTab === 'chat') {
+      setUnreadCount(0); // reset badge mỗi lần vào tab chat
       scrollToBottom();
       hasNewMessageRef.current = false;
     }
@@ -286,8 +287,8 @@ function Progress() {
               ? 'coach'
               : (msg.senderType || msg.sender || 'user').toLowerCase(),
         timestamp: msg.sentAt
-          ? new Date(msg.sentAt).toLocaleTimeString()
-          : new Date().toLocaleTimeString(),
+          ? new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+          : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
         senderName:
           msg.senderType === 'MEMBER' ||
             msg.senderType === 'USER' ||
@@ -356,7 +357,7 @@ function Progress() {
               id: receivedMessage.messageId || Date.now(),
               text: receivedMessage.content,
               sender: 'coach',
-              timestamp: new Date().toLocaleTimeString(),
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
               senderName: selectedCoach?.fullName || 'Coach'
             };
 
@@ -400,9 +401,14 @@ function Progress() {
     }
   };
 
+  // Đồng bộ logic unreadCount với Messages.jsx: chỉ tăng nếu không ở tab chat, nếu đang ở tab chat thì reset về 0
   const handleWebSocketMessage = (message) => {
-    if (message.sender === 'coach' && activeTab !== 'chat') {
-      setUnreadCount((prev) => prev + 1);
+    if (message.sender === 'coach') {
+      if (activeTab === 'chat') {
+        setUnreadCount(0); // reset badge ngay khi nhận tin nhắn nếu đang ở tab chat
+      } else {
+        setUnreadCount((prev) => prev + 1);
+      }
     }
   };
 
@@ -504,7 +510,7 @@ function Progress() {
       id: Date.now(),
       text: newMessage.trim(),
       sender: 'user',
-      timestamp: new Date().toLocaleTimeString(),
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
       senderName: user.fullName || 'Bạn'
     };
 
