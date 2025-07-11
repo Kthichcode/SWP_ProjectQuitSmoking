@@ -63,7 +63,7 @@ function Progress() {
   };
 
   /**
-   * Sửa ở đây:
+   * FIXED HERE:
    * Load coach info từ selectionId
    */
   const loadCoachInfo = () => {
@@ -77,7 +77,27 @@ function Progress() {
       const savedSelectionId = localStorage.getItem(getSelectionStorageKey(currentUserId));
       if (savedSelectionId) {
         setSelectionId(parseInt(savedSelectionId));
+      } else {
+        // NEW: GỌI API để lấy selectionId
+        fetchSelectionIdOfCurrentUser();
       }
+    }
+  };
+
+  const fetchSelectionIdOfCurrentUser = async () => {
+    try {
+      const res = await axiosInstance.get("/api/membercoachselection/selection-id/me");
+      if (res.data?.status === 'success') {
+        if (res.data.data != null) {
+          const currentUserId = user.userId || user.id;
+          setSelectionId(res.data.data);
+          localStorage.setItem(getSelectionStorageKey(currentUserId), res.data.data.toString());
+        } else {
+          await createDummyMessage();
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching selectionId of current user:", error);
     }
   };
 
@@ -164,7 +184,6 @@ function Progress() {
     }
   }, [selectionId, activeTab, chatHistoryLoaded]);
 
-  // Luôn scroll xuống cuối khi có tin nhắn mới ở tab chat
   useEffect(() => {
     if (activeTab === 'chat') {
       scrollToBottom();
@@ -179,10 +198,8 @@ function Progress() {
     }
   };
 
-  // Scroll chỉ trong khung chat, không scroll toàn trang
   const scrollToBottom = () => {
     if (!messagesEndRef.current) return;
-    // Tìm container scroll là .messages-list
     const container = messagesEndRef.current.parentNode;
     if (container && container.classList.contains('messages-list')) {
       container.scrollTop = container.scrollHeight;
@@ -202,7 +219,7 @@ function Progress() {
         setSelectionId(realSelectionId);
         localStorage.setItem(getSelectionStorageKey(currentUserId), realSelectionId.toString());
       } else {
-        await createDummyMessage(currentUserId, currentCoachId);
+        await createDummyMessage();
       }
     } catch {
       const fallbackId = Date.now();
@@ -212,8 +229,12 @@ function Progress() {
     }
   };
 
-  const createDummyMessage = async (currentUserId, currentCoachId) => {
+  const createDummyMessage = async () => {
     try {
+      const currentUserId = user.userId || user.id;
+      const currentCoachId = selectedCoach?.coachId || selectedCoach?.userId || selectedCoach?.id;
+      if (!currentUserId || !currentCoachId) return;
+
       const dummyMessageData = {
         selectionId: null,
         content: 'System: Initializing chat...',
@@ -221,6 +242,7 @@ function Progress() {
         userId: currentUserId,
         coachId: currentCoachId
       };
+
       const createResponse = await axiosInstance.post('/api/chat/send', dummyMessageData);
       if (createResponse.data?.status === 'success' && createResponse.data.data?.selectionId) {
         const newSelectionId = createResponse.data.data.selectionId;
@@ -230,6 +252,7 @@ function Progress() {
     } catch {
       const fallbackId = Date.now();
       setSelectionId(fallbackId);
+      const currentUserId = user.userId || user.id;
       localStorage.setItem(getSelectionStorageKey(currentUserId), fallbackId.toString());
     }
   };
@@ -359,7 +382,6 @@ function Progress() {
               setChatHistoryLoaded(true);
             }
 
-            // Khi nhận tin nhắn mới từ coach qua websocket
             handleWebSocketMessage(formattedMessage);
 
           } catch {
@@ -658,7 +680,7 @@ function Progress() {
 
           <div className="progress-stats">
             <div className="stat-card"><h3>{progress.days}</h3><p>Ngày không khói thuốc</p></div>
-            
+
 
             {/* Debug card - xóa sau khi test xong */}
             <div className="stat-card debug-card" style={{ border: '2px dashed #f39c12', backgroundColor: '#fff9e6' }}>
@@ -702,7 +724,7 @@ function Progress() {
                 <h3>🎯 Mục tiêu của bạn</h3>
                 <div className="goals-grid">
                   <div className="goal-item"><span className="goal-icon">🚭</span><div><h4>Hoàn toàn không hút thuốc</h4><p>30 ngày liên tục</p></div></div>
-                  
+
                   <div className="goal-item"><span className="goal-icon">❤️</span><div><h4>Cải thiện sức khỏe</h4><p>Phổi sạch hơn, hơi thở dễ dàng</p></div></div>
                 </div>
               </div>
@@ -872,7 +894,7 @@ function Progress() {
                   <div className="messages-list">
                     {messages.map(message => (
                       <div key={message.id} className={`message ${message.sender}`}>
-                        <div className={`message-content ${message.sender === 'user' ? 'message-user' : 'message-coach'}`}> 
+                        <div className={`message-content ${message.sender === 'user' ? 'message-user' : 'message-coach'}`}>
                           <div className="message-header">
                             <strong>{message.senderName}</strong>
                             <span className="timestamp">{message.timestamp}</span>
