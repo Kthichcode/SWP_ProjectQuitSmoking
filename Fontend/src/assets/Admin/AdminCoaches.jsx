@@ -217,7 +217,13 @@ function AdminCoaches() {
   return (
     <div className="admin-page">
       <h2>Quản lý Coach</h2>
-      <button className="admin-btn" onClick={() => setShowAdd(true)}>+ Thêm Coach</button>
+      <div style={{display:'flex',alignItems:'center',gap:24,marginBottom:16}}>
+        <div style={{background:'#e0f2f1',color:'#047857',borderRadius:16,padding:'24px 32px',minWidth:120,display:'flex',flexDirection:'column',alignItems:'center',boxShadow:'0 2px 8px #0001',fontWeight:600,fontSize:22}}>
+          {coaches.length}
+          <div style={{fontSize:15,fontWeight:500,marginTop:6,color:'#047857'}}>Tổng coach</div>
+        </div>
+        <button className="admin-btn" onClick={() => setShowAdd(true)}>+ Thêm Coach</button>
+      </div>
       {showAdd && (
         <div className="admin-modal">
           <form className="admin-modal-content" onSubmit={handleAdd}>
@@ -239,7 +245,7 @@ function AdminCoaches() {
         <tbody>
           {coaches.map(c => (
             <tr key={c.id}>
-              <td>{c.name}</td><td>{c.email}</td><td>{c.phone}</td><td>{c.exp}</td><td>{c.plans}</td><td>{c.rating}</td>
+              <td>{c.fullName || c.name}</td><td>{c.email}</td><td>{c.phone}</td><td>{c.exp}</td><td>{c.plans}</td><td>{c.rating}</td>
               <td><span className={c.status === 'active' ? 'active' : 'inactive'}>{c.status === 'active' ? 'Hoạt động' : 'Không hoạt động'}</span></td>
               <td style={{position:'relative'}}>
                 <button

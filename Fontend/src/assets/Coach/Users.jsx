@@ -35,9 +35,7 @@ function Users() {
       <div className="user-list">
         {users.map((user, idx) => (
           <div className="user-card" key={user.id || idx}>
-            <div className="user-avatar">
-              {(user.fullName || user.name || '').split(' ').map(w=>w[0]).join('')}
-            </div>
+            
             <div className="user-info">
               <div className="user-info-header">
                 <span className="user-name">{user.fullName || user.name}</span>

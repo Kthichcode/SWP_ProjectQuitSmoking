@@ -354,13 +354,14 @@ function Payment() {
                   <span className="package-price-main">{pkg.priceLabel}</span>
                 </div>
                 <div className="package-desc">
-                  {pkg.desc}
+                  {pkg.desc && typeof pkg.desc === 'string' && pkg.desc.trim() !== '' ? (
+                    <ul className="package-features">
+                      {pkg.desc.split(/\r?\n/).map((f, i) => (
+                        <li key={i}><AiOutlineCheck color="#43a047" style={{marginRight:6}}/>{f}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
-                <ul className="package-features">
-                  {pkg.features.map((f, i) => (
-                    <li key={f + i}><AiOutlineCheck color="#43a047" style={{marginRight:6}}/>{f}</li>
-                  ))}
-                </ul>
                 <button 
                   className={`buy-btn-v2 ${pkg.btnClass}`} 
                   onClick={() => handleBuy(pkg.id)}

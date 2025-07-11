@@ -50,8 +50,7 @@ function AdminUsers() {
       <h2>Quản lý Người Dùng</h2>
       <div className="admin-stats-row">
         <div className="admin-stat-block"><div className="admin-stat-value">{users.length}</div><div className="admin-stat-label">Tổng người dùng</div></div>
-        <div className="admin-stat-block"><div className="admin-stat-value">{users.filter(u => (u.status === 'active' || u.status === 'ACTIVE')).length}</div><div className="admin-stat-label">Đang hoạt động</div></div>
-        <div className="admin-stat-block"><div className="admin-stat-value">{users.filter(u => (u.role === 'Coach' || (u.roles && u.roles.includes('COACH')))).length}</div><div className="admin-stat-label">Coach</div></div>
+        
       </div>
       <div className="admin-search-row">
         <input className="admin-search" placeholder="Tìm kiếm theo tên, email..." value={search} onChange={e => setSearch(e.target.value)} />
@@ -70,7 +69,7 @@ function AdminUsers() {
             <tr><td colSpan="9" style={{textAlign:'center'}}>Không có người dùng nào</td></tr>
           ) : filtered.map(u => (
             <tr key={u.id}>
-              <td>{u.fullName || u.name}</td>
+              <td>{u.username || u.fullName || u.name}</td>
               <td>{u.email}</td>
               <td>{u.phone || u.phoneNumber || ''}</td>
               <td>{u.role || (u.roles ? Array.isArray(u.roles) ? u.roles.join(', ') : u.roles : '')}</td>

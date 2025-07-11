@@ -168,7 +168,15 @@ function AdminPackages() {
               <tr key={pkg.id}>
                 <td>{pkg.name}</td>
                 <td>{pkg.price ? Number(String(pkg.price).replace(/\D/g, '')).toLocaleString('vi-VN') + ' VNĐ' : ''}</td>
-                <td>{pkg.description}</td>
+                <td>
+                  {pkg.description && typeof pkg.description === 'string' && pkg.description.trim() !== '' ? (
+                    <ul style={{margin:0,paddingLeft:18}}>
+                      {pkg.description.split(/\r?\n/).map((f, i) => (
+                        <li key={i}>{f}</li>
+                      ))}
+                    </ul>
+                  ) : ''}
+                </td>
                 <td>{pkg.releaseDate && pkg.endDate ? (() => {
                   const parseToDMY = (val) => {
                     if (!val || typeof val !== 'string') return '';
@@ -226,8 +234,16 @@ function AdminPackages() {
                 </div>
               </div>
               <div className="admin-package-form-group">
-                <label className="admin-package-label">Mô tả</label>
-                <input className="admin-package-input" name="description" value={currentPackage.description} onChange={handleChange} required />
+                <label className="admin-package-label">Mô tả (mỗi dòng 1 chức năng)</label>
+                <textarea
+                  className="admin-package-input"
+                  name="description"
+                  value={currentPackage.description}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Nhập từng chức năng, mỗi dòng 1 chức năng"
+                  required
+                />
               </div>
               <div className="admin-package-form-group">
                 <label className="admin-package-label">Ngày bắt đầu</label>

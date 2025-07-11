@@ -203,14 +203,19 @@ function MembersModal({ open, onClose, members }) {
         ) : (
           <>
             <ul style={{listStyle:'none',padding:0,margin:0}}>
-              {members.map((m, idx) => (
-                <li key={m.id || idx} style={{display:'flex',alignItems:'center',gap:12,background:'#f6f8fa',borderRadius:8,padding:'12px 16px',marginBottom:10,boxShadow:'0 1px 4px rgba(44,108,223,0.04)'}}>
-                  <div style={{width:36,height:36,borderRadius:'50%',background:'#e3eefd',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:600,color:'#2d6cdf',fontSize:18}}>
-                    {(m.full_name || m.fullName || 'Ẩn danh').charAt(0).toUpperCase()}
-                  </div>
-                  <div style={{fontSize:17,fontWeight:500,color:'#2d6cdf'}}>{m.full_name || m.fullName || 'Ẩn danh'}</div>
-                </li>
-              ))}
+              {members.map((m, idx) => {
+                // Ưu tiên fullName, username, email, cuối cùng mới Ẩn danh
+                const name = m.fullName || m.full_name || m.username || m.email || 'Ẩn danh';
+                const firstLetter = name.charAt(0).toUpperCase();
+                return (
+                  <li key={m.id || m.memberId || idx} style={{display:'flex',alignItems:'center',gap:12,background:'#f6f8fa',borderRadius:8,padding:'12px 16px',marginBottom:10,boxShadow:'0 1px 4px rgba(44,108,223,0.04)'}}>
+                    <div style={{width:36,height:36,borderRadius:'50%',background:'#e3eefd',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:600,color:'#2d6cdf',fontSize:18}}>
+                      {firstLetter}
+                    </div>
+                    <div style={{fontSize:17,fontWeight:500,color:'#2d6cdf'}}>{name}</div>
+                  </li>
+                );
+              })}
             </ul>
           </>
         )}
@@ -224,35 +229,49 @@ import { FaUsers, FaCalendarAlt, FaEnvelope, FaStar, FaTachometerAlt, FaSignOutA
 function NotificationModal({ open, onClose, notifications, onMarkRead }) {
   if (!open) return null;
   return (
-    <div className="admin-modal" style={{zIndex: 2000}}>
-      <div className="admin-modal-content" style={{maxWidth: 400, minWidth: 320, padding: 24, position: 'relative'}}>
+    <div className="admin-modal" style={{zIndex: 2000, background: 'rgba(0,0,0,0.18)', position: 'fixed', top:0, left:0, right:0, bottom:0, display:'flex', alignItems:'center', justifyContent:'center'}}>
+      <div className="admin-modal-content" style={{maxWidth: 420, minWidth: 320, padding: 28, position: 'relative', borderRadius: 16, background:'#fff', boxShadow:'0 8px 32px rgba(44,108,223,0.10)'}}>
         <button
           className="admin-modal-close"
-          style={{position: 'absolute', top: 8, right: 12, fontSize: 24, background: 'none', border: 'none', cursor: 'pointer'}} 
+          style={{position: 'absolute', top: 12, right: 18, fontSize: 28, background: 'none', border: 'none', cursor: 'pointer', color:'#2d6cdf'}} 
           onClick={onClose}
           type="button"
         >×</button>
-        <h3 style={{marginBottom: 16, fontWeight: 700, fontSize: 20}}>Thông báo</h3>
+        <h3 style={{marginBottom: 18, fontWeight: 700, fontSize: 22, color:'#2d6cdf', textAlign:'center'}}>Thông báo</h3>
         {notifications.length === 0 ? (
-          <div style={{color: '#888'}}>Không có thông báo nào.</div>
+          <div style={{color: '#888', textAlign:'center', padding:'32px 0'}}>Không có thông báo nào.</div>
         ) : (
           <ul style={{listStyle: 'none', padding: 0, margin: 0}}>
-            {notifications.map(n => (
-              <li
-                key={n.userNotificationId}
-                style={{marginBottom: 16, borderBottom: '1px solid #eee', paddingBottom: 8, background: n.isRead ? '#f6f6f6' : '#fffbe7', cursor: n.isRead ? 'default' : 'pointer'}}
-                onClick={async () => {
-                  if (!n.isRead && onMarkRead) {
-                    await onMarkRead(n);
-                  }
-                }}
-              >
-                <div style={{fontWeight: 600, fontSize: 16}}>{n.title}</div>
-                <div style={{color: '#444', fontSize: 14}}>{n.content}</div>
-                <div style={{color: '#888', fontSize: 12, marginTop: 2}}>{n.createdAt ? new Date(n.createdAt).toLocaleString('vi-VN') : ''}</div>
-                {!n.isRead && <span style={{color:'#f59e42', fontSize:12, fontWeight:600}}>Chưa đọc</span>}
-              </li>
-            ))}
+            {notifications.map(n => {
+              // Determine sender: if createdBy/sender is 'admin' (case-insensitive) or empty, show 'Admin'
+              let sender = n.createdBy || n.sender || '';
+              if (!sender || /admin/i.test(sender)) sender = 'Admin';
+              // fallback: if still empty, show '-';
+              if (!sender) sender = '-';
+              return (
+                <li
+                  key={n.userNotificationId}
+                  style={{marginBottom: 20, borderBottom: '1px solid #e5e7eb', paddingBottom: 12, background: n.isRead ? '#f6f8fa' : '#fffbe7', cursor: n.isRead ? 'default' : 'pointer', borderRadius:10, boxShadow: n.isRead ? 'none' : '0 2px 8px #f59e4222'}}
+                  onClick={async () => {
+                    if (!n.isRead && onMarkRead) {
+                      await onMarkRead(n);
+                    }
+                  }}
+                >
+                  <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:6}}>
+                    <div style={{fontWeight: 700, fontSize: 16, color:'#2d6cdf'}}>{n.title}</div>
+                    {!n.isRead && <span style={{color:'#f59e42', fontSize:12, fontWeight:600, marginLeft:8}}>Chưa đọc</span>}
+                  </div>
+                  <div style={{color: '#444', fontSize: 15, marginBottom: 6, whiteSpace:'pre-line'}}>{n.content}</div>
+                  <div style={{display:'flex', alignItems:'center', gap:12, fontSize:13, color:'#666', marginBottom:2}}>
+                    <span><b>Từ:</b> {sender}</span>
+                    <span style={{fontSize:12, color:'#888'}}>
+                      {n.createdAt ? new Date(n.createdAt).toLocaleString('vi-VN', {hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric'}) : ''}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

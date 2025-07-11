@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaBell } from 'react-icons/fa';
 import axiosInstance from "../../axiosInstance";
 import '../assets/CSS/Home.css';
+import '../assets/CSS/NotificationDropdown.css';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +12,7 @@ const Header = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [hasUnread, setHasUnread] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
   // Fetch notifications for unread dot (on mount and when user changes)
   useEffect(() => {
@@ -19,15 +21,20 @@ const Header = () => {
         try {
           const res = await axiosInstance.get('/api/notifications/me');
           if (Array.isArray(res.data)) {
-            setHasUnread(res.data.some(n => !(n.hasBeenRead || n.isRead || n.read)));
+            const unread = res.data.filter(n => !(n.hasBeenRead || n.isRead || n.read));
+            setHasUnread(unread.length > 0);
+            setUnreadCount(unread.length);
           } else {
             setHasUnread(false);
+            setUnreadCount(0);
           }
         } catch (e) {
           setHasUnread(false);
+          setUnreadCount(0);
         }
       } else {
         setHasUnread(false);
+        setUnreadCount(0);
       }
     };
     fetchUnread();
@@ -45,16 +52,21 @@ const Header = () => {
               title: n.notificationTitle || n.title,
               content: n.content,
               isRead: n.hasBeenRead || n.isRead || n.read,
-              createdAt: n.sentAt || n.createdAt
+              createdAt: n.sentAt || n.createdAt,
+              sender: n.sender || n.from || n.coachName || n.senderName || n.senderEmail || ''
             })));
-            setHasUnread(res.data.some(n => !(n.hasBeenRead || n.isRead || n.read)));
+            const unread = res.data.filter(n => !(n.hasBeenRead || n.isRead || n.read));
+            setHasUnread(unread.length > 0);
+            setUnreadCount(unread.length);
           } else {
             setNotifications([]);
             setHasUnread(false);
+            setUnreadCount(0);
           }
         } catch (e) {
           setNotifications([]);
           setHasUnread(false);
+          setUnreadCount(0);
         }
       }
     };
@@ -89,77 +101,8 @@ const Header = () => {
         <button className={`nav-btn${isActive('/ranking') ? ' active' : ''}`} onClick={() => { navigate('/ranking'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Bảng xếp hạng</button>
         <button className={`nav-btn${isActive('/about') ? ' active' : ''}`} onClick={() => { navigate('/about'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Giới thiệu</button>
         <button className={`nav-btn${isActive('/progress') ? ' active' : ''}`} onClick={() => { navigate('/progress'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Tiến Trình Cai Thuốc</button>
-        {/* Notification Icon */}
-        {user && (
-          <button
-            className="nav-btn"
-            style={{ position: 'relative', background: 'none', border: 'none', marginLeft: 8 }}
-            onClick={() => setShowNotification(true)}
-            title="Thông báo"
-          >
-            <FaBell size={22} color="#222" />
-            {hasUnread && (
-              <span style={{
-                position: 'absolute',
-                top: 6,
-                right: 6,
-                width: 10,
-                height: 10,
-                background: '#ff5252',
-                borderRadius: '50%',
-                display: 'inline-block',
-                border: '2px solid #fff',
-                boxShadow: '0 0 2px #0003'
-              }}></span>
-            )}
-          </button>
-        )}
+        
       </div>
-      {/* Notification Modal */}
-      {showNotification && (
-        <div className="admin-modal" style={{zIndex: 2000}}>
-          <div className="admin-modal-content" style={{maxWidth: 400, minWidth: 320, padding: 24, position: 'relative'}}>
-            <button
-              className="admin-modal-close"
-              style={{position: 'absolute', top: 8, right: 12, fontSize: 24, background: 'none', border: 'none', cursor: 'pointer'}} 
-              onClick={() => setShowNotification(false)}
-              type="button"
-            >×</button>
-            <h3 style={{marginBottom: 16, fontWeight: 700, fontSize: 20}}>Thông báo</h3>
-            {notifications.length === 0 ? (
-              <div style={{color: '#888'}}>Không có thông báo nào.</div>
-            ) : (
-              <ul style={{listStyle: 'none', padding: 0, margin: 0}}>
-                {notifications.map(n => (
-                  <li
-                    key={n.userNotificationId}
-                    style={{marginBottom: 16, borderBottom: '1px solid #eee', paddingBottom: 8, background: n.isRead ? '#f6f6f6' : '#fffbe7', cursor: n.isRead ? 'default' : 'pointer'}}
-                    onClick={async () => {
-                      if (!n.isRead) {
-                        try {
-                          await axiosInstance.put(`/api/notifications/mark-as-read/${n.userNotificationId}`);
-                          setNotifications(prev => prev.map(item => item.userNotificationId === n.userNotificationId ? { ...item, isRead: true } : item));
-                          setHasUnread(prev => {
-                            // Nếu tất cả đã đọc thì tắt dot
-                            return prev && notifications.some(item => item.userNotificationId !== n.userNotificationId && !item.isRead);
-                          });
-                        } catch (e) {
-                          // Xử lý lỗi nếu cần
-                        }
-                      }
-                    }}
-                  >
-                    <div style={{fontWeight: 600, fontSize: 16}}>{n.title}</div>
-                    <div style={{color: '#444', fontSize: 14}}>{n.content}</div>
-                    <div style={{color: '#888', fontSize: 12, marginTop: 2}}>{n.createdAt ? new Date(n.createdAt).toLocaleString('vi-VN') : ''}</div>
-                    {!n.isRead && <span style={{color:'#f59e42', fontSize:12, fontWeight:600}}>Chưa đọc</span>}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      )}
 
       <div className="home-auth-buttons">
         {!user ? (
@@ -179,6 +122,55 @@ const Header = () => {
             >
               Nâng Cấp
             </button>
+            {/* Notification Icon + Dropdown */}
+            <div className="notification-dropdown-wrapper" style={{ display: 'inline-block', position: 'relative', marginRight: 8 }}>
+              <button
+                className="nav-btn"
+                style={{ position: 'relative', background: 'none', border: 'none' }}
+                onClick={() => setShowNotification((prev) => !prev)}
+                title="Thông báo"
+              >
+                <FaBell size={22} color='black' />
+                {unreadCount > 0 && (
+                  <span className="notification-badge">{unreadCount}</span>
+                )}
+              </button>
+              {showNotification && (
+                <div className="notification-dropdown">
+                  <div className="notification-dropdown-title">Thông báo</div>
+                  {notifications.length === 0 ? (
+                    <div className="notification-dropdown-empty">Không có thông báo nào.</div>
+                  ) : (
+                    <ul className="notification-dropdown-list">
+                      {notifications.map(n => (
+                        <li
+                          key={n.userNotificationId}
+                          className={`notification-dropdown-item${n.isRead ? ' read' : ' unread'}`}
+                          onClick={async () => {
+                            if (!n.isRead) {
+                              try {
+                                await axiosInstance.put(`/api/notifications/mark-as-read/${n.userNotificationId}`);
+                                setNotifications(prev => prev.map(item => item.userNotificationId === n.userNotificationId ? { ...item, isRead: true } : item));
+                                setUnreadCount(prev => prev > 0 ? prev - 1 : 0);
+                                setHasUnread(prev => {
+                                  return prev && notifications.some(item => item.userNotificationId !== n.userNotificationId && !item.isRead);
+                                });
+                              } catch (e) {}
+                            }
+                          }}
+                        >
+                          <div className="notification-dropdown-item-title">{n.title}</div>
+                          <div className="notification-dropdown-item-content">{n.content}</div>
+                          {n.sender && <div className="notification-dropdown-item-sender">Từ: {n.sender}</div>}
+                          <div className="notification-dropdown-item-time">{n.createdAt ? new Date(n.createdAt).toLocaleString('vi-VN') : ''}</div>
+                          {!n.isRead && <span className="notification-dropdown-item-unread">Chưa đọc</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
             <div className="user-dropdown" style={{ position: 'relative', display: 'inline-block' }}>
               <button
                 className="nav-btn"

@@ -76,7 +76,7 @@ function Messages() {
   const scrollToBottom = () => {
     setTimeout(() => {
       if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
       }
     }, 0);
   };
@@ -412,10 +412,24 @@ function Messages() {
   };
 
   const formatTime = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString('vi-VN', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    if (isToday) {
+      return date.toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } else {
+      return date.toLocaleString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+    }
   };
 
   const getInitials = (name) => {
@@ -451,9 +465,7 @@ function Messages() {
                 selectedConversation?.id === conv.id ? 'selected' : ''
               }`}
             >
-              <div className="messages-avatar">
-                {getInitials(conv.userFullName)}
-              </div>
+              
               <div className="conversation-info">
                 <div className="conversation-name">
                   {conv.userName || conv.userFullName}
