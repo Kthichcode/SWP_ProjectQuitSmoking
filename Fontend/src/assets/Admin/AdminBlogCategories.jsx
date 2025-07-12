@@ -8,7 +8,7 @@ const AdminBlogCategories = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('create'); // 'create' or 'edit'
-  const [currentCategory, setCurrentCategory] = useState({ id: null, name: '', description: '' });
+  const [currentCategory, setCurrentCategory] = useState({ id: null, name: '' });
   const [error, setError] = useState('');
 
   // API endpoints
@@ -44,14 +44,14 @@ const AdminBlogCategories = () => {
 
   const handleCreate = () => {
     setModalMode('create');
-    setCurrentCategory({ id: null, name: '', description: '' });
+    setCurrentCategory({ id: null, name: '' });
     setShowModal(true);
     setError('');
   };
 
   const handleEdit = (category) => {
     setModalMode('edit');
-    setCurrentCategory(category);
+    setCurrentCategory({ id: category.id, name: category.name });
     setShowModal(true);
     setError('');
   };
@@ -95,8 +95,7 @@ const AdminBlogCategories = () => {
       };
 
       const categoryData = {
-        name: currentCategory.name.trim(),
-        description: currentCategory.description.trim()
+        name: currentCategory.name.trim()
       };
 
       let response;
@@ -125,7 +124,7 @@ const AdminBlogCategories = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setCurrentCategory({ id: null, name: '', description: '' });
+    setCurrentCategory({ id: null, name: '' });
     setError('');
   };
 
@@ -148,21 +147,19 @@ const AdminBlogCategories = () => {
             <tr>
               <th>ID</th>
               <th>Tên Thể Loại</th>
-              <th>Mô Tả</th>
               <th>Thao Tác</th>
             </tr>
           </thead>
           <tbody>
             {categories.length === 0 ? (
               <tr>
-                <td colSpan="4" className="text-center">Không có thể loại nào</td>
+                <td colSpan="3" className="text-center">Không có thể loại nào</td>
               </tr>
             ) : (
               categories.map((category) => (
                 <tr key={category.id}>
                   <td>{category.id}</td>
                   <td>{category.name}</td>
-                  <td>{category.description || 'Không có mô tả'}</td>
                   <td>
                     <button 
                       className="btn btn-sm btn-warning"
@@ -200,7 +197,6 @@ const AdminBlogCategories = () => {
             <form onSubmit={handleSubmit}>
               <div className="modal-body">
                 {error && <div className="error-message">{error}</div>}
-                
                 <div className="form-group">
                   <label htmlFor="categoryName">Tên Thể Loại *</label>
                   <input
@@ -212,19 +208,7 @@ const AdminBlogCategories = () => {
                     required
                   />
                 </div>
-
-                <div className="form-group">
-                  <label htmlFor="categoryDescription">Mô Tả</label>
-                  <textarea
-                    id="categoryDescription"
-                    value={currentCategory.description}
-                    onChange={(e) => setCurrentCategory({...currentCategory, description: e.target.value})}
-                    placeholder="Nhập mô tả thể loại"
-                    rows="3"
-                  />
-                </div>
               </div>
-
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
                   <FaTimes /> Hủy

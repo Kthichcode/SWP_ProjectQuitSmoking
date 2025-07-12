@@ -9,28 +9,54 @@ export default function Blog() {
     const { token, user } = useAuth();
     const navigate = useNavigate();
     const [blogs, setBlogs] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const blogsPerPage = 9;
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
     useEffect(() => {
         setLoading(true);
-    
-        axios.get('/api/blog/getAllBlog')
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        if (selectedCategoryId) {
+            axios.get(`http://localhost:5175/api/blog/getBlogByCategoryId/${selectedCategoryId}`, { headers })
+                .then(res => {
+                    const approvedBlogs = (res.data.data || []).filter(blog => blog.status === 'APPROVED');
+                    setBlogs(approvedBlogs);
+                    setError('');
+                })
+                .catch(err => {
+                    setError('Không thể tải blog. Vui lòng thử lại.');
+                    setBlogs([]);
+                    console.error('Lỗi lấy danh sách blog:', err);
+                })
+                .finally(() => setLoading(false));
+        } else {
+            axios.get('/api/blog/getAllBlog', { headers })
+                .then(res => {
+                    const approvedBlogs = (res.data.data || []).filter(blog => blog.status === 'APPROVED');
+                    setBlogs(approvedBlogs);
+                    setError('');
+                })
+                .catch(err => {
+                    setError('Không thể tải blog. Vui lòng thử lại.');
+                    setBlogs([]);
+                    console.error('Lỗi lấy danh sách blog:', err);
+                })
+                .finally(() => setLoading(false));
+        }
+        // Lấy thể loại blog từ API
+        axios.get('http://localhost:5175/api/blog-categories/getAll', { headers })
             .then(res => {
-                
-                const approvedBlogs = (res.data.data || []).filter(blog => blog.status === 'APPROVED');
-                setBlogs(approvedBlogs);
-                setError('');
+                setCategories(res.data.data || []);
             })
             .catch(err => {
-                setError('Không thể tải blog. Vui lòng thử lại.');
-                setBlogs([]);
-                console.error('Lỗi lấy danh sách blog:', err);
-            })
-            .finally(() => setLoading(false));
-    }, []);
+                console.error('Lỗi lấy thể loại blog:', err);
+                setCategories([]);
+            });
+    }, [selectedCategoryId]);
 
     useEffect(() => {
         const handlePageShow = (event) => {
@@ -74,10 +100,10 @@ export default function Blog() {
             <div className="blog-filter-bar">
                 <input type="text" placeholder="Tìm kiếm bài viết..." className="blog-search" />
                 <div className="blog-tags">
-                    <button className="tag-btn active">Tất cả</button>
-                    <button className="tag-btn">Kinh nghiệm</button>
-                    <button className="tag-btn">Câu chuyện</button>
-                    <button className="tag-btn">Nghiên cứu</button>
+                    <button className={`tag-btn${!selectedCategoryId ? ' active' : ''}`} onClick={() => setSelectedCategoryId(null)}>Tất cả</button>
+                    {categories.map(cat => (
+                        <button key={cat.id} className={`tag-btn${selectedCategoryId === cat.id ? ' active' : ''}`} onClick={() => setSelectedCategoryId(cat.id)}>{cat.name}</button>
+                    ))}
                 </div>
             </div>
 

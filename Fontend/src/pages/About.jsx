@@ -53,14 +53,7 @@ const About = () => {
         </p>
       </section>
 
-      <section className="stats-bg">
-        <div className="stats">
-          <div className="stat-card"><h4>10,000+</h4><p>Người dùng</p></div>
-          <div className="stat-card"><h4>5,000+</h4><p>Người cai thuốc thành công</p></div>
-          <div className="stat-card"><h4>1,000,000+</h4><p>Ngày không hút thuốc</p></div>
-          <div className="stat-card"><h4>20+</h4><p>Chuyên gia y tế</p></div>
-        </div>
-      </section>
+     
 
       <section className="team">
         <h3>Đội ngũ của chúng tôi</h3>
