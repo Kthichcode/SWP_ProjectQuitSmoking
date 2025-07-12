@@ -26,13 +26,13 @@ function Login() {
   // Hàm kiểm tra thông tin khai báo ban đầu
   const checkInitialInfoAndNavigate = async (token) => {
     try {
-      const res = await axios.get('http://localhost:5175/api/member-initial-info', {
+      const res = await axios.get('http://localhost:5175/api/member-initial-info/has-submitted', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (!res.data || !res.data.yearsSmoking) {
-        navigate('/initial-info', { replace: true });
-      } else {
+      if (res.data === true) {
         navigate('/home', { replace: true });
+      } else {
+        navigate('/initial-info', { replace: true });
       }
     } catch {
       navigate('/initial-info', { replace: true });

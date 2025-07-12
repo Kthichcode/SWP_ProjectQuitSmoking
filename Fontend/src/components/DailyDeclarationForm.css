@@ -1,0 +1,71 @@
+.daily-declaration-form {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 24px;
+  margin: 24px 0;
+  max-width: 500px;
+}
+.daily-declaration-form h3 {
+  margin-bottom: 4px;
+  color: #2ecc71;
+}
+.daily-declaration-form .desc {
+  font-size: 0.95rem;
+  color: #666;
+  margin-bottom: 16px;
+}
+.daily-declaration-form .form-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+.daily-declaration-form label {
+  font-weight: 500;
+  margin-bottom: 4px;
+  display: block;
+}
+.daily-declaration-form input,
+.daily-declaration-form select,
+.daily-declaration-form textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+.daily-declaration-form textarea {
+  min-height: 60px;
+/* Hiển thị chữ rõ ràng trong dropdown */
+.daily-declaration-form select,
+.daily-declaration-form option {
+  color: #222;
+  background: #fff;
+}
+  resize: vertical;
+}
+.daily-declaration-form .btn-main {
+  background: linear-gradient(90deg,#1abc9c,#3498db);
+  color: #fff;
+  border: none;
+  padding: 10px 0;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  width: 100%;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.daily-declaration-form .btn-main:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.daily-declaration-form .error-message {
+  color: #e74c3c;
+  margin-bottom: 8px;
+}
+.daily-declaration-form .success-message {
+  color: #27ae60;
+  margin-bottom: 8px;
+}

@@ -14,6 +14,24 @@ const Header = () => {
   const [hasUnread, setHasUnread] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
+  const [missingDailyLog, setMissingDailyLog] = useState(false);
+
+  // Kiểm tra nhật ký hằng ngày bị thiếu
+  useEffect(() => {
+    const checkMissingLog = async () => {
+      if (!user) return;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axiosInstance.post('/api/smoking-logs/check-missing', {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setMissingDailyLog(res.data === true);
+      } catch {
+        setMissingDailyLog(false);
+      }
+    };
+    checkMissingLog();
+  }, [user]);
   // Fetch notifications for unread dot (on mount and when user changes)
   useEffect(() => {
     const fetchUnread = async () => {
@@ -90,6 +108,11 @@ const Header = () => {
 
   return (
     <div className="home-header-bar">
+      {missingDailyLog && (
+        <div style={{background:'#fff3cd',color:'#856404',padding:'8px 16px',borderRadius:8,marginBottom:8,border:'1px solid #ffe082',fontWeight:500}}>
+          Bạn chưa khai báo nhật ký hằng ngày hôm nay! Vui lòng vào phần Tiến Trình Cai Thuốc để khai báo.
+        </div>
+      )}
       <a href="/home" className="home-logo">
         <img src="/src/assets/img1/android-chrome-192x192.png" alt="NoSmoke Logo" className="logo-img" />
         <span className="logo-text">NoSmoke</span>

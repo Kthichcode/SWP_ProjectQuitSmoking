@@ -8,6 +8,7 @@ import coachReviewService from '../services/coachReviewService';
 import CoachRatingModal from '../components/CoachRatingModal';
 import QuitPlanSummary from './QuitPlanSummary';
 import PlanStages from './PlanStages';
+import DailyDeclarationForm from '../components/DailyDeclarationForm';
 import '../assets/CSS/Progress.css';
 
 // Helper: lưu selectionId riêng cho từng user
@@ -699,6 +700,8 @@ function Progress() {
                 <h3>🎯 Mục tiêu của bạn</h3>
                 {/* Hiển thị tổng quan kế hoạch cai thuốc từ QuitPlanSummary hoặc dữ liệu động */}
                 <QuitPlanSummary />
+                {/* Thêm form khai báo hằng ngày */}
+                <DailyDeclarationForm />
               </div>
             )}
 
