@@ -90,6 +90,7 @@ function Users() {
           <div><b>Số điếu mỗi ngày:</b> {selectedMemberInfo.cigarettesPerDay}</div>
           <div><b>Lý do cai thuốc:</b> {selectedMemberInfo.reasonToQuit}</div>
           <div><b>Tình trạng sức khỏe:</b> {selectedMemberInfo.healthStatus}</div>
+          <button className="action-button" onClick={() => setSelectedMemberInfo(null)}>Đóng</button>
         </div>
       )}
     </div>
