@@ -23,6 +23,22 @@ function Login() {
 
   const navigate = useNavigate();
 
+  // Hàm kiểm tra thông tin khai báo ban đầu
+  const checkInitialInfoAndNavigate = async (token) => {
+    try {
+      const res = await axios.get('http://localhost:5175/api/member-initial-info', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.data || !res.data.yearsSmoking) {
+        navigate('/initial-info', { replace: true });
+      } else {
+        navigate('/home', { replace: true });
+      }
+    } catch {
+      navigate('/initial-info', { replace: true });
+    }
+  };
+
   useEffect(() => {
     if (user) {
       if (user.scope?.toUpperCase() === 'ADMIN') {
@@ -64,7 +80,17 @@ function Login() {
           const token = res.data.data.token;
           localStorage.setItem('token', token);
           login(token);
-          navigate('/home', { replace: true });
+          const decoded = jwtDecode(token);
+          const role = decoded.scope?.toUpperCase();
+          if (role === 'ADMIN') {
+            navigate('/admin/dashboard', { replace: true });
+          } else if (role === 'COACH') {
+            navigate('/coach', { replace: true });
+          } else if (role === 'MEMBER' || role === 'USER') {
+            await checkInitialInfoAndNavigate(token);
+          } else {
+            navigate('/home', { replace: true });
+          }
         } else if (status === 'need_username') {
           setEmailFromGoogle(res.data.data.email);
           setNameFromGoogle(res.data.data.name);
@@ -92,7 +118,17 @@ function Login() {
       const token = res.data.data.token;
       localStorage.setItem('token', token);
       login(token);
-      navigate('/home', { replace: true });
+      const decoded = jwtDecode(token);
+      const role = decoded.scope?.toUpperCase();
+      if (role === 'ADMIN') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (role === 'COACH') {
+        navigate('/coach', { replace: true });
+      } else if (role === 'MEMBER' || role === 'USER') {
+        await checkInitialInfoAndNavigate(token);
+      } else {
+        navigate('/home', { replace: true });
+      }
     } catch (err) {
       console.error(err);
       setErrorMessage(err?.response?.data?.message || 'Đã có lỗi xảy ra.');
@@ -118,6 +154,8 @@ function Login() {
         navigate('/admin/dashboard', { replace: true });
       } else if (role === 'COACH') {
         navigate('/coach', { replace: true });
+      } else if (role === 'MEMBER' || role === 'USER') {
+        await checkInitialInfoAndNavigate(token);
       } else {
         navigate('/home', { replace: true });
       }

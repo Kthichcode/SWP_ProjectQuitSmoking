@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './Users.css';
@@ -8,6 +7,9 @@ function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedMemberInfo, setSelectedMemberInfo] = useState(null);
+  const [infoLoading, setInfoLoading] = useState(false);
+  const [infoError, setInfoError] = useState(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -26,6 +28,24 @@ function Users() {
     };
     fetchUsers();
   }, []);
+
+  const handleViewDeclaration = async (memberId) => {
+    setInfoLoading(true);
+    setInfoError(null);
+    setSelectedMemberInfo(null);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`http://localhost:5175/api/member-initial-info/my-members?memberId=${memberId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      // Giả sử trả về { data: [ { ...info } ] }
+      setSelectedMemberInfo(res.data.data?.[0] || null);
+    } catch (err) {
+      setInfoError('Không thể tải thông tin khai báo của thành viên');
+    } finally {
+      setInfoLoading(false);
+    }
+  };
 
   return (
     <div>
@@ -51,7 +71,7 @@ function Users() {
               <div className="user-goal">Mục tiêu: <b>{user.goal || '-'}</b></div>
               <div className="user-note">Ghi chú: {user.note || '-'}</div>
               <div className="user-actions">
-                <button className="action-button">Gọi</button>
+                <button className="action-button" onClick={() => handleViewDeclaration(user.id || user.memberId)}>Xem khai báo</button>
                 <button className="action-button">Email</button>
                 <button className="action-button">Hẹn</button>
               </div>
@@ -59,6 +79,19 @@ function Users() {
           </div>
         ))}
       </div>
+      {/* Hiển thị thông tin khai báo của member đã chọn */}
+      {infoLoading && <div>Đang tải thông tin khai báo...</div>}
+      {infoError && <div style={{color:'red'}}>{infoError}</div>}
+      {selectedMemberInfo && (
+        <div className="member-declaration-info">
+          <h3>Thông tin khai báo của thành viên</h3>
+          <div><b>Họ tên:</b> {selectedMemberInfo.fullName}</div>
+          <div><b>Số năm hút thuốc:</b> {selectedMemberInfo.yearsSmoking}</div>
+          <div><b>Số điếu mỗi ngày:</b> {selectedMemberInfo.cigarettesPerDay}</div>
+          <div><b>Lý do cai thuốc:</b> {selectedMemberInfo.reasonToQuit}</div>
+          <div><b>Tình trạng sức khỏe:</b> {selectedMemberInfo.healthStatus}</div>
+        </div>
+      )}
     </div>
   );
 }

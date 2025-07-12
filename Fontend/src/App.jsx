@@ -37,6 +37,7 @@ import Checkout from './pages/Checkout';
 import PaymentResult from './pages/PaymentResult';
 import VNPayCallback from './pages/VNPayCallback';
 import MembershipDebug from './components/MembershipDebug';
+import UserInitialInfo from './pages/UserInitialInfo';
 
 function RequireRole({ role, children }) {
   const { user } = useAuth();
@@ -70,6 +71,7 @@ function App() {
           <Route path="blog-categories" element={<AdminBlogCategories />} />
           <Route path="badges" element={<AdminBadges />} />
         </Route>
+        <Route path="/initial-info" element={<UserInitialInfo />} />
         <Route
           path="/coach/*"
           element={
