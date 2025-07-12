@@ -15,6 +15,7 @@ function Messages() {
 
   const messagesEndRef = useRef(null);
   const globalSubscriptionRef = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     if (user) {
@@ -69,9 +70,17 @@ function Messages() {
     };
   }, [selectedConversation?.selectionId]);
 
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Focus input after sending or switching conversation
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [selectedConversation, sendingMessage]);
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -351,6 +360,11 @@ function Messages() {
     setNewMessage('');
     setSendingMessage(true);
 
+    // Focus input after sending
+    setTimeout(() => {
+      if (inputRef.current) inputRef.current.focus();
+    }, 0);
+
     try {
       const payload = {
         selectionId: selectedConversation.selectionId,
@@ -363,7 +377,6 @@ function Messages() {
       const res = await axiosInstance.post('/api/chat/send', payload);
 
       if (res.data.status === 'success') {
-        console.log('Message sent successfully, server response:', res.data);
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === optimisticId
@@ -377,7 +390,6 @@ function Messages() {
               : msg
           )
         );
-        // Cập nhật lastMessage ngay khi gửi thành công
         setConversations((prevConvs) =>
           prevConvs.map((conv) =>
             conv.selectionId === selectedConversation.selectionId
@@ -394,13 +406,16 @@ function Messages() {
         throw new Error('Gửi tin nhắn thất bại');
       }
     } catch (e) {
-      console.error('Lỗi gửi tin nhắn:', e);
       setMessages((prev) =>
         prev.filter((msg) => msg.id !== optimisticId)
       );
       setNewMessage(messageContent);
     } finally {
       setSendingMessage(false);
+      // Ensure input stays focused even if error
+      setTimeout(() => {
+        if (inputRef.current) inputRef.current.focus();
+      }, 0);
     }
   };
 
@@ -540,11 +555,13 @@ function Messages() {
             <div className="messages-chat-footer">
               <input
                 type="text"
+                ref={inputRef}
                 placeholder="Nhập tin nhắn..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 disabled={sendingMessage}
+                autoFocus
               />
               <button
                 onClick={sendMessage}

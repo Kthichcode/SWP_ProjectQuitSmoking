@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
+import './AdminBlogs.css';
 
 function AdminBlogs() {
   const { token } = useAuth();
@@ -15,15 +17,16 @@ function AdminBlogs() {
     status: 'PENDING',
   });
   const [loading, setLoading] = useState(false);
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 8;
 
-  
   useEffect(() => {
     axios.get('/api/blog-categories/getAll')
       .then(res => setCategories(res.data.data || []))
       .catch(() => setCategories([]));
   }, []);
 
-  
   const fetchBlogs = () => {
     if (!token) return;
     setLoading(true);
@@ -121,51 +124,79 @@ function AdminBlogs() {
       .catch((err) => console.error('Lỗi từ chối blog:', err));
   };
 
+  // Pagination logic
+  const filteredBlogs = blogs.filter((blog) => blog.status !== 'REJECTED');
+  const totalPages = Math.ceil(filteredBlogs.length / PAGE_SIZE) || 1;
+  const pagedBlogs = filteredBlogs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Reset page to 1 if filter/search changes and page out of range
+  useEffect(() => {
+    if (page > totalPages) setPage(1);
+  }, [filteredBlogs.length, totalPages]);
+
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: 24 }}>
-      <h2 style={{ textAlign: 'center' }}>Quản lý Blog</h2>
+    <div className="admin-blogs-container">
+      <h2 className="admin-blogs-title">Quản lý Blog</h2>
+      <div className="admin-blogs-desc">Quản lý và duyệt các bài blog của người dùng</div>
 
-      <form onSubmit={editingId ? handleUpdate : handleAdd} style={{ marginBottom: 32 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 25 }}>
-          <input
-            name="title"
-            value={form.title}
-            onChange={handleChange}
-            placeholder="Tiêu đề blog"
-            style={{ padding: 5 }}
-          />
-          <input
-            name="coverImage"
-            value={form.coverImage}
-            onChange={handleChange}
-            placeholder="Link ảnh bìa"
-            style={{ padding: 5, background: '#fff', color: '#222', border: '1px solid #ccc', borderRadius: 4 }}
-          />
-          <textarea
-            name="content"
-            value={form.content}
-            onChange={handleChange}
-            placeholder="Nội dung blog"
-            rows={3}
-            style={{ gridColumn: '1 / -1', padding: 10, background: '#fff', color: '#222', border: '1px solid #ccc', borderRadius: 4 }}
-          />
-
-          <select
-            name="categoryId"
-            value={form.categoryId}
-            onChange={handleChange}
-            style={{ padding: 10, background: '#fff', color: '#222', border: '1px solid #ccc', borderRadius: 4 }}
-          >
-            <option value="">-- Chọn danh mục --</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-
-          <div style={{ gridColumn: '1 / -1' }}>
+      <form onSubmit={editingId ? handleUpdate : handleAdd} className="admin-blogs-form">
+        <div className="admin-blogs-form-fields">
+          <div>
+            <label htmlFor="admin-blogs-title">Tiêu đề blog</label>
+            <input
+              id="admin-blogs-title"
+              name="title"
+              value={form.title}
+              onChange={handleChange}
+              placeholder="Tiêu đề blog"
+              className="admin-blogs-input"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="admin-blogs-coverImage">Link ảnh bìa</label>
+            <input
+              id="admin-blogs-coverImage"
+              name="coverImage"
+              value={form.coverImage}
+              onChange={handleChange}
+              placeholder="Link ảnh bìa"
+              className="admin-blogs-input"
+            />
+          </div>
+          <div>
+            <label htmlFor="admin-blogs-content">Nội dung blog</label>
+            <textarea
+              id="admin-blogs-content"
+              name="content"
+              value={form.content}
+              onChange={handleChange}
+              placeholder="Nội dung blog"
+              rows={4}
+              className="admin-blogs-textarea"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="admin-blogs-category">Danh mục</label>
+            <select
+              id="admin-blogs-category"
+              name="categoryId"
+              value={form.categoryId}
+              onChange={handleChange}
+              className="admin-blogs-select"
+              required
+            >
+              <option value="">-- Chọn danh mục --</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
             <button
               type="submit"
-              style={{ padding: '10px 20px', background: '#4CAF50', color: '#fff', border: 'none', borderRadius: 4 }}
+              className="admin-blogs-form-btn"
             >
               {editingId ? 'Cập nhật' : 'Thêm mới'}
             </button>
@@ -173,7 +204,7 @@ function AdminBlogs() {
               <button
                 type="button"
                 onClick={resetForm}
-                style={{ marginLeft: 12, padding: '10px 20px', background: '#ccc', border: 'none', borderRadius: 4 }}
+                className="admin-blogs-form-btn-cancel"
               >
                 Hủy
               </button>
@@ -183,55 +214,78 @@ function AdminBlogs() {
       </form>
 
       {loading ? (
-        <p>Đang tải...</p>
-      ) : blogs.length === 0 ? (
-        <p>Không có blog nào.</p>
+        <p style={{ textAlign: 'center', color: '#64748b', fontSize: 16, padding: '40px 0' }}>Đang tải...</p>
+      ) : filteredBlogs.length === 0 ? (
+        <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: 16, padding: '60px 0' }}>Không có blog nào.</p>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
-          {blogs.filter((blog) => blog.status !== 'REJECTED').map((blog) => (
-            <div key={blog.id} style={{ border: '1px solid #ddd', padding: 16, borderRadius: 8, background: '#fff' }}>
-              <h3>{blog.title}</h3>
-              <p>{blog.content.length > 100 ? blog.content.slice(0, 100) + '...' : blog.content}</p>
-              {blog.coverImage && (
-                <img src={blog.coverImage} alt="cover" style={{ width: '100%', borderRadius: 6, marginBottom: 8 }} />
-              )}
-              <p style={{ fontSize: 14, color: '#666' }}>
-                <b>Trạng thái:</b> {blog.status} | <b>Danh mục:</b> {blog.categoryName}
-              </p>
-              <div>
-                <button
-                  onClick={() => handleEdit(blog)}
-                  style={{ marginRight: 8, padding: '6px 12px', background: '#2196F3', color: '#fff', border: 'none', borderRadius: 4 }}
-                >
-                  Sửa
-                </button>
-                <button
-                  onClick={() => handleDelete(blog.id)}
-                  style={{ padding: '6px 12px', background: '#f44336', color: '#fff', border: 'none', borderRadius: 4 }}
-                >
-                  Xóa
-                </button>
-                
-                {blog.status === 'PENDING' && (
-                  <>
-                    <button
-                      onClick={() => handleApprove(blog.id)}
-                      style={{ marginLeft: 8, padding: '6px 12px', background: '#4CAF50', color: '#fff', border: 'none', borderRadius: 4 }}
-                    >
-                      Duyệt
-                    </button>
-                    <button
-                      onClick={() => handleReject(blog.id)}
-                      style={{ marginLeft: 8, padding: '6px 12px', background: '#ff9800', color: '#fff', border: 'none', borderRadius: 4 }}
-                    >
-                      Từ chối
-                    </button>
-                  </>
+        <>
+          <div className="admin-blogs-list">
+            {pagedBlogs.map((blog) => (
+              <div key={blog.id} className="admin-blogs-card">
+                <div className="admin-blogs-card-title">{blog.title}</div>
+                {blog.coverImage && (
+                  <img src={blog.coverImage} alt="cover" style={{ width: '100%', borderRadius: 8, marginBottom: 8, maxHeight: 180, objectFit: 'cover' }} />
                 )}
+                <div className="admin-blogs-card-content">{blog.content?.slice(0, 100) || ''}</div>
+                <div className="admin-blogs-card-meta">
+                  <b>Trạng thái:</b> {blog.status} | <b>Danh mục:</b> {blog.categoryName}
+                </div>
+                <div className="admin-blogs-card-actions">
+                  <button
+                    onClick={() => handleEdit(blog)}
+                    className="admin-blogs-btn admin-blogs-btn-edit"
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    onClick={() => handleDelete(blog.id)}
+                    className="admin-blogs-btn admin-blogs-btn-delete"
+                  >
+                    Xóa
+                  </button>
+                  {blog.status === 'PENDING' && (
+                    <>
+                      <button
+                        onClick={() => handleApprove(blog.id)}
+                        className="admin-blogs-btn admin-blogs-btn-approve"
+                      >
+                        Duyệt
+                      </button>
+                      <button
+                        onClick={() => handleReject(blog.id)}
+                        className="admin-blogs-btn admin-blogs-btn-reject"
+                      >
+                        Từ chối
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
+            ))}
+          </div>
+          {/* Pagination UI */}
+          {totalPages > 1 && (
+            <div className="admin-blogs-pagination">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="admin-blogs-pagination-btn"
+              >Trước</button>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => setPage(i + 1)}
+                  className={`admin-blogs-pagination-btn${page === i + 1 ? ' active' : ''}`}
+                >{i + 1}</button>
+              ))}
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="admin-blogs-pagination-btn"
+              >Sau</button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );

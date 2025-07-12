@@ -161,12 +161,14 @@ function Login() {
       <section className="login-section">
         <div className="login-container">
           <img src="/src/assets/img1/android-chrome-192x192.png" alt="Logo" className="logo" />
-          <h2>Đăng nhập</h2>
+          <h2>NoSmoke</h2>
           <p className="subtitle">Chào mừng bạn quay lại với hành trình không khói thuốc</p>
 
           <form className="login-form" onSubmit={handleLoginSubmit}>
-            <h3>Đăng nhập tài khoản</h3>
-            <p className="form-subtitle">Nhập thông tin đăng nhập của bạn bên dưới</p>
+            <div className="login-quote-box">
+            <span className="login-quote-emoji" role="img" aria-label="motivation">💪</span>
+            <span className="login-quote-text">"Mỗi ngày mới là một cơ hội để trở thành phiên bản tốt hơn"</span>
+          </div>
 
             <label htmlFor="username">Tên đăng nhập</label>
             <div className="input-password-wrapper">
@@ -207,7 +209,7 @@ function Login() {
             {errorMessage && <p className="error-message">{errorMessage}</p>}
 
             <div className="forgot-password">
-            <span style={{ cursor: 'pointer', color: '#4CAF50' }} onClick={() => setShowForgotModal(true)}>
+            <span style={{ cursor: 'pointer' }} onClick={() => setShowForgotModal(true)}>
               Quên mật khẩu?
             </span>
             </div>

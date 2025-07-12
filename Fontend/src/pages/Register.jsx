@@ -73,8 +73,8 @@ function Register() {
       <div className="register-container">
         <div className="register-wrapper">
           <div className="register-header">
-            <img src="/src/assets/img1/android-chrome-192x192.png" alt="NoSmoke" className="register-logo" />
-            <h2>Đăng ký tài khoản</h2>
+            <img src="/src/assets/img1/android-chrome-192x192.png" alt="Logo" className="logo" />
+            <h2>NoSmoke</h2>
             <p>Bắt đầu hành trình không khói thuốc của bạn ngay hôm nay</p>
           </div>
 

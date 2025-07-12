@@ -86,10 +86,10 @@ body {
 
 .login-container {
   background-color: #ffffff;
-  padding: 40px 30px;
+  padding: 28px 18px 32px;
   border-radius: 16px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  max-width: 400px;
+  max-width: 420px;
   width: 100%;
   text-align: center;
   position: relative;
