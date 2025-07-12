@@ -6,6 +6,8 @@ import axiosInstance from '../../axiosInstance';
 import WebSocketService from '../services/websocketService';
 import coachReviewService from '../services/coachReviewService';
 import CoachRatingModal from '../components/CoachRatingModal';
+import QuitPlanSummary from './QuitPlanSummary';
+import PlanStages from './PlanStages';
 import '../assets/CSS/Progress.css';
 
 // Helper: lưu selectionId riêng cho từng user
@@ -638,33 +640,8 @@ function Progress() {
                 )}
               </div>
             </div>
-            <div className="header-actions">
-              <div className="quit-date-input">
-                <label>Ngày bắt đầu cai thuốc:</label>
-                <input type="date" value={quitDate} onChange={(e) => setQuitDate(e.target.value)} max={new Date().toISOString().split('T')[0]} />
-              </div>
-
-              {/* Button test - xóa sau khi test xong */}
-              <button
-                className="test-btn"
-                onClick={() => {
-                  const testDate = new Date();
-                  testDate.setDate(testDate.getDate() - 8); // 8 ngày trước
-                  setQuitDate(testDate.toISOString().split('T')[0]);
-                }}
-                style={{
-                  background: '#e74c3c',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '8px 16px',
-                  fontSize: '0.8rem',
-                  cursor: 'pointer'
-                }}
-              >
-                🧪 Test (8 ngày)
-              </button>
-
+            <div className="header-actions"> 
+              <QuitPlanSummary />
               {canShowRating() && (
                 <button
                   className="rating-btn"
@@ -720,166 +697,14 @@ function Progress() {
             {activeTab === 'overview' && (
               <div className="overview-content">
                 <h3>🎯 Mục tiêu của bạn</h3>
-                <div className="goals-grid">
-                  <div className="goal-item"><span className="goal-icon">🚭</span><div><h4>Hoàn toàn không hút thuốc</h4><p>30 ngày liên tục</p></div></div>
-
-                  <div className="goal-item"><span className="goal-icon">❤️</span><div><h4>Cải thiện sức khỏe</h4><p>Phổi sạch hơn, hơi thở dễ dàng</p></div></div>
-                </div>
+                {/* Hiển thị tổng quan kế hoạch cai thuốc từ QuitPlanSummary hoặc dữ liệu động */}
+                <QuitPlanSummary />
               </div>
             )}
 
             {activeTab === 'plan' && (
               <div className="plan-content">
-                <h3>📋 Kế hoạch cai thuốc 3 giai đoạn</h3>
-                <div className="phases-container">
-                  <div className={`phase-card ${getCompletedPhases().includes(1) ? 'completed' : progress.days >= 7 ? 'current' : 'upcoming'}`}>
-                    <div className="phase-header">
-                      <div className="phase-icon">
-                        {getCompletedPhases().includes(1) ? '✅' : '🎯'}
-                      </div>
-                      <div className="phase-title">
-                        <h4>Giai đoạn 1: Khởi đầu (0-7 ngày)</h4>
-                        <p className="phase-status">
-                          {getCompletedPhases().includes(1) ? 'Hoàn thành' :
-                            progress.days < 7 ? `Còn ${7 - progress.days} ngày` : 'Sẵn sàng hoàn thành'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="phase-progress">
-                      <div className="progress-bar">
-                        <div
-                          className="progress-fill"
-                          style={{ width: `${Math.min((progress.days / 7) * 100, 100)}%` }}
-                        ></div>
-                      </div>
-                      <span className="progress-text">{Math.min(progress.days, 7)}/7 ngày</span>
-                    </div>
-                    <ul className="phase-tasks">
-                      <li className={progress.days >= 1 ? 'completed' : ''}>
-                        <span className="task-icon">{progress.days >= 1 ? '✅' : '⏳'}</span>
-                        Xác định lý do cai thuốc
-                      </li>
-                      <li className={progress.days >= 2 ? 'completed' : ''}>
-                        <span className="task-icon">{progress.days >= 2 ? '✅' : '⏳'}</span>
-                        Loại bỏ thuốc lá khỏi nhà
-                      </li>
-                      <li className={progress.days >= 4 ? 'completed' : ''}>
-                        <span className="task-icon">{progress.days >= 4 ? '✅' : '⏳'}</span>
-                        Thay đổi thói quen hàng ngày
-                      </li>
-                      <li className={progress.days >= 7 ? 'completed' : ''}>
-                        <span className="task-icon">{progress.days >= 7 ? '✅' : '⏳'}</span>
-                        Tìm hoạt động thay thế
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className={`phase-card ${getCompletedPhases().includes(2) ? 'completed' : progress.days >= 14 ? 'current' : progress.days >= 7 ? 'upcoming' : 'locked'}`}>
-                    <div className="phase-header">
-                      <div className="phase-icon">
-                        {getCompletedPhases().includes(2) ? '✅' : progress.days >= 7 ? '🎯' : '🔒'}
-                      </div>
-                      <div className="phase-title">
-                        <h4>Giai đoạn 2: Vượt qua cơn thèm (7-14 ngày)</h4>
-                        <p className="phase-status">
-                          {getCompletedPhases().includes(2) ? 'Hoàn thành' :
-                            progress.days < 7 ? 'Chưa mở khóa' :
-                              progress.days < 14 ? `Còn ${14 - progress.days} ngày` : 'Sẵn sàng hoàn thành'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="phase-progress">
-                      <div className="progress-bar">
-                        <div
-                          className="progress-fill"
-                          style={{ width: progress.days >= 7 ? `${Math.min(((progress.days - 7) / 7) * 100, 100)}%` : '0%' }}
-                        ></div>
-                      </div>
-                      <span className="progress-text">
-                        {progress.days >= 7 ? Math.min(progress.days - 7, 7) : 0}/7 ngày
-                      </span>
-                    </div>
-                    <ul className="phase-tasks">
-                      <li className={progress.days >= 8 ? 'completed' : ''}>
-                        <span className="task-icon">{progress.days >= 8 ? '✅' : '⏳'}</span>
-                        Luyện tập thở sâu khi thèm thuốc
-                      </li>
-                      <li className={progress.days >= 10 ? 'completed' : ''}>
-                        <span className="task-icon">{progress.days >= 10 ? '✅' : '⏳'}</span>
-                        Uống nhiều nước, ăn trái cây
-                      </li>
-                      <li className={progress.days >= 12 ? 'completed' : ''}>
-                        <span className="task-icon">{progress.days >= 12 ? '✅' : '⏳'}</span>
-                        Tập thể dục nhẹ hàng ngày
-                      </li>
-                      <li className={progress.days >= 14 ? 'completed' : ''}>
-                        <span className="task-icon">{progress.days >= 14 ? '✅' : '⏳'}</span>
-                        Tránh môi trường có khói thuốc
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className={`phase-card ${getCompletedPhases().includes(3) ? 'completed' : progress.days >= 21 ? 'current' : progress.days >= 14 ? 'upcoming' : 'locked'}`}>
-                    <div className="phase-header">
-                      <div className="phase-icon">
-                        {getCompletedPhases().includes(3) ? '✅' : progress.days >= 14 ? '🎯' : '🔒'}
-                      </div>
-                      <div className="phase-title">
-                        <h4>Giai đoạn 3: Tạo thói quen mới (14-21 ngày)</h4>
-                        <p className="phase-status">
-                          {getCompletedPhases().includes(3) ? 'Hoàn thành' :
-                            progress.days < 14 ? 'Chưa mở khóa' :
-                              progress.days < 21 ? `Còn ${21 - progress.days} ngày` : 'Sẵn sàng hoàn thành'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="phase-progress">
-                      <div className="progress-bar">
-                        <div
-                          className="progress-fill"
-                          style={{ width: progress.days >= 14 ? `${Math.min(((progress.days - 14) / 7) * 100, 100)}%` : '0%' }}
-                        ></div>
-                      </div>
-                      <span className="progress-text">
-                        {progress.days >= 14 ? Math.min(progress.days - 14, 7) : 0}/7 ngày
-                      </span>
-                    </div>
-                    <ul className="phase-tasks">
-                      <li className={progress.days >= 16 ? 'completed' : ''}>
-                        <span className="task-icon">{progress.days >= 16 ? '✅' : '⏳'}</span>
-                        Duy trì lối sống lành mạnh
-                      </li>
-                      <li className={progress.days >= 18 ? 'completed' : ''}>
-                        <span className="task-icon">{progress.days >= 18 ? '✅' : '⏳'}</span>
-                        Tham gia hoạt động xã hội
-                      </li>
-                      <li className={progress.days >= 20 ? 'completed' : ''}>
-                        <span className="task-icon">{progress.days >= 20 ? '✅' : '⏳'}</span>
-                        Theo dõi tiến trình hàng ngày
-                      </li>
-                      <li className={progress.days >= 21 ? 'completed' : ''}>
-                        <span className="task-icon">{progress.days >= 21 ? '✅' : '⏳'}</span>
-                        Tự thưởng khi đạt mục tiêu
-                      </li>
-                    </ul>
-                  </div>
-
-                  {getCompletedPhases().length > 0 && (
-                    <div className="achievement-banner">
-                      <div className="achievement-icon">🏆</div>
-                      <div className="achievement-text">
-                        <h4>Chúc mừng bạn!</h4>
-                        <p>Bạn đã hoàn thành {getCompletedPhases().length} giai đoạn. Hãy đánh giá coach để chia sẻ trải nghiệm!</p>
-                      </div>
-                      <button
-                        className="achievement-btn"
-                        onClick={() => setShowRatingModal(true)}
-                      >
-                        {existingReview ? 'Sửa đánh giá' : 'Đánh giá ngay'}
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <PlanStages />
               </div>
             )}
 
