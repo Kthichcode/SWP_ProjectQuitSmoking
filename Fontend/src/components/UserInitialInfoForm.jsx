@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import './UserInitialInfoForm.css';
 
 const UserInitialInfoForm = ({ onSuccess }) => {
   const [form, setForm] = useState({
@@ -33,19 +34,115 @@ const UserInitialInfoForm = ({ onSuccess }) => {
   };
 
   return (
-    <form className="user-initial-info-form" onSubmit={handleSubmit}>
-      <h2>Khai báo thông tin ban đầu</h2>
-      <label>Số năm hút thuốc</label>
-      <input name="yearsSmoking" type="number" min={0} value={form.yearsSmoking} onChange={handleChange} required />
-      <label>Số điếu hút mỗi ngày</label>
-      <input name="cigarettesPerDay" type="number" min={0} value={form.cigarettesPerDay} onChange={handleChange} required />
-      <label>Lý do muốn cai thuốc</label>
-      <input name="reasonToQuit" type="text" value={form.reasonToQuit} onChange={handleChange} required />
-      <label>Tình trạng sức khỏe hiện tại</label>
-      <input name="healthStatus" type="text" value={form.healthStatus} onChange={handleChange} required />
-      {error && <div style={{color:'red'}}>{error}</div>}
-      <button type="submit" disabled={loading}>{loading ? 'Đang gửi...' : 'Xác nhận'}</button>
-    </form>
+    <div className="user-initial-info-container">
+      <form className="user-initial-info-form" onSubmit={handleSubmit}>
+        {/* Progress bar moved to top */}
+        <div className="form-progress">
+          <div className="progress-bar"></div>
+        </div>
+
+        <div className="form-header">
+          <h2 className="form-title">Khai báo thông tin ban đầu</h2>
+          <p className="form-subtitle">Bước đầu tiên trên hành trình cai thuốc của bạn</p>
+        </div>
+
+        <div className="form-fields">
+          <div className="field-group">
+            <label className="field-label" htmlFor="yearsSmoking">
+              Số năm hút thuốc
+            </label>
+            <div className="field-input-container">
+              <input 
+                id="yearsSmoking"
+                className="field-input field-input-number"
+                name="yearsSmoking" 
+                type="number" 
+                min={0} 
+                value={form.yearsSmoking} 
+                onChange={handleChange} 
+                placeholder="Ví dụ: 5"
+                required 
+              />
+            </div>
+          </div>
+
+          <div className="field-group">
+            <label className="field-label" htmlFor="cigarettesPerDay">
+              Số điếu hút mỗi ngày
+            </label>
+            <div className="field-input-container">
+              <input 
+                id="cigarettesPerDay"
+                className="field-input field-input-number"
+                name="cigarettesPerDay" 
+                type="number" 
+                min={0} 
+                value={form.cigarettesPerDay} 
+                onChange={handleChange} 
+                placeholder="Ví dụ: 10"
+                required 
+              />
+            </div>
+          </div>
+
+          <div className="field-group">
+            <label className="field-label" htmlFor="reasonToQuit">
+              Lý do muốn cai thuốc
+            </label>
+            <div className="field-input-container">
+              <textarea 
+                id="reasonToQuit"
+                className="field-input field-input-textarea"
+                name="reasonToQuit" 
+                value={form.reasonToQuit} 
+                onChange={handleChange} 
+                placeholder="Ví dụ: Vì sức khỏe, gia đình..."
+                rows={3}
+                required 
+              />
+            </div>
+          </div>
+
+          <div className="field-group">
+            <label className="field-label" htmlFor="healthStatus">
+              Tình trạng sức khỏe hiện tại
+            </label>
+            <div className="field-input-container">
+              <textarea 
+                id="healthStatus"
+                className="field-input field-input-textarea field-input-health"
+                name="healthStatus" 
+                value={form.healthStatus} 
+                onChange={handleChange} 
+                placeholder="Ví dụ: Ho, khó thở, mệt mỏi..."
+                rows={3}
+                required 
+              />
+            </div>
+          </div>
+        </div>
+
+        {error && (
+          <div className="error-message">
+            <span className="error-icon">⚠️</span>
+            <span className="error-text">{error}</span>
+          </div>
+        )}
+
+        <div className="form-actions">
+          <button 
+            type="submit" 
+            className={`submit-btn ${loading ? 'submit-btn-loading' : ''}`}
+            disabled={loading}
+          >
+            <span className="submit-btn-text">
+              {loading ? 'Đang gửi...' : 'Xác nhận'}
+            </span>
+            {loading && <span className="submit-btn-spinner"></span>}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

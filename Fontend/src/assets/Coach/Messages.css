@@ -51,7 +51,7 @@
 .messages-container .messages-list-header {
   padding: 15px;
   border-bottom: 1px solid #e0e0e0;
-  background: #f8f9fa;
+  background: lightskyblue;
   flex-shrink: 0;
 }
 
@@ -221,7 +221,7 @@
 }
 
 .messages-container .message.coach-right .message-content {
-  background: blue;
+  background: cadetblue;
   color: white;
 }
 
