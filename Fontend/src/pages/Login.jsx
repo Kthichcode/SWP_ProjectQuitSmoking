@@ -163,7 +163,7 @@ function Login() {
       setErrorMessage('');
     } catch (error) {
       console.error("Login failed", error);
-      if (error.response && error.response.status === 401) {
+      if (error.response && (error.response.status === 401 || error.response.status === 400)) {
         setErrorMessage("Sai tài khoản hoặc mật khẩu");
       } else {
         setErrorMessage("Đã có lỗi xảy ra. Vui lòng thử lại.");
