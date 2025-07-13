@@ -33,6 +33,26 @@ function Progress() {
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [existingReview, setExistingReview] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [stages, setStages] = useState([]);
+  const [expandedStage, setExpandedStage] = useState(null);
+  useEffect(() => {
+    if (activeTab !== 'overview') return;
+    const fetchStages = async () => {
+      try {
+        const res = await axiosInstance.get('/api/quitplan/stages/my');
+        if (Array.isArray(res.data)) {
+          setStages(res.data);
+        } else if (res.data?.status === 'success' && Array.isArray(res.data.data)) {
+          setStages(res.data.data);
+        } else {
+          setStages([]);
+        }
+      } catch {
+        setStages([]);
+      }
+    };
+    fetchStages();
+  }, [activeTab]);
 
   const messagesEndRef = useRef(null);
   const reconnectAttempts = useRef(0);
@@ -696,9 +716,71 @@ function Progress() {
             {activeTab === 'overview' && (
               <div className="overview-content">
                 <h3>🎯 Mục tiêu của bạn</h3>
-                
                 {/* Thêm form khai báo hằng ngày */}
                 <DailyDeclarationForm />
+
+                {/* Hiển thị các giai đoạn tiến trình */}
+                <div style={{ marginTop: 32 }}>
+                  <h3>Các giai đoạn thực hiện</h3>
+                  {stages.length === 0 && (
+                    <div style={{ color: '#888', margin: '16px 0' }}>Chưa có dữ liệu tiến trình.</div>
+                  )}
+                  {stages.map(stage => (
+                    <div key={stage.stageId} style={{
+                      border: '1px solid #e0e0e0',
+                      borderRadius: 8,
+                      marginBottom: 16,
+                      background: '#fff',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+                    }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '12px 16px',
+                          cursor: 'pointer',
+                          background: expandedStage === stage.stageId ? '#f6fcfa' : '#f9f9f9',
+                          borderBottom: expandedStage === stage.stageId ? '1px solid #b2f5ea' : '1px solid #e0e0e0'
+                        }}
+                        onClick={() => setExpandedStage(expandedStage === stage.stageId ? null : stage.stageId)}
+                      >
+                        <span style={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: '50%',
+                          background: stage.status === 'completed' ? '#2ecc40' : (stage.status === 'active' ? '#3498db' : '#bdc3c7'),
+                          marginRight: 12
+                        }}></span>
+                        <strong style={{ fontSize: 16 }}>Giai đoạn {stage.stageNumber}: </strong>
+                        <span style={{ marginLeft: 8, color: '#666' }}>{stage.status === 'completed' ? 'Hoàn thành' : (stage.status === 'active' ? 'Đang thực hiện' : 'Chưa bắt đầu')}</span>
+                        <span style={{ marginLeft: 'auto', fontWeight: 500, color: '#27ae60' }}>{stage.progressPercentage ?? 0}%</span>
+                        <span style={{ marginLeft: 16, fontSize: 18 }}>{expandedStage === stage.stageId ? '▼' : '▶'}</span>
+                      </div>
+                      {expandedStage === stage.stageId && (
+                        <div style={{ padding: '16px', background: '#f6fcfa', borderTop: '1px solid #b2f5ea' }}>
+                          <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+                            <div>
+                              <span style={{ fontWeight: 500 }}>Ngày bắt đầu:</span> {stage.startDate}
+                            </div>
+                            <div>
+                              <span style={{ fontWeight: 500 }}>Ngày kết thúc:</span> {stage.endDate}
+                            </div>
+                            <div>
+                              <span style={{ fontWeight: 500 }}>Mục tiêu số điếu:</span> {stage.targetCigaretteCount} điếu/ngày
+                            </div>
+                            <div>
+                              <span style={{ fontWeight: 500 }}>Hoàn thành:</span> {stage.progressPercentage ?? 0}%
+                            </div>
+                          </div>
+                          <div style={{ marginTop: 12 }}>
+                            <span style={{ fontWeight: 500 }}>Lời khuyên của Coach:</span>
+                            <div style={{ background: '#eaf6ff', padding: 8, borderRadius: 4, marginTop: 4 }}>{stage.advice}</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

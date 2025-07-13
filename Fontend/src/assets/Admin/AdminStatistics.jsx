@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import './AdminPage.css';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 function AdminStatistics() {
   const { token } = useAuth();
@@ -10,6 +11,54 @@ function AdminStatistics() {
   const [error, setError] = useState('');
   const [useTestData, setUseTestData] = useState(false);
   const [debugInfo, setDebugInfo] = useState(null);
+  // Thêm state cho thống kê membership theo tháng
+  const [membershipStats, setMembershipStats] = useState([]);
+  // Thêm state cho tổng tiền và doanh thu từng tháng
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [monthlyRevenue, setMonthlyRevenue] = useState([]);
+  // Gọi API lấy tổng tiền đã kiếm được
+  const fetchTotalRevenue = async () => {
+    try {
+      const res = await axios.get('/api/statistics/membership-total-revenue', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      // Dữ liệu dạng { total: 123456789 }
+      if (typeof res.data?.total === 'number') {
+        setTotalRevenue(res.data.total);
+      } else if (typeof res.data === 'number') {
+        setTotalRevenue(res.data);
+      } else {
+        setTotalRevenue(0);
+      }
+    } catch {
+      setTotalRevenue(0);
+    }
+  };
+
+  // Gọi API lấy doanh thu từng tháng
+  const fetchMonthlyRevenue = async () => {
+    try {
+      const res = await axios.get('/api/statistics/membership-revenue-by-month', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      // Dữ liệu dạng [{ month: '2025-07', revenue: 123456 }, ...]
+      if (Array.isArray(res.data)) {
+        setMonthlyRevenue(res.data);
+      } else if (res.data?.status === 'success' && Array.isArray(res.data.data)) {
+        setMonthlyRevenue(res.data.data);
+      } else {
+        setMonthlyRevenue([]);
+      }
+    } catch {
+      setMonthlyRevenue([]);
+    }
+  };
 
   // Test data for development
   const testStats = {
@@ -27,8 +76,33 @@ function AdminStatistics() {
     ]
   };
 
+  // Gọi API lấy thống kê số lượng người mua gói thành viên theo tháng
+  const fetchMembershipStats = async () => {
+    try {
+      const res = await axios.get('/api/statistics/membership-purchases-by-month', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      // Dữ liệu dạng [{ month: '2025-07', count: 12 }, ...]
+      if (Array.isArray(res.data)) {
+        setMembershipStats(res.data);
+      } else if (res.data?.status === 'success' && Array.isArray(res.data.data)) {
+        setMembershipStats(res.data.data);
+      } else {
+        setMembershipStats([]);
+      }
+    } catch {
+      setMembershipStats([]);
+    }
+  };
+
   useEffect(() => {
     fetchDashboardStats();
+    fetchMembershipStats();
+    fetchTotalRevenue();
+    fetchMonthlyRevenue();
   }, []);
 
   const fetchDashboardStats = async () => {
@@ -112,6 +186,35 @@ function AdminStatistics() {
         </div>
       </div>
     );
+      {/* Card tổng tiền và biểu đồ doanh thu từng tháng */}
+      <div style={{ margin: '40px 0 30px 0', background: '#fff', borderRadius: '10px', border: '1px solid #e0e0e0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', padding: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <h3 style={{ fontSize: '1.3em', fontWeight: 600, margin: 0 }}>Tổng tiền giao dịch</h3>
+          <span style={{ color: '#007bff', fontWeight: 700, fontSize: '1.2em' }}>
+            Tổng: {formatNumber(totalRevenue)} VND
+          </span>
+        </div>
+        {monthlyRevenue.length > 0 ? (
+          <ResponsiveContainer width="100%" height={320}>
+            <LineChart data={monthlyRevenue} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" tick={{ fontSize: 13 }} />
+              <YAxis tickFormatter={v => formatNumber(v)} />
+              <Tooltip formatter={v => `${v.toLocaleString('vi-VN')} VND`} />
+              <Line type="monotone" dataKey="revenue" stroke="#007bff" strokeWidth={3} dot={{ r: 5 }} activeDot={{ r: 7 }} name="Doanh thu" fillOpacity={0.2} />
+              <defs>
+                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#007bff" stopOpacity={0.2}/>
+                  <stop offset="100%" stopColor="#007bff" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <Area type="monotone" dataKey="revenue" stroke={false} fill="url(#colorRevenue)" />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div style={{ color: '#888', margin: '16px 0' }}>Chưa có dữ liệu doanh thu từng tháng.</div>
+        )}
+      </div>
   }
 
   if (error) {
@@ -308,6 +411,37 @@ function AdminStatistics() {
         )}
       </div>
 
+      {/* Thống kê tài chính: Số lượng người mua gói thành viên theo tháng */}
+      <div className="membership-stats" style={{ marginTop: '40px', marginBottom: '30px' }}>
+        <h3>📅 Thống kê số lượng người mua gói thành viên theo tháng</h3>
+        <table className="admin-table" style={{ marginTop: '20px', minWidth: 320 }}>
+          <thead>
+            <tr>
+              <th>Tháng</th>
+              <th>Số lượng thành viên mới</th>
+            </tr>
+          </thead>
+          <tbody>
+            {membershipStats.length > 0 ? (
+              membershipStats.map((item, idx) => (
+                <tr key={idx}>
+                  <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{item.month}</td>
+                  <td style={{ textAlign: 'center', color: '#007bff', fontWeight: 500 }}>{item.count}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="2" style={{ textAlign: 'center', color: '#6c757d', padding: '30px' }}>
+                  <div>
+                    <div style={{ fontSize: '2em', marginBottom: '10px' }}>📊</div>
+                    <div style={{ fontSize: '15px', marginBottom: '5px' }}>Chưa có dữ liệu thống kê thành viên theo tháng</div>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
       {/* Top Members Table */}
       <div className="top-members">
         <h3>🏆 Top 3 Thành Viên Hút Thuốc Ít Nhất Tháng Này</h3>
