@@ -344,8 +344,33 @@ const CoachProfile = () => {
                 required
               />
             </div>
+           <div className="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                value={coachData.email}
+                disabled
+                className="disabled-input"
+              />
+              <small>Email không thể thay đổi</small>
+            </div>
           </div>
 
+          <div className="form-row">
+
+            <div className="form-group">
+              <label>Kinh nghiệm (năm)</label>
+              <input
+                type="number"
+                min="0"
+                value={coachData.yearsOfExperience}
+                onChange={(e) => handleInputChange('yearsOfExperience', e.target.value)}
+                disabled={!isEditing}
+                placeholder="Ví dụ: 5"
+              />
+            </div>
+          </div>
+          
           <div className="form-row">
             <div className="form-group">
               <label>Ảnh đại diện</label>
