@@ -655,7 +655,7 @@ function Progress() {
           </div>
 
           <div className="progress-stats">
-            <div className="stat-card"><h3>{progress.days}</h3><p>Ngày không khói thuốc</p></div>
+            
 
 
             {/* Debug card - xóa sau khi test xong */}
@@ -672,9 +672,7 @@ function Progress() {
             <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => handleTabChange('overview')}>
               <span role="img" aria-label="Tổng quan">📊</span> Tổng quan
             </button>
-            <button className={activeTab === 'plan' ? 'active' : ''} onClick={() => handleTabChange('plan')}>
-              <span role="img" aria-label="Kế hoạch">📋</span> Kế hoạch
-            </button>
+            
             <button className={activeTab === 'chat' ? 'active' : ''} onClick={() => handleTabChange('chat')} style={{ position: 'relative' }}>
               <span role="img" aria-label="Chat">💬</span> Chat với Coach
               {unreadCount > 0 && (
@@ -698,8 +696,7 @@ function Progress() {
             {activeTab === 'overview' && (
               <div className="overview-content">
                 <h3>🎯 Mục tiêu của bạn</h3>
-                {/* Hiển thị tổng quan kế hoạch cai thuốc từ QuitPlanSummary hoặc dữ liệu động */}
-                <QuitPlanSummary />
+                
                 {/* Thêm form khai báo hằng ngày */}
                 <DailyDeclarationForm />
               </div>
