@@ -70,7 +70,7 @@ const CoachProfile = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     
-    if (!coachData.fullName.trim()) {
+    if (!coachData.fullName || typeof coachData.fullName !== 'string' || !coachData.fullName.trim()) {
       setError('Họ tên không được để trống');
       return;
     }
@@ -78,16 +78,17 @@ const CoachProfile = () => {
     try {
       setUpdating(true);
       setError('');
-      
+
       const token = localStorage.getItem('token');
 
+      // Đảm bảo các trường không bị undefined trước khi trim
       const updateData = {
-        fullName: coachData.fullName.trim(),
-        phoneNumber: coachData.phoneNumber.trim(),
-        yearsOfExperience: coachData.yearsOfExperience !== '' ? parseInt(coachData.yearsOfExperience, 10) : null,
-        specialization: coachData.specialization.trim(),
-        bio: coachData.bio.trim(),
-        imageUrl: coachData.imageUrl // gửi base64 vào imageUrl
+        fullName: coachData.fullName ? coachData.fullName.trim() : '',
+        phoneNumber: coachData.phoneNumber ? coachData.phoneNumber.trim() : '',
+        yearsOfExperience: coachData.yearsOfExperience !== '' && coachData.yearsOfExperience !== undefined ? parseInt(coachData.yearsOfExperience, 10) : null,
+        specialization: coachData.specialization ? coachData.specialization.trim() : '',
+        bio: coachData.bio ? coachData.bio.trim() : '',
+        imageUrl: coachData.imageUrl || '' // gửi base64 vào imageUrl
       };
 
       const response = await axios.put(`${API_BASE_URL}/update`, updateData, {
@@ -205,7 +206,6 @@ const CoachProfile = () => {
 
   const validateResetCode = async (code) => {
     if (!code) return false;
-    
     try {
       const response = await axios.get(`${PASSWORD_API_URL}/validate-code`, {
         params: { code },
@@ -213,10 +213,18 @@ const CoachProfile = () => {
           'Content-Type': 'application/json'
         }
       });
-      
       return response.data.status === 'success' && response.data.data === true;
     } catch (error) {
       console.error('Error validating code:', error);
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Status:', error.response.status);
+        console.error('Headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+      } else {
+        console.error('Error setting up request:', error.message);
+      }
       return false;
     }
   };
@@ -334,31 +342,6 @@ const CoachProfile = () => {
                 onChange={(e) => handleInputChange('fullName', e.target.value)}
                 disabled={!isEditing}
                 required
-              />
-            </div>
-            <div className="form-group">
-              <label>Email</label>
-              <input
-                type="email"
-                value={coachData.email}
-                disabled
-                className="disabled-input"
-              />
-              <small>Email không thể thay đổi</small>
-            </div>
-          </div>
-
-          <div className="form-row">
-
-            <div className="form-group">
-              <label>Kinh nghiệm (năm)</label>
-              <input
-                type="number"
-                min="0"
-                value={coachData.yearsOfExperience}
-                onChange={(e) => handleInputChange('yearsOfExperience', e.target.value)}
-                disabled={!isEditing}
-                placeholder="Ví dụ: 5"
               />
             </div>
           </div>

@@ -29,17 +29,35 @@ function PaymentResult() {
       payDate
     });
 
+    // Sử dụng BroadcastChannel để đồng bộ trạng thái xử lý transactionId giữa các tab
+    const channel = new window.BroadcastChannel('payment_transaction_channel');
+    let isProcessing = false;
+
+    const processedKey = transactionId ? `payment_processed_${transactionId}` : '';
+
     const verifyAndCreateMembership = async () => {
       if (responseCode && transactionId && orderInfo) {
+        // Kiểm tra transactionId đã xử lý chưa
+        const alreadyProcessed = localStorage.getItem(processedKey);
+        if (alreadyProcessed) {
+          setPaymentStatus('success');
+          console.log('Transaction already processed, skipping callback:', transactionId);
+          return;
+        }
+        if (isProcessing) {
+          // Đã có tab khác xử lý
+          return;
+        }
+        isProcessing = true;
+        channel.postMessage({ type: 'processing', transactionId });
         try {
           console.log('Processing payment callback:', { transactionId, responseCode, orderInfo });
-          
           const result = await processPaymentCallback(transactionId, responseCode, orderInfo);
           console.log('Payment callback result:', result);
-          
           if (result.paymentVerified) {
             setPaymentStatus('success');
-            
+            localStorage.setItem(processedKey, 'true');
+            channel.postMessage({ type: 'processed', transactionId });
             if (result.membershipResult && result.membershipResult.success) {
               setPaymentInfo(prev => ({
                 ...prev,
@@ -59,7 +77,6 @@ function PaymentResult() {
             setPaymentStatus('failed');
             console.error('Payment verification failed:', result.error);
           }
-          
         } catch (error) {
           console.error('Error in verifyAndCreateMembership:', error);
           setPaymentStatus('failed');
@@ -70,7 +87,24 @@ function PaymentResult() {
       }
     };
 
+    // Lắng nghe các tab khác xử lý transactionId
+    channel.onmessage = (event) => {
+      if (event.data && event.data.transactionId === transactionId) {
+        if (event.data.type === 'processing') {
+          isProcessing = true;
+        }
+        if (event.data.type === 'processed') {
+          localStorage.setItem(processedKey, 'true');
+          setPaymentStatus('success');
+        }
+      }
+    };
+
     verifyAndCreateMembership();
+
+    return () => {
+      channel.close();
+    };
   }, [searchParams]);
 
   const handleGoHome = () => {
