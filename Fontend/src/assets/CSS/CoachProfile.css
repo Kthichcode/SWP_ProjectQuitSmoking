@@ -19,7 +19,7 @@
   font-weight: 700;
   cursor: pointer;
   margin-bottom: 24px;
-  margin-top: 24px;
+  margin-top: 50px;
   margin-left: 24px;
   box-shadow: 0 2px 8px rgba(22,163,74,0.07);
   position: relative;
@@ -35,13 +35,11 @@
 
 /* Main container */
 .coach-profile-container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  backdrop-filter: blur(10px);
+  padding: 20px;
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Header section */
@@ -67,7 +65,7 @@
   justify-content: center;
   font-size: 36px;
   font-weight: bold;
-  color: #16a34a;
+  
   border: 3px solid #16a34a;
   box-shadow: 0 2px 12px rgba(22,163,74,0.10);
   flex-shrink: 0;
@@ -77,7 +75,7 @@
   font-size: 28px;
   font-weight: 800;
   margin-bottom: 8px;
-  color: #15803d;
+  color: black;
   letter-spacing: 0.01em;
   text-shadow: none;
 }
@@ -93,7 +91,7 @@
 .coach-profile-rating,
 .coach-profile-exp {
   background: #e0f7e9;
-  color: #15803d;
+  color: black;
   padding: 5px 14px;
   border-radius: 16px;
   font-size: 15px;
@@ -124,7 +122,7 @@
 
 .coach-profile-badges span {
   background: #e0f7e9;
-  color: #16a34a;
+  color: black;
   padding: 5px 14px;
   border-radius: 16px;
   font-size: 15px;
@@ -137,7 +135,7 @@
 .coach-profile-desc {
   font-size: 16px;
   line-height: 1.6;
-  color: #166534;
+  color: black;
   opacity: 0.98;
   margin-bottom: 10px;
   font-weight: 500;
@@ -172,7 +170,7 @@
 .coach-profile-stat-value {
   font-size: 26px;
   font-weight: 800;
-  color: #16a34a;
+  color: black;
   margin-bottom: 6px;
 }
 
@@ -185,15 +183,15 @@
 }
 
 .coach-profile-stat.blue .coach-profile-stat-value {
-  color: #16a34a;
+  color: black;
 }
 
 .coach-profile-stat.purple .coach-profile-stat-value {
-  color: #10b981;
+  color: black;
 }
 
 .coach-profile-stat.orange .coach-profile-stat-value {
-  color: #15803d;
+  color: black;
 }
 
 /* Action buttons */
@@ -273,6 +271,7 @@
   padding: 30px;
   background: white;
   min-height: 200px;
+  border-radius:0 0 24px 24px;
 }
 
 .coach-profile-info-flex {

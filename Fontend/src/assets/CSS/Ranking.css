@@ -10,23 +10,64 @@
   margin-bottom: 2rem;
 }
 
+
 .top3 {
   display: flex;
   justify-content: center;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  align-items: flex-end;
+  gap: 2.5rem;
+  margin-bottom: 2.5rem;
+  width: 100%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
+
 .userCard {
-  background: #fff;
-  border-radius: 12px;
-  padding: 1rem;
-  width: 150px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: 0.2s;
+  border-radius: 18px;
+  padding: 1.5rem 1rem 1.2rem 1rem;
+  width: 180px;
+  min-width: 150px;
+  box-shadow: 0 6px 24px 0 rgba(42,178,107,0.10), 0 1.5px 6px 0 rgba(42,178,107,0.08);
+  border: 2.5px solid #b2f5ea;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  transition: box-shadow 0.25s, transform 0.2s;
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(135deg, #e0ffe7 0%, #f4fff6 60%, #e0f7fa 100%);
+}
+.userCard.top1 {
+  background: linear-gradient(135deg, #fffbe0 0%, #ffe9b2 60%, #fff6e0 100%);
+  border-color: #ffe066;
+}
+.userCard.top2 {
+  background: linear-gradient(135deg, #e0f3ff 0%, #b2e0ff 60%, #e0f7fa 100%);
+  border-color: #7ecbff;
+}
+.userCard.top3 {
+  background: linear-gradient(135deg, #f3e0ff 0%, #e0b2ff 60%, #f6e0ff 100%);
+  border-color: #d1aaff;
+}
+
+.userCard h3 {
+  margin: 0.5rem 0 0.2rem 0;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #222;
+  word-break: break-all;
+  text-align: center;
+  max-width: 95%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre-line;
 }
 .userCard:hover {
-  transform: scale(1.05);
+  transform: translateY(-6px) scale(1.06);
+  box-shadow: 0 12px 32px 0 rgba(42,178,107,0.18), 0 2px 8px 0 rgba(42,178,107,0.10);
 }
 
 .emoji {
@@ -34,13 +75,16 @@
   margin-bottom: 0.5rem;
 }
 
+
 .table {
   width: 100%;
-  max-width: 700px;
-  margin: auto;
+  max-width: 1000px;
+  margin: 0 auto 0 auto;
   border-collapse: collapse;
   background: #fff;
   box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  margin-bottom: 2.5rem;
+  
 }
 
 .table th, .table td {

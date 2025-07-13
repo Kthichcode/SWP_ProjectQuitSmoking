@@ -82,13 +82,27 @@ function CoachProfile() {
     }
   };
 
-  const handleSelectCoach = () => {
-    // Chuyển đến trang tiến trình cai thuốc
-    navigate('/progress', { 
-      state: { 
-        selectedCoach: coach,
-        coachId: coach.userId 
-      } 
+  // Xử lý chọn coach giống CoachPayment: gọi API lấy selectionId (nếu có), rồi navigate với state: { selectionId, coachId }
+  const handleSelectCoach = async (coach) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn chọn coach "${coach.fullName}" để đồng hành không?\nSau khi chọn, bạn sẽ bắt đầu hành trình cùng coach này.`)) return;
+
+    const coachId = coach.userId || coach.id;
+    let selectionId = null;
+    try {
+      // Gọi API lấy selectionId nếu đã từng có
+      const response = await axiosInstance.get(`/api/users/members/selection-with-coach/${coachId}`);
+      if (response.data?.status === 'success' && response.data.data?.selectionId) {
+        selectionId = response.data.data.selectionId;
+      }
+    } catch (e) {
+      // Không có selectionId, sẽ tạo khi vào progress
+    }
+
+    navigate('/progress', {
+      state: {
+        selectionId: selectionId || undefined,
+        coachId: coachId
+      }
     });
   };
 
@@ -115,7 +129,7 @@ function CoachProfile() {
             <div className="error-message">
               <h3>😔 {error || 'Không tìm thấy hồ sơ coach'}</h3>
               <button className="coach-profile-btn-back" onClick={() => navigate(-1)}>
-                <span style={{ fontSize: 20, marginRight: 8, verticalAlign: 'middle' }}>←</span>
+                <span style={{ fontSize: 20, marginRight: 8, verticalAlign: 'middle', marginTop: 50 }}>←</span>
                 Quay lại danh sách
               </button>
             </div>
@@ -159,7 +173,7 @@ function CoachProfile() {
                 )}
               </div>
               <div className="coach-profile-desc">{coach.bio || 'Chuyên gia tư vấn cai thuốc lá với nhiều năm kinh nghiệm'}</div>
-              <div style={{marginTop: 10, color: '#fff', fontSize: 15}}>
+              <div style={{marginTop: 10, color: 'black', fontSize: 15}}>
                 <b>Email:</b> {coach.email || 'N/A'} &nbsp;|&nbsp; <b>Username:</b> {coach.username || 'N/A'}
               </div>
             </div>
@@ -186,10 +200,11 @@ function CoachProfile() {
 
           {/* Action buttons */}
           <div className="coach-profile-actions">
-            <button className="btn-select-coach" onClick={handleSelectCoach}>
+            <button className="btn-select-coach" onClick={() => handleSelectCoach(coach)}>
               ✓ Chọn Coach này
             </button>
           </div>
+          
 
           <div className="coach-profile-tabs">
             <button className={tab === 'overview' ? 'active' : ''} onClick={() => setTab('overview')}>Tổng quan</button>

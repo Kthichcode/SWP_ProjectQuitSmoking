@@ -66,7 +66,7 @@ const Ranking = () => {
                 displayName = user.email.replace(/@gmail\.com$/, '');
               }
               return (
-                <div key={user.memberId} className="userCard">
+                <div key={user.memberId} className={`userCard top${idx + 1}`}>
                   <div className="emoji">{idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}</div>
                   {user.avatarUrl ? (
                     <img src={user.avatarUrl} alt="avatar" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', marginBottom: 8 }} />

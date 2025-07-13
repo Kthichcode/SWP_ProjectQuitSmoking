@@ -530,7 +530,7 @@ function Messages() {
                   >
                     <div className="message-content">
                       <div className="message-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                        <strong style={{ fontSize: 14, color: message.senderType === 'COACH' ? 'white' : '#15803d', fontWeight: 700, padding: '2px 4px', borderRadius: 4 }}>
+                        <strong style={{ fontSize: 14, color: message.senderType === 'COACH' ? 'white' : '#15803d', fontWeight: 700, borderRadius: 4 }}>
                           {message.senderType === 'MEMBER'
                             ? (selectedConversation?.userName || selectedConversation?.userFullName)
                             : (user.userName || user.fullName || 'Bạn')}

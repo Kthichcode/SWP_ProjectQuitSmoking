@@ -18,7 +18,7 @@ import CoachDashboard from './assets/Coach/CoachDashboard';
 import Users from './assets/Coach/Users';
 import MakePlans from './assets/Coach/MakePlans';
 import Messages from './assets/Coach/Messages';
-import CoachProfile from './assets/Coach/CoachProfile';
+import CProfile from './assets/Coach/CProfile';
 import AdminAchievements from './assets/Admin/AdminAchievements';
 import AdminUsers from './assets/Admin/AdminUsers';
 import AdminCoaches from './assets/Admin/AdminCoaches';
@@ -91,7 +91,7 @@ function App() {
           <Route path="plans" element={<MakePlans />} />
           <Route path="messages" element={<Messages />} />
           <Route path="blog" element={<CoachBlog />} />
-          <Route path="profile" element={<CoachProfile />} />
+          <Route path="profile" element={<CProfile />} />
         </Route>
         <Route
           path="/coach-payment"

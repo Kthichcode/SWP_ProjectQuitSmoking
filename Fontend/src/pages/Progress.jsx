@@ -300,25 +300,31 @@ function Progress() {
 
       let hasNew = false;
 
-      const formatted = messagesData.map(msg => ({
-        id: msg.messageId || msg.id || Date.now(),
-        text: msg.content || msg.message || '',
-        sender:
+      const formatted = messagesData.map(msg => {
+        let sender =
           msg.senderType === 'MEMBER'
             ? 'user'
             : msg.senderType === 'COACH'
               ? 'coach'
-              : (msg.senderType || msg.sender || 'user').toLowerCase(),
-        timestamp: msg.sentAt
-          ? new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
-          : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
-        senderName:
-          msg.senderType === 'MEMBER' ||
-            msg.senderType === 'USER' ||
-            msg.sender === 'user'
-            ? user.fullName
-            : selectedCoach?.fullName
-      }));
+              : (msg.senderType || msg.sender || 'user').toLowerCase();
+        let senderName;
+        if (sender === 'user') {
+          senderName = user.fullName || 'Bạn';
+        } else if (sender === 'coach') {
+          senderName = selectedCoach?.fullName || 'Coach';
+        } else {
+          senderName = sender;
+        }
+        return {
+          id: msg.messageId || msg.id || Date.now(),
+          text: msg.content || msg.message || '',
+          sender,
+          timestamp: msg.sentAt
+            ? new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+            : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+          senderName
+        };
+      });
 
       setMessages(prev => {
         const combined = [...prev];

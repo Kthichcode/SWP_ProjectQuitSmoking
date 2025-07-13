@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaUser, FaPhone, FaEnvelope, FaLock, FaSave, FaEdit, FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
-import './CoachProfile.css';
+import './CProfile.css';
 
 const CoachProfile = () => {
   const [coachData, setCoachData] = useState({
@@ -278,7 +278,7 @@ const CoachProfile = () => {
   }
 
   return (
-    <div className="coach-profile-container">
+    <div className="coach-profile-container-1">
       <div className="profile-header">
         <h2>Hồ Sơ Cá Nhân</h2>
         <div className="profile-actions">
