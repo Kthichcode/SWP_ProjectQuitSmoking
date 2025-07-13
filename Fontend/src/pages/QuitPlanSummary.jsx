@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../axiosInstance';
+import './QuitPlanSummary.css';
 
 function QuitPlanSummary() {
   const [plans, setPlans] = useState([]);
@@ -24,20 +25,38 @@ function QuitPlanSummary() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div style={{color:'#888'}}>Đang tải kế hoạch...</div>;
-  if (error) return <div style={{color:'red'}}>{error}</div>;
-  if (!plans.length) return <div style={{color:'#888'}}>Chưa có kế hoạch nào.</div>;
+  if (loading) return <div className="quitplan-summary-loading">Đang tải kế hoạch...</div>;
+  if (error) return <div className="quitplan-summary-error">{error}</div>;
+  if (!plans.length) return <div className="quitplan-summary-empty">Chưa có kế hoạch nào.</div>;
+
+  // Hiển thị chỉ 1 kế hoạch mới nhất (nếu có nhiều)
+  const plan = plans[0];
 
   return (
-    <div style={{marginBottom:12, background:'#f8fbff', border:'1px solid #e3eefd', borderRadius:8, padding:12}}>
-      <h4 style={{margin:'8px 0'}}>Tổng quan kế hoạch cai thuốc</h4>
-      <ul style={{margin:0, paddingLeft:16}}>
-        {plans.map(plan => (
-          <li key={plan.quitPlanId} style={{marginBottom:6}}>
-            <b>Mục tiêu:</b> {plan.goal} | <b>Lý do:</b> {plan.reasonToQuit} | <b>Ngày tạo:</b> {plan.createdAt} | <b>Số giai đoạn:</b> {plan.totalStages}
-          </li>
-        ))}
-      </ul>
+    <div className="quitplan-summary-card">
+      <div className="quitplan-summary-title">
+        <span className="quitplan-summary-icon">🎯</span>
+        <span className="quitplan-summary-heading">Kế hoạch cai thuốc</span>
+      </div>
+      <div className="quitplan-summary-content">
+        <div className="quitplan-summary-row">
+          <div className="quitplan-summary-label">Lý do cai thuốc</div>
+          <div className="quitplan-summary-value">{plan.reasonToQuit}</div>
+        </div>
+        <div className="quitplan-summary-row">
+          <div className="quitplan-summary-label">Tổng số giai đoạn</div>
+          <div className="quitplan-summary-value">{plan.totalStages} giai đoạn</div>
+        </div>
+        
+        <div className="quitplan-summary-row">
+          <div className="quitplan-summary-label">Ngày tạo</div>
+          <div className="quitplan-summary-value">{plan.createdAt && (new Date(plan.createdAt).toLocaleDateString('vi-VN'))}</div>
+        </div>
+        <div className="quitplan-summary-row">
+          <div className="quitplan-summary-label">Mục tiêu chính</div>
+          <div className="quitplan-summary-value">{plan.goal}</div>
+        </div>
+      </div>
     </div>
   );
 }
