@@ -50,13 +50,20 @@ const Profile = () => {
 
   useEffect(() => {
     const token = authUser?.token || authUser?.accessToken;
-    if (!token) return;
-    axios.get('/api/users/badges', {
+    const userId = user?.userId || authUser?.userId;
+    if (!token || !userId) return;
+    axios.get(`/api/member-badge/getallbage/${userId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(res => setBadges(res.data || []))
+      .then(res => {
+        if (res.data?.status === 'success' && Array.isArray(res.data.data)) {
+          setBadges(res.data.data);
+        } else {
+          setBadges([]);
+        }
+      })
       .catch(() => setBadges([]));
-  }, [authUser]);
+  }, [authUser, user]);
 
   const handleEditSave = async (e) => {
     e.preventDefault();
@@ -232,8 +239,7 @@ const Profile = () => {
                       ) : (
                         badges.map(badge => (
                           <div key={badge.id} className="badge-item">
-                            <div className="badge-title">{badge.title}</div>
-                            <div className="badge-desc">{badge.description}</div>
+                            <div className="badge-title">{badge.badgeName}</div>
                           </div>
                         ))
                       )}
