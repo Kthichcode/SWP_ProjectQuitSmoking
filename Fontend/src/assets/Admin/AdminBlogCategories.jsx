@@ -10,6 +10,8 @@ const AdminBlogCategories = () => {
   const [modalMode, setModalMode] = useState('create'); // 'create' or 'edit'
   const [currentCategory, setCurrentCategory] = useState({ id: null, name: '' });
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   // API endpoints
   const API_BASE_URL = 'http://localhost:8080/api/blog-categories';
@@ -21,6 +23,7 @@ const AdminBlogCategories = () => {
   const fetchCategories = async () => {
     try {
       setLoading(true);
+      setErrorMessage('');
       const token = localStorage.getItem('token');
       const response = await axios.get(`${API_BASE_URL}/getAll`, {
         headers: {
@@ -37,6 +40,7 @@ const AdminBlogCategories = () => {
     } catch (error) {
       console.error('Error fetching categories:', error);
       setError('Lỗi khi tải danh sách thể loại');
+      setErrorMessage('Lỗi khi tải danh sách thể loại');
     } finally {
       setLoading(false);
     }
@@ -60,8 +64,8 @@ const AdminBlogCategories = () => {
     if (window.confirm('Bạn có chắc chắn muốn xóa thể loại này?')) {
       try {
         // Note: Backend cần thêm DELETE endpoint
-        alert('Chức năng xóa chưa được hỗ trợ từ backend. Vui lòng liên hệ developer để thêm DELETE endpoint.');
-        
+        setErrorMessage('Chức năng xóa chưa được hỗ trợ từ backend. Vui lòng liên hệ developer để thêm DELETE endpoint.');
+        setSuccessMessage('');
         // Uncomment khi backend đã có DELETE endpoint
         // const token = localStorage.getItem('token');
         // await axios.delete(`${API_BASE_URL}/${id}`, {
@@ -69,19 +73,21 @@ const AdminBlogCategories = () => {
         //     'Authorization': `Bearer ${token}`
         //   }
         // });
-        // 
         // fetchCategories(); // Reload list
-        // alert('Xóa thể loại thành công!');
+        // setSuccessMessage('Xóa thể loại thành công!');
+        // setErrorMessage('');
       } catch (error) {
         console.error('Error deleting category:', error);
-        alert('Lỗi khi xóa thể loại');
+        setErrorMessage('Lỗi khi xóa thể loại');
+        setSuccessMessage('');
       }
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setSuccessMessage('');
+    setErrorMessage('');
     if (!currentCategory.name.trim()) {
       setError('Tên thể loại không được để trống');
       return;
@@ -108,17 +114,23 @@ const AdminBlogCategories = () => {
       if (response.data.status === 'success') {
         setShowModal(false);
         fetchCategories();
-        alert(modalMode === 'create' ? 'Tạo thể loại thành công!' : 'Cập nhật thể loại thành công!');
+        setSuccessMessage(modalMode === 'create' ? 'Tạo thể loại thành công!' : 'Cập nhật thể loại thành công!');
+        setErrorMessage('');
       } else {
         setError(response.data.message || 'Có lỗi xảy ra');
+        setErrorMessage(response.data.message || 'Có lỗi xảy ra');
+        setSuccessMessage('');
       }
     } catch (error) {
       console.error('Error saving category:', error);
       if (error.response?.data?.message) {
         setError(error.response.data.message);
+        setErrorMessage(error.response.data.message);
       } else {
         setError('Lỗi khi lưu thể loại');
+        setErrorMessage('Lỗi khi lưu thể loại');
       }
+      setSuccessMessage('');
     }
   };
 
@@ -140,6 +152,10 @@ const AdminBlogCategories = () => {
           <FaPlus /> Thêm Thể Loại
         </button>
       </div>
+
+      {/* Thông báo thành công/thất bại */}
+      {successMessage && <div style={{color:'green',marginBottom:8,fontWeight:600}}>{successMessage}</div>}
+      {errorMessage && <div style={{color:'red',marginBottom:8,fontWeight:600}}>{errorMessage}</div>}
 
       <div className="admin-table-container">
         <table className="admin-table">

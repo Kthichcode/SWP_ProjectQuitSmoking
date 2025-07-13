@@ -23,6 +23,8 @@ function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -34,9 +36,17 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSuccessMessage('');
+    setErrorMessage('');
 
-    if (!formData.agree) return alert("Bạn cần đồng ý với điều khoản.");
-    if (formData.password !== formData.confirmPassword) return alert("Mật khẩu không khớp.");
+    if (!formData.agree) {
+      setErrorMessage("Bạn cần đồng ý với điều khoản.");
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setErrorMessage("Mật khẩu không khớp.");
+      return;
+    }
 
     const payload = {
       fullName: formData.name,
@@ -54,14 +64,14 @@ function Register() {
 
       const data = await res.json();
       if (res.ok) {
-        alert("🎉 Đăng ký thành công!");
-        navigate('/login');
+        setSuccessMessage("🎉 Đăng ký thành công! Đang chuyển hướng...");
+        setTimeout(() => navigate('/login'), 1800);
       } else {
-        alert(data.message || "Đăng ký thất bại!");
+        setErrorMessage(data.message || "Đăng ký thất bại!");
       }
     } catch (err) {
       console.error(err);
-      alert("Lỗi kết nối backend.");
+      setErrorMessage("Lỗi kết nối backend.");
     }
   };
 
@@ -82,6 +92,8 @@ function Register() {
             
 
             <form className="register-form" onSubmit={handleSubmit}>
+              {successMessage && <div style={{color:'green',marginBottom:8,fontWeight:600}}>{successMessage}</div>}
+              {errorMessage && <div style={{color:'red',marginBottom:8,fontWeight:600}}>{errorMessage}</div>}
               <div className="form-group">
                 <label htmlFor="name">Họ và tên</label>
                 <input type="text" name="name" id="name" placeholder="Nhập họ và tên"
