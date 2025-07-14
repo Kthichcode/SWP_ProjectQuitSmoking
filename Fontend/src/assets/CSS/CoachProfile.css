@@ -200,6 +200,7 @@
   text-align: center;
   background: white;
   border-bottom: 1px solid #e2e8f0;
+  border-radius:0 0 24px 24px;
 }
 
 .btn-select-coach {
@@ -271,7 +272,7 @@
   padding: 30px;
   background: white;
   min-height: 200px;
-  border-radius:0 0 24px 24px;
+  
 }
 
 .coach-profile-info-flex {

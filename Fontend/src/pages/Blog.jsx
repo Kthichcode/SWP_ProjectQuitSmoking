@@ -15,6 +15,7 @@ export default function Blog() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+    const [showMembershipMessage, setShowMembershipMessage] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -83,10 +84,25 @@ export default function Blog() {
     };
 
     
-    const handleReadMore = (blog) => {
+    // Kiểm tra membership từ localStorage
+    const hasMembership = () => {
+        const membership = localStorage.getItem('currentMembership');
+        if (!membership) return false;
+        try {
+            const m = JSON.parse(membership);
+            return m && m.status === 'ACTIVE';
+        } catch {
+            return false;
+        }
+    };
+
+    const handleReadMore = (blog, membership) => {
         const blogId = blog.id || blog._id;
         if (!token) {
             navigate('/login');
+        } else if (!hasMembership()) {
+            setShowMembershipMessage(true);
+            setTimeout(() => setShowMembershipMessage(false), 3000);
         } else if (blogId) {
             navigate(`/blog/${blogId}`);
         }
@@ -94,6 +110,11 @@ export default function Blog() {
 
     return (
         <div className="blog-container">
+            {showMembershipMessage && (
+                <div style={{position:'fixed',bottom:32,right:32,zIndex:9999,background:'#fffbe6',color:'#d35400',padding:'16px 28px',borderRadius:12,boxShadow:'0 2px 8px rgba(0,0,0,0.12)',fontWeight:600}}>
+                    Bạn cần đăng ký gói thành viên để có thể sử dụng chức năng này
+                </div>
+            )}
             <h2 className="blog-title">Blog chia sẻ kinh nghiệm</h2>
             <p className="blog-subtitle">Khám phá các bài viết, câu chuyện thành công và lời khuyên từ chuyên gia</p>
 
@@ -116,7 +137,7 @@ export default function Blog() {
                 margin: '24px 0'
             }}>
                 {loading ? <p>Đang tải...</p> : currentBlogs.map(blog => (
-                    <BlogCard key={blog.id || blog._id} blog={blog} onReadMore={handleReadMore} />
+                    <BlogCard key={blog.id || blog._id} blog={blog} onReadMore={handleReadMore} hasMembership={hasMembership()} />
                 ))}
             </div>
 

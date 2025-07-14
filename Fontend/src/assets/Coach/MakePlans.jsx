@@ -147,7 +147,7 @@ function MakePlans() {
             <select
               value={createPlanForm.memberId}
               onChange={e => setCreatePlanForm(prev => ({ ...prev, memberId: e.target.value }))}
-              style={{padding:'6px 12px', borderRadius:6, border:'1px solid #ccc', minWidth:180}}
+              style={{padding:'6px 12px', borderRadius:6, border:'1px solid #ccc', background:'#fff',color:'#333', minWidth:180}}
             >
               <option value="">-- Chọn thành viên --</option>
               {clients.map(client => (

@@ -11,6 +11,9 @@ function Payment() {
   const [apiPackages, setApiPackages] = useState([]);
   const [currentMembership, setCurrentMembership] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [upgradeMessage, setUpgradeMessage] = useState('');
+  const [pendingPackage, setPendingPackage] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
     if (user === null) {
@@ -57,6 +60,7 @@ function Payment() {
             
             if (membershipRes.data && membershipRes.data.data) {
               setCurrentMembership(membershipRes.data.data);
+              localStorage.setItem('currentMembership', JSON.stringify(membershipRes.data.data));
               console.log('Current membership set:', membershipRes.data.data);
             } else {
               console.log('No membership data found');
@@ -86,6 +90,7 @@ function Payment() {
                     
                     if (userActiveMembership) {
                       setCurrentMembership(userActiveMembership);
+                      localStorage.setItem('currentMembership', JSON.stringify(userActiveMembership));
                       console.log('Found active membership from getAll:', userActiveMembership);
                     }
                   }
@@ -114,29 +119,24 @@ function Payment() {
     fetchData();
   }, [user]);
 
-  const handleBuy = async (packageId) => {
+  const handleBuy = async (packageId, skipConfirm = false) => {
     if (!user) {
       navigate('/login');
       return;
     }
 
     // Kiểm tra nếu user đã có membership active
-    if (currentMembership && currentMembership.status === 'ACTIVE') {
+    if (!skipConfirm && currentMembership && currentMembership.status === 'ACTIVE') {
       // Nếu đang cố mua cùng gói đang sử dụng
       if (currentMembership.membershipPackage && currentMembership.membershipPackage.id === packageId) {
         alert(`Bạn đang sử dụng gói ${currentMembership.membershipPackage.name}. Không thể mua lại gói này.`);
         return;
       }
-      
-      // Nếu cố mua gói khác
-      const confirmUpgrade = window.confirm(
-        `Bạn đang có gói ${currentMembership.membershipPackage?.name || 'membership'} đang hoạt động. ` +
-        `Bạn có muốn nâng cấp/thay đổi gói dịch vụ không? Gói hiện tại sẽ bị hủy.`
-      );
-      
-      if (!confirmUpgrade) {
-        return;
-      }
+      // Nếu cố mua gói khác, hiển thị modal xác nhận
+      setUpgradeMessage(`Bạn đang có gói ${currentMembership.membershipPackage?.name || 'membership'} đang hoạt động. Gói hiện tại sẽ bị hủy khi bạn chọn gói mới. Bạn có chắc chắn muốn tiếp tục?`);
+      setPendingPackage(packageId);
+      setShowConfirmModal(true);
+      return;
     }
 
     try {
@@ -227,6 +227,7 @@ function Payment() {
               
               if (membershipRes.data && membershipRes.data.data) {
                 setCurrentMembership(membershipRes.data.data);
+                localStorage.setItem('currentMembership', JSON.stringify(membershipRes.data.data));
                 console.log('Successfully refreshed membership');
                 break;
               }
@@ -295,10 +296,17 @@ function Payment() {
       id: pkg.id,
       name: pkg.name,
       price: Number(pkg.price),
-      priceLabel: pkg.price === 0 ? 'Miễn phí' : `${Number(pkg.price).toLocaleString('vi-VN')}đ/tháng`,
-      icon: idx === 0 ? <AiFillHeart size={38} color="#2e7d32" style={{background:'#fff',borderRadius:'50%',padding:6}} />
-        : idx === 1 ? <AiFillStar size={38} color="#1976d2" style={{background:'#fff',borderRadius:'50%',padding:6}} />
-        : <AiFillCrown size={38} color="#8e24aa" style={{background:'#fff',borderRadius:'50%',padding:6}} />,
+      priceLabel:
+        idx === 0
+          ? 'Miễn phí'
+          : idx === 1
+            ? `${Number(pkg.price).toLocaleString('vi-VN')}đ/6 tháng`
+            : idx === 2
+              ? `${Number(pkg.price).toLocaleString('vi-VN')}đ/9 tháng`
+              : `${Number(pkg.price).toLocaleString('vi-VN')}đ/tháng`,
+      icon: idx === 0 ? <AiFillHeart size={60} color="#2e7d32" style={{background:'#fff',borderRadius:'50%',padding:6}} />
+        : idx === 1 ? <AiFillStar size={60} color="#1976d2" style={{background:'#fff',borderRadius:'50%',padding:6}} />
+        : <AiFillCrown size={60} color="#8e24aa" style={{background:'#fff',borderRadius:'50%',padding:6}} />,
       features: pkg.features && Array.isArray(pkg.features) ? pkg.features : [pkg.description || ''],
       btn: isCurrentPackage ? 'Đang sử dụng' : (pkg.price === 0 ? 'Bắt đầu miễn phí' : 'Chọn gói này'),
       btnClass: isCurrentPackage ? 'btn-current' : (idx === 0 ? 'btn-free' : idx === 1 ? 'btn-popular' : 'btn-premium'),
@@ -312,6 +320,36 @@ function Payment() {
 
   return (
     <div className="payment-bg">
+      {/* Modal xác nhận nâng cấp gói */}
+      {showConfirmModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.25)', zIndex: 10000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{background:'#fff',padding:32,borderRadius:16,minWidth:320,boxShadow:'0 4px 24px rgba(0,0,0,0.18)'}}>
+            <div style={{marginBottom:24, color:'#d35400', fontWeight:600, fontSize:18}}>{upgradeMessage}</div>
+            <div style={{display:'flex',justifyContent:'flex-end',gap:12}}>
+              <button
+                style={{padding:'8px 20px',background:'#c92424ff',border:'none',borderRadius:6,fontWeight:500,cursor:'pointer'}}
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  setPendingPackage(null);
+                }}
+              >Hủy</button>
+              <button
+                style={{padding:'8px 20px',background:'#1976d2',color:'#fff',border:'none',borderRadius:6,fontWeight:500,cursor:'pointer'}}
+                onClick={async () => {
+                  setShowConfirmModal(false);
+                  if (pendingPackage) {
+                    await handleBuy(pendingPackage, true);
+                    setPendingPackage(null);
+                  }
+                }}
+              >Xác nhận</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="payment-container">
         <h2 className="payment-title">Hành trình cai nghiện thuốc lá cùng chúng tôi</h2>
         <div className="payment-sub">Chọn gói dịch vụ phù hợp để bắt đầu cuộc sống khỏe mạnh</div>
@@ -378,4 +416,9 @@ function Payment() {
   );
 }
 
+// Để handleBuy nhận thêm tham số skipConfirm (nếu xác nhận từ modal thì bỏ qua modal)
+// eslint-disable-next-line
+function PaymentWithConfirm(props) {
+  return <Payment {...props} />;
+}
 export default Payment;

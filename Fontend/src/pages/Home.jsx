@@ -12,6 +12,7 @@ function Home() {
   const [ranking, setRanking] = useState([]);
   const [loadingRanking, setLoadingRanking] = useState(false);
   const [rankingError, setRankingError] = useState('');
+  const [showMembershipMessage, setShowMembershipMessage] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -63,10 +64,25 @@ function Home() {
     else navigate('/login');
   };
 
+  // Kiểm tra membership từ localStorage
+  const hasMembership = () => {
+    const membership = localStorage.getItem('currentMembership');
+    if (!membership) return false;
+    try {
+      const m = JSON.parse(membership);
+      return m && m.status === 'ACTIVE';
+    } catch {
+      return false;
+    }
+  };
+
   const handleReadMore = (blog) => {
     const blogId = blog.id || blog._id;
     if (!user) {
       navigate('/login');
+    } else if (!hasMembership()) {
+      setShowMembershipMessage(true);
+      setTimeout(() => setShowMembershipMessage(false), 3000);
     } else if (blogId) {
       navigate(`/blog/${blogId}`);
     }
@@ -101,6 +117,11 @@ function Home() {
 
   return (
     <div>
+      {showMembershipMessage && (
+        <div style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 9999, background: '#fffbe6', color: '#d35400', padding: '16px 28px', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.12)', fontWeight: 600 }}>
+          Bạn cần đăng ký gói thành viên để có thể sử dụng chức năng này
+        </div>
+      )}
       <div className="home-main-section">
         <img
           className="quit-smoking-anim"
@@ -249,29 +270,30 @@ function Home() {
       <div className="blog-section">
         <h2>Blog chia sẻ kinh nghiệm</h2>
         <p>Cùng lắng nghe những câu chuyện, lời khuyên chân thực từ cộng đồng và chuyên gia trong hành trình bỏ thuốc lá.</p>
-        <div className="blog-list" style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '24px',
-          margin: '24px 0'
-        }}>
+        <div className="blog-list">
           {loadingBlogs ? (
             <p>Đang tải...</p>
           ) : validBlogs.length > 0 ? (
             validBlogs.slice(0, 6).map(blog => (
               <div className="blog-card" key={blog.id || blog._id}>
-                <img
-                  src={blog.coverImage || blog.image || '/default-image.jpg'}
-                  alt={blog.title || 'Bài viết'}
-                />
-                <h4>{blog.title || 'Không có tiêu đề'}</h4>
-                <p>{blog.content?.slice(0, 100) || 'Không có nội dung.'}</p>
-                <span
-                  style={{ color: '#2e7dff', cursor: 'pointer' }}
-                  onClick={() => handleReadMore(blog)}
-                >
-                  Đọc tiếp →
-                </span>
+                <div
+                  className="blog-card-image"
+                  style={{
+                    backgroundImage: `url(${blog.coverImage || blog.image || '/default-image.jpg'})`
+                  }}
+                ></div>
+                <div className="blog-card-content">
+                  <h4 className="blog-card-title">{blog.title || 'Không có tiêu đề'}</h4>
+                  <p className="blog-card-summary">
+                    {blog.content?.slice(0, 100) || 'Không có nội dung.'}
+                  </p>
+                  <span
+                    className="blog-card-readmore"
+                    onClick={() => handleReadMore(blog)}
+                  >
+                    Đọc tiếp →
+                  </span>
+                </div>
               </div>
             ))
           ) : (

@@ -39,21 +39,6 @@ function AdminDashboard() {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/admin/dashboard/achievements" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
-              <MdEmojiEvents size={20} /> Quản lý Thành Tích
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/admin/dashboard/system" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
-              <MdSettings size={20} /> Quản lý Hệ Thống
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/admin/dashboard/feedback" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
-              <MdFeedback size={20} /> Phản Hồi Người Dùng
-            </NavLink>
-          </li>
-          <li>
             <NavLink to="/admin/dashboard/packages" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
               <FaBoxOpen size={20} /> Quản lý Gói Dịch Vụ
             </NavLink>

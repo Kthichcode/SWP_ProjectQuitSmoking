@@ -36,8 +36,8 @@
   background: #fff;
   border: 2.5px solid #e0e0e0;
   border-radius: 18px;
-  padding: 32px 28px 28px 28px;
-  width: 330px;
+  padding: 44px 38px 38px 38px;
+  width: 420px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.07);
   position: relative;
   display: flex;
@@ -78,10 +78,12 @@
 }
 
 .package-name {
-  font-size: 1.35rem;
+  font-size: 2.1rem;
   font-weight: 700;
   color: #222;
-  margin-bottom: 2px;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  margin-top:auto;
 }
 
 .package-price {
@@ -92,14 +94,16 @@
 }
 
 .package-price-main {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .package-desc {
   color: #888;
   font-size: 1.05rem;
   margin-bottom: 16px;
+  flex-grow: 1;
 }
 
 .package-features {
@@ -113,7 +117,7 @@
 .package-features li {
   margin-bottom: 8px;
   color: #222;
-  font-size: 1.05rem;
+  font-size: 1.25rem;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -126,7 +130,7 @@
   font-weight: 700;
   font-size: 1.13rem;
   padding: 12px 0;
-  margin-top: 8px;
+  margin-top: auto;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }

@@ -5,16 +5,18 @@ export default function BlogCard({ blog, onReadMore }) {
   const imgSrc = blog.image || blog.coverImage || '';
   return (
     <div className="blog-card">
-      <img src={imgSrc} alt={blog.title} className="blog-img" />
-      <div className="blog-info">
-        <span className="blog-tag">{blog.tag || blog.categoryName}</span>
-        <h3 className="blog-title-card">{blog.title}</h3>
-        <p className="blog-summary">{blog.summary || blog.content?.slice(0, 100) + '...'}</p>
-        <div className="blog-footer">
-          <span className="blog-author">{blog.author || ''}</span>
-          <span className="blog-date">{blog.date || ''}</span>
+      <div className="blog-card-image" style={{ backgroundImage: `url(${imgSrc})` }}></div>
+      <div className="blog-card-content">
+        <span className="blog-card-tag">{blog.tag || blog.categoryName}</span>
+        <h3 className="blog-card-title">{blog.title}</h3>
+        <p className="blog-card-summary">{blog.summary || blog.content?.slice(0, 100) + '...'}</p>
+        <div className="blog-card-footer">
+          <span className="blog-card-author">{blog.author || ''}</span>
+          <span className="blog-card-date">{blog.date || ''}</span>
         </div>
-        <button className="blog-readmore" onClick={() => onReadMore && onReadMore(blog)} style={{background:'none',border:'none',color:'#2e7dff',cursor:'pointer',padding:0}}>Đọc tiếp →</button>
+        <button className="blog-card-readmore" onClick={() => onReadMore && onReadMore(blog)}>
+          Đọc tiếp →
+        </button>
       </div>
     </div>
   );

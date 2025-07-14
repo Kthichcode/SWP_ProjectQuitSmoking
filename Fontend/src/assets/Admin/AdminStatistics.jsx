@@ -463,41 +463,6 @@ function AdminStatistics() {
           🔄 Làm mới dữ liệu
         </button>
       </div>
-
-      {/* Debug Panel - Only show in development */}
-      {debugInfo && (process.env.NODE_ENV === 'development' || useTestData) && (
-        <div style={{
-          marginTop: '30px',
-          background: '#f8f9fa',
-          border: '1px solid #dee2e6',
-          borderRadius: '8px',
-          padding: '15px'
-        }}>
-          <h4>🔧 Debug Information</h4>
-          <div style={{ fontSize: '12px', fontFamily: 'monospace' }}>
-            <p><strong>Status:</strong> {debugInfo.status}</p>
-            <p><strong>Timestamp:</strong> {debugInfo.timestamp}</p>
-            {debugInfo.error && <p><strong>Error:</strong> {debugInfo.error}</p>}
-            {debugInfo.statusCode && <p><strong>Status Code:</strong> {debugInfo.statusCode}</p>}
-            {debugInfo.responseData && (
-              <details>
-                <summary>Response Data</summary>
-                <pre style={{ background: '#f1f3f4', padding: '10px', borderRadius: '4px', overflow: 'auto' }}>
-                  {JSON.stringify(debugInfo.responseData, null, 2)}
-                </pre>
-              </details>
-            )}
-            {debugInfo.data && (
-              <details>
-                <summary>Success Data</summary>
-                <pre style={{ background: '#f1f3f4', padding: '10px', borderRadius: '4px', overflow: 'auto' }}>
-                  {JSON.stringify(debugInfo.data, null, 2)}
-                </pre>
-              </details>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

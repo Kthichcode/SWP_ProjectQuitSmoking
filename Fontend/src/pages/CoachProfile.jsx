@@ -179,32 +179,6 @@ function CoachProfile() {
             </div>
           </div>
           
-          <div className="coach-profile-stats">
-            <div className="coach-profile-stat">
-              <div className="coach-profile-stat-value" style={{ color: '#16a34a' }}>{coach.rating || 4.5}</div>
-              <div className="coach-profile-stat-label" style={{ color: '#16a34a' }}>Đánh giá</div>
-            </div>
-            <div className="coach-profile-stat blue">
-              <div className="coach-profile-stat-value">{coach.yearsOfExperience || 'N/A'}</div>
-              <div className="coach-profile-stat-label">Năm KN</div>
-            </div>
-            <div className="coach-profile-stat purple">
-              <div className="coach-profile-stat-value">&lt; 1h</div>
-              <div className="coach-profile-stat-label">Phản hồi</div>
-            </div>
-            <div className="coach-profile-stat orange">
-              <div className="coach-profile-stat-value">Việt Nam</div>
-              <div className="coach-profile-stat-label">Địa điểm</div>
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="coach-profile-actions">
-            <button className="btn-select-coach" onClick={() => handleSelectCoach(coach)}>
-              ✓ Chọn Coach này
-            </button>
-          </div>
-          
 
           <div className="coach-profile-tabs">
             <button className={tab === 'overview' ? 'active' : ''} onClick={() => setTab('overview')}>Tổng quan</button>
@@ -238,7 +212,7 @@ function CoachProfile() {
               </div>
             )}
             {tab === 'method' && (
-              <div style={{fontSize: 16, color: '#047857'}}>
+              <div style={{fontSize: 16}}>
                 <b>Giới thiệu về coach:</b> <br/>
                 {coach.bio || 'Coach chuyên nghiệp với nhiều năm kinh nghiệm trong lĩnh vực tư vấn cai thuốc lá. Áp dụng các phương pháp khoa học hiện đại để giúp khách hàng đạt được mục tiêu cai thuốc thành công.'}
               </div>
@@ -263,6 +237,11 @@ function CoachProfile() {
                 </div>
               </div>
             )}
+          </div>
+          <div className="coach-profile-actions">
+            <button className="btn-select-coach" onClick={() => handleSelectCoach(coach)}>
+              ✓ Chọn Coach này
+            </button>
           </div>
         </div>
       </div>
