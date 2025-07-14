@@ -54,11 +54,6 @@ const AdminBadges = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     if (!form.name.trim()) return alert('Tên huy hiệu không được để trống!');
-    console.log('iconUrl:', form.iconUrl);
-    if (!form.iconUrl || !form.iconUrl.startsWith('data:image')) {
-      alert('Bạn phải chọn ảnh cho huy hiệu!');
-      return;
-    }
     try {
       const token = user?.token || user?.accessToken || localStorage.getItem('token');
       const badgeData = {
@@ -126,7 +121,7 @@ const AdminBadges = () => {
         <input name="condition_description" value={form.condition_description} onChange={handleChange} placeholder="Điều kiện đạt" style={{marginRight:8}} />
         <input name="score" value={form.score} onChange={handleChange} placeholder="Điểm" type="number" min="0" style={{marginRight:8}} />
         <input name="iconUrl" type="file" accept="image/*" onChange={handleChange} style={{marginRight:8}} />
-        {form.iconUrl && form.iconUrl.startsWith('data:image') && (
+        {form.iconUrl && (
           <img src={form.iconUrl} alt="icon preview" style={{width:32, height:32, objectFit:'contain', marginRight:8}} />
         )}
         <button type="submit">{editing ? 'Cập nhật' : 'Thêm mới'}</button>

@@ -298,7 +298,7 @@ function Payment() {
       price: Number(pkg.price),
       priceLabel:
         idx === 0
-          ? 'Miễn phí'
+          ? `${Number(pkg.price).toLocaleString('vi-VN')}đ/tháng`
           : idx === 1
             ? `${Number(pkg.price).toLocaleString('vi-VN')}đ/6 tháng`
             : idx === 2
@@ -320,7 +320,6 @@ function Payment() {
 
   return (
     <div className="payment-bg">
-      {/* Modal xác nhận nâng cấp gói */}
       {showConfirmModal && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.25)', zIndex: 10000,
