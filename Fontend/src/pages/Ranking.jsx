@@ -39,13 +39,31 @@ const Ranking = () => {
     };
   }, []);
 
-  const badges = [
-    { day: 7, icon: '🌱', title: 'Mầm Sống Mới', desc: 'Khởi đầu mạnh mẽ!' },
-    { day: 14, icon: '🌿', title: 'Sức Mạnh Ý Chí', desc: 'Kiên định vượt khó.' },
-    { day: 30, icon: '🍀', title: 'Chiến Binh Không Khói', desc: 'Bạn đang làm chủ!' },
-    { day: 60, icon: '🌞', title: 'Ánh Sáng Hy Vọng', desc: 'Cơ thể hồi phục rõ rệt.' },
-    { day: 100, icon: '🏅', title: 'Người Truyền Cảm Hứng', desc: 'Bạn là tấm gương!' }
-  ];
+  const [badges, setBadges] = React.useState([]);
+  const [badgesLoading, setBadgesLoading] = React.useState(true);
+  const [badgesError, setBadgesError] = React.useState('');
+
+  useEffect(() => {
+    const fetchBadges = async () => {
+      try {
+        setBadgesLoading(true);
+        setBadgesError('');
+        const res = await fetch('http://localhost:5175/api/badges/GetAll');
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setBadges(data);
+        } else {
+          setBadges([]);
+        }
+      } catch (err) {
+        setBadgesError('Không thể tải huy hiệu');
+        setBadges([]);
+      } finally {
+        setBadgesLoading(false);
+      }
+    };
+    fetchBadges();
+  }, []);
 
   return (
     <div className="container">
@@ -111,16 +129,25 @@ const Ranking = () => {
 
       <section className="badges">
         <h2>🎖 Huy Hiệu Thành Tích</h2>
-        <div className="badgeList">
-          {badges.map(badge => (
-            <div key={badge.day} className="badgeCard">
-              <div className="icon">{badge.icon}</div>
-              <h4>{badge.title}</h4>
-              <p>{badge.desc}</p>
-              <span>{badge.day} ngày</span>
-            </div>
-          ))}
-        </div>
+        {badgesLoading ? (
+          <div style={{ textAlign: 'center', margin: '20px 0' }}>Đang tải huy hiệu...</div>
+        ) : badgesError ? (
+          <div style={{ color: 'red', textAlign: 'center', margin: '20px 0' }}>{badgesError}</div>
+        ) : (
+          <div className="badgeList">
+            {badges.map(badge => (
+              <div key={badge.id} className="badgeCard">
+                {badge.iconUrl ? (
+                  <img src={badge.iconUrl} alt={badge.name} className="icon" style={{ width: 40, height: 40, marginBottom: 8 }} />
+                ) : (
+                  <div className="icon" style={{ fontSize: 32, marginBottom: 8 }}>🏅</div>
+                )}
+                <h4>{badge.name}</h4>
+                {/* Optionally show description or score if needed */}
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

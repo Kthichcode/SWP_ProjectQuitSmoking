@@ -51,47 +51,23 @@ function AdminCoaches() {
   const fetchCoachReviews = async (coachId) => {
     try {
       setLoadingReviews(true);
-      const token = localStorage.getItem('token');   
-      const mockReviews = [
-        {
-          reviewId: 1,
-          coachId: coachId,
-          rating: 5,
-          comment: "Coach rất tận tâm và hỗ trợ tốt trong quá trình cai thuốc. Rất hài lòng!",
-          memberName: "Nguyễn Văn A",
-          createdAt: "2024-07-01T10:00:00Z"
-        },
-        {
-          reviewId: 2,
-          coachId: coachId,
-          rating: 4,
-          comment: "Kế hoạch cai thuốc rất chi tiết và hiệu quả. Coach luôn động viên khi gặp khó khăn.",
-          memberName: "Trần Thị B",
-          createdAt: "2024-07-05T14:30:00Z"
-        },
-        {
-          reviewId: 3,
-          coachId: coachId,
-          rating: 5,
-          comment: "Đã cai thuốc thành công nhờ sự hướng dẫn của coach. Rất chuyên nghiệp!",
-          memberName: "Lê Văn C",
-          createdAt: "2024-07-08T09:15:00Z"
-        }
-      ];
-      
-      // Simulate API delay
-      setTimeout(() => {
-        setSelectedCoachReviews(mockReviews);
-        setLoadingReviews(false);
-      }, 1000);
-      
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`http://localhost:5175/api/coach-reviews/coach/${coachId}`, {
+        headers: token ? { Authorization: 'Bearer ' + token } : {}
+      });
+      // API trả về mảng review
+      const reviews = Array.isArray(res.data?.data) ? res.data.data : [];
+      // Đổi tên reviewer thành 'Ẩn danh'
+      const anonymousReviews = reviews.map(r => ({ ...r, memberName: 'Ẩn danh' }));
+      setSelectedCoachReviews(anonymousReviews);
+      setLoadingReviews(false);
     } catch (err) {
       console.error('Error fetching coach reviews:', err);
       setSelectedCoachReviews([]);
       setLoadingReviews(false);
     }
   };
-
+  
   // Fetch review statistics for a coach
   const fetchReviewStats = async (coachId) => {
     try {
@@ -225,7 +201,7 @@ function AdminCoaches() {
             <tr key={c.id}>
               <td>{c.fullName || c.name}</td>
               <td>{c.email}</td>
-              <td><span className={c.status === 'active' ? 'active' : 'inactive'}>{c.status === 'active' ? 'Hoạt động' : 'Không hoạt động'}</span></td>
+              <td><span className={c.status && c.status.toLowerCase() === 'active' ? 'active' : 'inactive'}>{c.status && c.status.toLowerCase() === 'active' ? 'Hoạt động' : 'Không hoạt động'}</span></td>
               <td style={{position:'relative', display:'flex', gap:8}}>
                 <button
                   className="admin-btn admin-btn-menu"
@@ -368,7 +344,7 @@ function AdminCoaches() {
                             </span>
                           </div>
                           <div style={{fontSize: '0.85rem', color: '#6b7280'}}>
-                            Bởi: {review.memberName || 'Thành viên'} • {review.createdAt ? new Date(review.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
+                            Bởi: Ẩn danh • {review.createdAt ? new Date(review.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
                           </div>
                         </div>
                         
@@ -400,19 +376,20 @@ function AdminCoaches() {
                         </button>
                       </div>
                       
-                      {review.comment && (
-                        <div style={{
-                          background: '#f9fafb',
-                          padding: '12px',
-                          borderRadius: '8px',
-                          border: '1px solid #e5e7eb',
-                          fontSize: '0.95rem',
-                          color: '#374151',
-                          lineHeight: '1.5'
-                        }}>
-                          "{review.comment}"
-                        </div>
-                      )}
+                      <div style={{
+                        background: '#f9fafb',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        fontSize: '0.95rem',
+                        color: '#374151',
+                        lineHeight: '1.5'
+                      }}>
+                        {review.comment && review.comment.trim() !== ''
+                          ? `"${review.comment}"`
+                          : <span style={{color:'#9ca3af'}}>Không có nhận xét nào.</span>
+                        }
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -7,7 +7,7 @@ const AdminBadges = () => {
   const { user } = useAuth();
   const [badges, setBadges] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ name: '', description: '', condition_description: '', score: '', icon: 'leaf', id: null });
+  const [form, setForm] = useState({ name: '', description: '', condition_description: '', score: '', icon: 'leaf', iconUrl: '', id: null });
   const [editing, setEditing] = useState(false);
  
   const iconOptions = {
@@ -51,8 +51,8 @@ const AdminBadges = () => {
         name: form.name,
         description: form.description,
         condition_description: form.condition_description,
-        score: Number(form.score) || 0,
-        icon: form.icon
+        iconUrl: form.iconUrl,
+        score: Number(form.score) || 0
       };
       if (editing) {
         await axios.put(`/api/badges/UpdateById/${form.id}`, badgeData, {
@@ -64,6 +64,7 @@ const AdminBadges = () => {
         });
       }
       setForm({ name: '', description: '', condition_description: '', score: '', icon: 'leaf', id: null });
+      setForm({ name: '', description: '', condition_description: '', score: '', icon: 'leaf', iconUrl: '', id: null });
       setEditing(false);
       fetchBadges();
     } catch {
@@ -72,7 +73,15 @@ const AdminBadges = () => {
   };
 
   const handleEdit = badge => {
-    setForm({ ...badge, icon: badge.icon || 'leaf' });
+    setForm({
+      name: badge.name || '',
+      description: badge.description || '',
+      condition_description: badge.condition_description || '',
+      score: badge.score || '',
+      icon: badge.icon || '',
+      iconUrl: badge.iconUrl || '',
+      id: badge.id
+    });
     setEditing(true);
   };
 
@@ -90,7 +99,7 @@ const AdminBadges = () => {
   };
 
   const handleCancel = () => {
-    setForm({ name: '', description: '', condition_description: '', score: '', icon: 'leaf', id: null });
+    setForm({ name: '', description: '', condition_description: '', score: '', icon: 'leaf', iconUrl: '', id: null });
     setEditing(false);
   };
 
@@ -102,15 +111,7 @@ const AdminBadges = () => {
         <input name="description" value={form.description} onChange={handleChange} placeholder="Mô tả" style={{marginRight:8}} />
         <input name="condition_description" value={form.condition_description} onChange={handleChange} placeholder="Điều kiện đạt" style={{marginRight:8}} />
         <input name="score" value={form.score} onChange={handleChange} placeholder="Điểm" type="number" min="0" style={{marginRight:8}} />
-        <select name="icon" value={form.icon} onChange={handleChange} style={{marginRight:8, background:'#fff', color:'#222', border:'1px solid #ccc', borderRadius:4, padding:'4px 8px'}}>
-          <option value="leaf">🍃 Lá xanh</option>
-          <option value="seedling">🌱 Mầm cây</option>
-          <option value="tree">🌳 Cây lớn</option>
-          <option value="sun">🌞 Mặt trời</option>
-          <option value="heart">❤️ Trái tim</option>
-          <option value="smile">😊 Nụ cười</option>
-        </select>
-        <span style={{marginRight:8, fontSize:22}}>{iconOptions[form.icon]}</span>
+        <input name="iconUrl" value={form.iconUrl} onChange={handleChange} placeholder="Icon URL (ảnh)" style={{marginRight:8}} />
         <button type="submit">{editing ? 'Cập nhật' : 'Thêm mới'}</button>
         {editing && <button type="button" onClick={handleCancel} style={{marginLeft:8}}>Hủy</button>}
       </form>
@@ -119,11 +120,11 @@ const AdminBadges = () => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Biểu tượng</th>
               <th>Tên huy hiệu</th>
               <th>Mô tả</th>
               <th>Điều kiện đạt</th>
               <th>Điểm</th>
+              <th>Icon</th>
               <th>Hành động</th>
             </tr>
           </thead>
@@ -131,11 +132,17 @@ const AdminBadges = () => {
             {badges.map(badge => (
               <tr key={badge.id}>
                 <td>{badge.id}</td>
-                <td style={{fontSize:22}}>{iconOptions[badge.icon] || iconOptions['leaf']}</td>
                 <td>{badge.name}</td>
                 <td>{badge.description}</td>
                 <td>{badge.condition_description}</td>
                 <td>{badge.score}</td>
+                <td style={{fontSize:24, textAlign:'center'}}>
+                  {badge.iconUrl ? (
+                    <img src={badge.iconUrl} alt="icon" style={{width:32, height:32, objectFit:'contain'}} />
+                  ) : (
+                    <span style={{color:'#ccc'}}>Không có ảnh</span>
+                  )}
+                </td>
                 <td>
                   <button onClick={() => handleEdit(badge)}>Sửa</button>
                   <button onClick={() => handleDelete(badge.id)} style={{marginLeft:8}}>Xóa</button>
