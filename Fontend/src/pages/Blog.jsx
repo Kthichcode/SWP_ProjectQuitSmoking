@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../assets/CSS/Blog.css';
 import BlogCard from '../components/BlogCard';
-import axios from 'axios';
+import axiosInstance from '../../axiosInstance';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,10 +19,8 @@ export default function Blog() {
 
     useEffect(() => {
         setLoading(true);
-        const token = localStorage.getItem('token');
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
         if (selectedCategoryId) {
-            axios.get(`http://localhost:5175/api/blog/getBlogByCategoryId/${selectedCategoryId}`, { headers })
+            axiosInstance.get(`/api/blog/getBlogByCategoryId/${selectedCategoryId}`)
                 .then(res => {
                     const approvedBlogs = (res.data.data || []).filter(blog => blog.status === 'APPROVED');
                     setBlogs(approvedBlogs);
@@ -35,7 +33,7 @@ export default function Blog() {
                 })
                 .finally(() => setLoading(false));
         } else {
-            axios.get('/api/blog/getAllBlog', { headers })
+            axiosInstance.get('/api/blog/getAllBlog')
                 .then(res => {
                     const approvedBlogs = (res.data.data || []).filter(blog => blog.status === 'APPROVED');
                     setBlogs(approvedBlogs);
@@ -49,7 +47,7 @@ export default function Blog() {
                 .finally(() => setLoading(false));
         }
         // Lấy thể loại blog từ API
-        axios.get('http://localhost:5175/api/blog-categories/getAll', { headers })
+        axiosInstance.get('/api/blog-categories/getAll')
             .then(res => {
                 setCategories(res.data.data || []);
             })
@@ -84,19 +82,49 @@ export default function Blog() {
     };
 
     
-    // Kiểm tra membership từ localStorage
-    const hasMembership = () => {
-        const membership = localStorage.getItem('currentMembership');
-        if (!membership) return false;
-        try {
-            const m = JSON.parse(membership);
-            return m && m.status === 'ACTIVE';
-        } catch {
-            return false;
-        }
-    };
+    // Kiểm tra membership từ API mỗi lần user thay đổi hoặc trang được focus/visibilitychange
+    const [membershipStatus, setMembershipStatus] = useState(null);
+    const [checkingMembership, setCheckingMembership] = useState(false);
+    useEffect(() => {
+        let isMounted = true;
+        const checkMembership = async () => {
+            if (!user) {
+                setMembershipStatus(null);
+                return;
+            }
+            setCheckingMembership(true);
+            try {
+                const userId = user.userId || user.id;
+                const res = await axiosInstance.get(`/api/user-memberships/check-active/${userId}`);
+                if (isMounted && res.data?.status === 'success' && res.data.data === true) {
+                    setMembershipStatus('ACTIVE');
+                } else if (isMounted) {
+                    setMembershipStatus(null);
+                }
+            } catch {
+                if (isMounted) setMembershipStatus(null);
+            } finally {
+                if (isMounted) setCheckingMembership(false);
+            }
+        };
 
-    const handleReadMore = (blog, membership) => {
+        checkMembership();
+
+        const handleVisibility = () => {
+            checkMembership();
+        };
+        window.addEventListener('focus', handleVisibility);
+        document.addEventListener('visibilitychange', handleVisibility);
+        return () => {
+            isMounted = false;
+            window.removeEventListener('focus', handleVisibility);
+            document.removeEventListener('visibilitychange', handleVisibility);
+        };
+    }, [user]);
+
+    const hasMembership = () => membershipStatus === 'ACTIVE';
+
+    const handleReadMore = (blog) => {
         const blogId = blog.id || blog._id;
         if (!token) {
             navigate('/login');

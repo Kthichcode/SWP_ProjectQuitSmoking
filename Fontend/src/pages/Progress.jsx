@@ -677,10 +677,12 @@ function Progress() {
                   <img
                     src={`data:image/jpeg;base64,${selectedCoach.imageUrl}`}
                     alt="avatar"
-                    style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '50%', border: '1.5px solid #fff', background: '#fff' }}
+                    style={{ width: 135, height: 135, objectFit: 'cover', borderRadius: '50%', border: '2.5px solid #fff', background: '#fff', boxShadow: '0 2px 12px rgba(44,62,80,0.10)' }}
                   />
                 ) : (
-                  selectedCoach.fullName?.charAt(0)?.toUpperCase() || 'C'
+                  <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#eaf6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, color: '#667eea', fontWeight: 700 }}>
+                    {selectedCoach.fullName?.charAt(0)?.toUpperCase() || 'C'}
+                  </div>
                 )}
               </div>
               <div>

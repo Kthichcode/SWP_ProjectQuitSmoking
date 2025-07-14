@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import '../assets/CSS/Home.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import axios from 'axios';
+import axiosInstance from '../../axiosInstance';
 
 function Home() {
   const { user } = useAuth();
@@ -27,8 +27,7 @@ function Home() {
 
   useEffect(() => {
     setLoadingBlogs(true);
-    const token = localStorage.getItem('token');
-    axios.get('/api/blog/getAllBlog', token ? { headers: { Authorization: `Bearer ${token}` } } : {})
+    axiosInstance.get('/api/blog/getAllBlog')
       .then(res => {
         const data = res.data?.data || [];
         setBlogs(data.filter(blog => blog.status === 'APPROVED'));
@@ -64,17 +63,47 @@ function Home() {
     else navigate('/login');
   };
 
-  // Kiểm tra membership từ localStorage
-  const hasMembership = () => {
-    const membership = localStorage.getItem('currentMembership');
-    if (!membership) return false;
-    try {
-      const m = JSON.parse(membership);
-      return m && m.status === 'ACTIVE';
-    } catch {
-      return false;
-    }
-  };
+  // Kiểm tra membership từ API mỗi lần user thay đổi hoặc trang được focus/visibilitychange
+  const [membershipStatus, setMembershipStatus] = useState(null);
+  const [checkingMembership, setCheckingMembership] = useState(false);
+  useEffect(() => {
+    let isMounted = true;
+    const checkMembership = async () => {
+      if (!user) {
+        setMembershipStatus(null);
+        return;
+      }
+      setCheckingMembership(true);
+      try {
+        const userId = user.userId || user.id;
+        const res = await axiosInstance.get(`/api/user-memberships/check-active/${userId}`);
+        if (isMounted && res.data?.status === 'success' && res.data.data === true) {
+          setMembershipStatus('ACTIVE');
+        } else if (isMounted) {
+          setMembershipStatus(null);
+        }
+      } catch {
+        if (isMounted) setMembershipStatus(null);
+      } finally {
+        if (isMounted) setCheckingMembership(false);
+      }
+    };
+
+    checkMembership();
+
+    const handleVisibility = () => {
+      checkMembership();
+    };
+    window.addEventListener('focus', handleVisibility);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('focus', handleVisibility);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [user]);
+
+  const hasMembership = () => membershipStatus === 'ACTIVE';
 
   const handleReadMore = (blog) => {
     const blogId = blog.id || blog._id;

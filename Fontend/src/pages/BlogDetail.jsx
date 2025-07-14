@@ -81,7 +81,16 @@ export default function BlogDetail() {
         
         <div className="blog-detail-content">
           <div className="content-wrapper">
-            {blog.content}
+            {blog.content && (
+              blog.content.includes('\n')
+                ? blog.content.split(/\r?\n/).map((line, idx) => (
+                    <React.Fragment key={idx}>
+                      {line}
+                      <br />
+                    </React.Fragment>
+                  ))
+                : blog.content
+            )}
           </div>
         </div>
       </div>

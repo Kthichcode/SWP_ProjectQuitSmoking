@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ConfirmModal from '../components/ConfirmModal';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../axiosInstance';
 import '../assets/CSS/CoachProfile.css';
@@ -82,22 +83,27 @@ function CoachProfile() {
     }
   };
 
-  // Xử lý chọn coach giống CoachPayment: gọi API lấy selectionId (nếu có), rồi navigate với state: { selectionId, coachId }
-  const handleSelectCoach = async (coach) => {
-    if (!window.confirm(`Bạn có chắc chắn muốn chọn coach "${coach.fullName}" để đồng hành không?\nSau khi chọn, bạn sẽ bắt đầu hành trình cùng coach này.`)) return;
+  // Xử lý chọn coach với modal xác nhận
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingCoach, setPendingCoach] = useState(null);
 
-    const coachId = coach.userId || coach.id;
+  const handleSelectCoach = (coach) => {
+    setPendingCoach(coach);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmSelectCoach = async () => {
+    if (!pendingCoach) return;
+    const coachId = pendingCoach.userId || pendingCoach.id;
     let selectionId = null;
     try {
-      // Gọi API lấy selectionId nếu đã từng có
       const response = await axiosInstance.get(`/api/users/members/selection-with-coach/${coachId}`);
       if (response.data?.status === 'success' && response.data.data?.selectionId) {
         selectionId = response.data.data.selectionId;
       }
-    } catch (e) {
-      // Không có selectionId, sẽ tạo khi vào progress
-    }
-
+    } catch (e) {}
+    setConfirmOpen(false);
+    setPendingCoach(null);
     navigate('/progress', {
       state: {
         selectionId: selectionId || undefined,
@@ -179,6 +185,10 @@ function CoachProfile() {
             </div>
           </div>
           
+          
+
+          
+          
 
           <div className="coach-profile-tabs">
             <button className={tab === 'overview' ? 'active' : ''} onClick={() => setTab('overview')}>Tổng quan</button>
@@ -213,7 +223,7 @@ function CoachProfile() {
             )}
             {tab === 'method' && (
               <div style={{fontSize: 16}}>
-                <b>Giới thiệu về coach:</b> <br/>
+                
                 {coach.bio || 'Coach chuyên nghiệp với nhiều năm kinh nghiệm trong lĩnh vực tư vấn cai thuốc lá. Áp dụng các phương pháp khoa học hiện đại để giúp khách hàng đạt được mục tiêu cai thuốc thành công.'}
               </div>
             )}
@@ -238,11 +248,19 @@ function CoachProfile() {
               </div>
             )}
           </div>
+          {/* Action buttons */}
           <div className="coach-profile-actions">
             <button className="btn-select-coach" onClick={() => handleSelectCoach(coach)}>
               ✓ Chọn Coach này
             </button>
           </div>
+          <ConfirmModal
+            open={confirmOpen}
+            title="Xác nhận chọn coach"
+            message={pendingCoach ? `Bạn có chắc chắn muốn chọn coach \"${pendingCoach.fullName}\" để đồng hành không?\nSau khi chọn, bạn sẽ bắt đầu hành trình cùng coach này.` : ''}
+            onConfirm={handleConfirmSelectCoach}
+            onCancel={() => { setConfirmOpen(false); setPendingCoach(null); }}
+          />
         </div>
       </div>
     </>
