@@ -39,19 +39,33 @@ const AdminBadges = () => {
   }, []);
 
   const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value, type, files } = e.target;
+    if (name === 'iconUrl' && type === 'file' && files && files[0]) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm(f => ({ ...f, iconUrl: reader.result }));
+      };
+      reader.readAsDataURL(files[0]);
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
     if (!form.name.trim()) return alert('Tên huy hiệu không được để trống!');
+    console.log('iconUrl:', form.iconUrl);
+    if (!form.iconUrl || !form.iconUrl.startsWith('data:image')) {
+      alert('Bạn phải chọn ảnh cho huy hiệu!');
+      return;
+    }
     try {
       const token = user?.token || user?.accessToken || localStorage.getItem('token');
       const badgeData = {
         name: form.name,
         description: form.description,
         condition_description: form.condition_description,
-        iconUrl: form.iconUrl,
+        iconUrl: form.iconUrl, // Ensure iconUrl is included in the badge data
         score: Number(form.score) || 0
       };
       if (editing) {
@@ -79,7 +93,7 @@ const AdminBadges = () => {
       condition_description: badge.condition_description || '',
       score: badge.score || '',
       icon: badge.icon || '',
-      iconUrl: badge.iconUrl || '',
+      iconUrl: badge.iconUrl || '', // Ensure iconUrl is set when editing a badge
       id: badge.id
     });
     setEditing(true);
@@ -111,7 +125,10 @@ const AdminBadges = () => {
         <input name="description" value={form.description} onChange={handleChange} placeholder="Mô tả" style={{marginRight:8}} />
         <input name="condition_description" value={form.condition_description} onChange={handleChange} placeholder="Điều kiện đạt" style={{marginRight:8}} />
         <input name="score" value={form.score} onChange={handleChange} placeholder="Điểm" type="number" min="0" style={{marginRight:8}} />
-        <input name="iconUrl" value={form.iconUrl} onChange={handleChange} placeholder="Icon URL (ảnh)" style={{marginRight:8}} />
+        <input name="iconUrl" type="file" accept="image/*" onChange={handleChange} style={{marginRight:8}} />
+        {form.iconUrl && form.iconUrl.startsWith('data:image') && (
+          <img src={form.iconUrl} alt="icon preview" style={{width:32, height:32, objectFit:'contain', marginRight:8}} />
+        )}
         <button type="submit">{editing ? 'Cập nhật' : 'Thêm mới'}</button>
         {editing && <button type="button" onClick={handleCancel} style={{marginLeft:8}}>Hủy</button>}
       </form>

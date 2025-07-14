@@ -19,7 +19,6 @@ function Users() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        // Lấy token nếu cần, ví dụ từ localStorage
         const token = localStorage.getItem('token');
         const res = await axios.get('/api/coach-members/my-members', {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
@@ -42,8 +41,7 @@ function Users() {
       const token = localStorage.getItem('token');
       const res = await axios.get(`http://localhost:5175/api/member-initial-info/my-members?memberId=${memberId}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
-      }); 
-      // Giả sử trả về { data: [ { ...info } ] }
+      });    
       setSelectedMemberInfo(res.data.data?.[0] || null);
     } catch (err) {
       setInfoError('Không thể tải thông tin khai báo của thành viên');
@@ -65,7 +63,6 @@ function Users() {
                 <span className="user-name">{user.fullName || user.name}</span>
               </div>
               <div className="user-contact">Email: <b>{user.email}</b> | SĐT: <b>{user.phone || user.phoneNumber || '-'}</b></div>
-              {/* Đã xoá các trường tham gia, phiên gần nhất */}
               <div className="user-actions">
                 <button className="action-button" onClick={() => handleViewDeclaration(user.id || user.memberId)}>Xem khai báo</button>
                 <button className="action-button" onClick={handleGoToMessages}>Tin nhắn</button>
@@ -74,7 +71,6 @@ function Users() {
           </div>
         ))}
       </div>
-      {/* Hiển thị thông tin khai báo của member đã chọn */}
       {infoLoading && <div>Đang tải thông tin khai báo...</div>}
       {infoError && <div style={{color:'red'}}>{infoError}</div>}
       {selectedMemberInfo && (

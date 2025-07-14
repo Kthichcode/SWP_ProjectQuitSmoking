@@ -55,11 +55,9 @@ function AdminCoaches() {
       const res = await axios.get(`http://localhost:5175/api/coach-reviews/coach/${coachId}`, {
         headers: token ? { Authorization: 'Bearer ' + token } : {}
       });
-      // API trả về mảng review
-      const reviews = Array.isArray(res.data?.data) ? res.data.data : [];
-      // Đổi tên reviewer thành 'Ẩn danh'
-      const anonymousReviews = reviews.map(r => ({ ...r, memberName: 'Ẩn danh' }));
-      setSelectedCoachReviews(anonymousReviews);
+      // API trả về mảng review trực tiếp
+      const reviews = Array.isArray(res.data) ? res.data : [];
+      setSelectedCoachReviews(reviews);
       setLoadingReviews(false);
     } catch (err) {
       console.error('Error fetching coach reviews:', err);
@@ -90,21 +88,13 @@ function AdminCoaches() {
     if (!window.confirm('Bạn có chắc chắn muốn xóa đánh giá này?')) {
       return;
     }
-    
     try {
       const token = localStorage.getItem('token');
-      
-      // TODO: Uncomment khi đã implement API admin
-      /*
       await axios.delete(`/api/coach-reviews/${reviewId}`, {
         headers: token ? { Authorization: 'Bearer ' + token } : {}
       });
-      */
-      
-      // MOCK: Remove from current state
       setSelectedCoachReviews(prev => prev.filter(r => r.reviewId !== reviewId));
       setSuccessMessage('Đã xóa đánh giá thành công');
-      
     } catch (err) {
       console.error('Error deleting review:', err);
       setErrorMessage('Có lỗi khi xóa đánh giá');
@@ -344,7 +334,7 @@ function AdminCoaches() {
                             </span>
                           </div>
                           <div style={{fontSize: '0.85rem', color: '#6b7280'}}>
-                            Bởi: Ẩn danh • {review.createdAt ? new Date(review.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
+                            Bởi: {review.reviewerName || 'Ẩn danh'} • {review.createdAt ? new Date(review.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
                           </div>
                         </div>
                         
