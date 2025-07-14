@@ -63,19 +63,15 @@ const AdminBlogCategories = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa thể loại này?')) {
       try {
-        // Note: Backend cần thêm DELETE endpoint
-        setErrorMessage('Chức năng xóa chưa được hỗ trợ từ backend. Vui lòng liên hệ developer để thêm DELETE endpoint.');
-        setSuccessMessage('');
-        // Uncomment khi backend đã có DELETE endpoint
-        // const token = localStorage.getItem('token');
-        // await axios.delete(`${API_BASE_URL}/${id}`, {
-        //   headers: {
-        //     'Authorization': `Bearer ${token}`
-        //   }
-        // });
-        // fetchCategories(); // Reload list
-        // setSuccessMessage('Xóa thể loại thành công!');
-        // setErrorMessage('');
+        const token = localStorage.getItem('token');
+        await axios.delete(`${API_BASE_URL}/categories/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        fetchCategories(); // Reload list
+        setSuccessMessage('Xóa thể loại thành công!');
+        setErrorMessage('');
       } catch (error) {
         console.error('Error deleting category:', error);
         setErrorMessage('Lỗi khi xóa thể loại');

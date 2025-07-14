@@ -461,9 +461,10 @@ function Progress() {
     return phases;
   };
 
+  // Cho phép rating nếu có ít nhất một giai đoạn hoàn thành
   const canShowRating = () => {
-    const completedPhases = getCompletedPhases();
-    return completedPhases.length > 0;
+    if (!stages || stages.length === 0) return false;
+    return stages.some(stage => (stage.progressPercentage ?? 0) === 100 || stage.status === 'completed');
   };
 
   const checkExistingReview = async () => {
@@ -478,25 +479,48 @@ function Progress() {
     }
   };
 
+  // Thông báo UI cho kết quả rating
+  const [ratingMessage, setRatingMessage] = useState('');
+  const [ratingType, setRatingType] = useState('success'); // 'success' | 'error'
+
   const handleSubmitReview = async (reviewData) => {
     try {
       if (existingReview) {
         const response = await coachReviewService.updateReview(existingReview.reviewId, reviewData);
         if (response?.message === 'Review updated successfully') {
-          alert('Đánh giá đã được cập nhật thành công!');
+          setRatingMessage('Đánh giá đã được cập nhật thành công!');
+          setRatingType('success');
           checkExistingReview();
         }
       } else {
         const response = await coachReviewService.createReview(reviewData);
         if (response?.message === 'Review submitted successfully') {
-          alert('Đánh giá đã được gửi thành công!');
+          setRatingMessage('Đánh giá đã được gửi thành công!');
+          setRatingType('success');
           checkExistingReview();
         }
       }
-      setShowRatingModal(false);
+      setTimeout(() => {
+        setRatingMessage('');
+        setShowRatingModal(false);
+      }, 1800);
     } catch (error) {
-      alert('Lỗi khi gửi đánh giá. Vui lòng thử lại sau.');
-      throw error;
+      // Nếu lỗi đã đánh giá rồi
+      if (error?.response?.status === 500 && error?.response?.data?.message?.includes('already reviewed')) {
+        setRatingMessage('Bạn đã đánh giá coach này trước đó.');
+        setRatingType('error');
+        setTimeout(() => {
+          setRatingMessage('');
+          setShowRatingModal(false);
+        }, 2200);
+      } else {
+        setRatingMessage('Lỗi khi gửi đánh giá. Vui lòng thử lại sau.');
+        setRatingType('error');
+        setTimeout(() => {
+          setRatingMessage('');
+          setShowRatingModal(false);
+        }, 2200);
+      }
     }
   };
 
@@ -575,6 +599,8 @@ function Progress() {
       setUnreadCount(0);
     }
   }, [activeTab]);
+
+  
 
   if (checkingMembership) {
     return (
@@ -681,9 +707,6 @@ function Progress() {
           </div>
 
           <div className="progress-stats">
-            
-
-
             {/* Debug card - xóa sau khi test xong */}
             <div className="stat-card debug-card" style={{ border: '2px dashed #f39c12', backgroundColor: '#fff9e6' }}>
               <h3>{getCompletedPhases().length}</h3>
@@ -852,6 +875,8 @@ function Progress() {
         coach={selectedCoach}
         onSubmit={handleSubmitReview}
         existingReview={existingReview}
+        ratingMessage={ratingMessage}
+        ratingType={ratingType}
       />
     </>
   );

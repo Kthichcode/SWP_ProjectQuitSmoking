@@ -9,7 +9,8 @@ function PlanStages() {
 
   useEffect(() => {
     setLoading(true);
-    axiosInstance.get('http://localhost:5175/api/quitplan/member')
+    // Đổi từ gọi trực tiếp localhost sang dùng axiosInstance với endpoint tương đối
+    axiosInstance.get('/api/quitplan/member')
       .then(res => {
         if (res.data && Array.isArray(res.data.data)) {
           setPlans(res.data.data);

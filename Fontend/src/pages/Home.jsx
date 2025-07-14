@@ -9,6 +9,9 @@ function Home() {
   const navigate = useNavigate();
   const [blogs, setBlogs] = useState([]);
   const [loadingBlogs, setLoadingBlogs] = useState(false);
+  const [ranking, setRanking] = useState([]);
+  const [loadingRanking, setLoadingRanking] = useState(false);
+  const [rankingError, setRankingError] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -33,6 +36,26 @@ function Home() {
         setBlogs([]);
       })
       .finally(() => setLoadingBlogs(false));
+  }, []);
+
+  useEffect(() => {
+    setLoadingRanking(true);
+    setRankingError('');
+    fetch('/api/member-badge/ranking')
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success' && Array.isArray(data.data)) {
+          const sorted = [...data.data].sort((a, b) => b.totalScore - a.totalScore);
+          setRanking(sorted);
+        } else {
+          setRanking([]);
+        }
+      })
+      .catch(() => {
+        setRankingError('Không thể tải bảng xếp hạng');
+        setRanking([]);
+      })
+      .finally(() => setLoadingRanking(false));
   }, []);
 
   const handleProtectedClick = (targetPath) => {
@@ -125,26 +148,103 @@ function Home() {
         </div>
       </div>
       <div className="ranking-section">
-        <h2>Bảng xếp hạng thành tích</h2>
-        <p>Hãy xem những người xuất sắc trong việc cai thuốc và số ngày không hút thuốc họ đã đạt được.</p>
-        <div className="ranking-list">
-          {[
-            { name: 'Nguyễn Văn A', days: 120, money: '2,400,000₫' },
-            { name: 'Trần Thị B', days: 95, money: '1,900,000₫' },
-            { name: 'Phạm Văn C', days: 70, money: '1,400,000₫' },
-            { name: 'Lê Thị D', days: 60, money: '1,200,000₫' },
-          ].map((user, i) => (
-            <div className={`rank-card ${i === 0 ? 'top' : ''}`} key={user.name}>
-              <div className="rank-avatar"></div>
-              <h4>{user.name}</h4>
-              <p>{user.days} ngày</p>
-              <strong>{user.money}</strong>
-            </div>
-          ))}
+        <h2 style={{ textAlign: 'center', fontWeight: 800, fontSize: '2rem', marginBottom: 8, letterSpacing: 1 }}>Bảng xếp hạng thành tích</h2>
+        <p style={{ textAlign: 'center', color: '#555', marginBottom: 32 }}>Hãy xem những người xuất sắc trong việc cai thuốc và số ngày không hút thuốc họ đã đạt được.</p>
+        {loadingRanking ? (
+          <div style={{ textAlign: 'center', margin: '40px 0', fontSize: '1.2rem', color: '#2e7dff' }}>Đang tải bảng xếp hạng...</div>
+        ) : rankingError ? (
+          <div style={{ color: 'red', textAlign: 'center', margin: '40px 0', fontWeight: 600 }}>{rankingError}</div>
+        ) : (
+          <div className="ranking-list" style={{ display: 'flex', gap: '32px', justifyContent: 'center', marginBottom: 24 }}>
+            {ranking.slice(0, 4).map((user, i) => {
+              let displayName = user.fullName;
+              if (!displayName && user.email) {
+                displayName = user.email.replace(/@gmail\.com$/, '');
+              }
+              let topLabel = '';
+              let topIcon = '';
+              let cardBg = '#fff';
+              let border = '1px solid #eee';
+              let shadow = '0 2px 12px rgba(44,62,80,0.08)';
+              let nameColor = '#222';
+              let scoreColor = '#2e7dff';
+              if (i === 0) {
+                topLabel = 'Top 1'; topIcon = '🥇';
+                cardBg = 'linear-gradient(135deg, #fffbe6 60%, #ffeaa7 100%)';
+                border = '2px solid #f39c12';
+                shadow = '0 4px 24px rgba(243,156,18,0.15)';
+                nameColor = '#f39c12';
+                scoreColor = '#d35400';
+              } else if (i === 1) {
+                topLabel = 'Top 2'; topIcon = '🥈';
+                cardBg = 'linear-gradient(135deg, #f0f4f8 60%, #d6e4ff 100%)';
+                border = '2px solid #2e7dff';
+                shadow = '0 4px 24px rgba(46,125,255,0.12)';
+                nameColor = '#2e7dff';
+                scoreColor = '#1565c0';
+              } else if (i === 2) {
+                topLabel = 'Top 3'; topIcon = '🥉';
+                cardBg = 'linear-gradient(135deg, #fff0f0 60%, #ffb3b3 100%)';
+                border = '2px solid #e67e22';
+                shadow = '0 4px 24px rgba(230,126,34,0.12)';
+                nameColor = '#e67e22';
+                scoreColor = '#b9770e';
+              }
+              return (
+                <div
+                  className={`rank-card${i === 0 ? ' top' : ''}`}
+                  key={user.memberId}
+                  style={{
+                    background: cardBg,
+                    border,
+                    boxShadow: shadow,
+                    borderRadius: 18,
+                    padding: '24px 32px',
+                    minWidth: 180,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    position: 'relative',
+                    transition: 'transform 0.2s',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  {topLabel && (
+                    <div style={{
+                      fontWeight: 800,
+                      color: nameColor,
+                      fontSize: '1.3rem',
+                      marginBottom: 8,
+                      letterSpacing: 1,
+                      textShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                    }}>{topIcon} {topLabel}</div>
+                  )}
+                  <h4 style={{
+                    fontWeight: 700,
+                    color: nameColor,
+                    fontSize: '1.15rem',
+                    margin: 0,
+                    marginBottom: 6,
+                    textAlign: 'center',
+                    textShadow: '0 1px 4px rgba(0,0,0,0.07)'
+                  }}>{displayName}</h4>
+                  <strong style={{
+                    color: scoreColor,
+                    fontSize: '1.1rem',
+                    fontWeight: 700,
+                    marginTop: 2,
+                    letterSpacing: 1
+                  }}>{user.totalScore} điểm</strong>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <div style={{ textAlign: 'center', marginTop: 8 }}>
+          <button className="white-btn" style={{ fontWeight: 600, fontSize: '1rem', padding: '10px 28px', borderRadius: 12, boxShadow: '0 2px 8px rgba(44,62,80,0.08)' }} onClick={() => handleProtectedClick('/ranking')}>
+            Xem bảng xếp hạng đầy đủ
+          </button>
         </div>
-        <button className="white-btn" onClick={() => handleProtectedClick('/ranking')}>
-          Xem bảng xếp hạng đầy đủ
-        </button>
       </div>
       <div className="blog-section">
         <h2>Blog chia sẻ kinh nghiệm</h2>

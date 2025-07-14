@@ -4,6 +4,8 @@ import { FaUser, FaEdit, FaPause, FaEllipsisV, FaStar, FaComments } from 'react-
 import axios from 'axios';
 
 function AdminCoaches() {
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [coaches, setCoaches] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name: '', username: '', email: '', phone: '', exp: '', rating: '' });
@@ -46,26 +48,10 @@ function AdminCoaches() {
     fetchCoaches();
   }, []);
 
-  // Fetch reviews for a specific coach (Admin cần API khác để lấy tất cả reviews)
   const fetchCoachReviews = async (coachId) => {
     try {
       setLoadingReviews(true);
-      const token = localStorage.getItem('token');
-      
-      // TODO: Uncomment khi đã implement API admin
-      /*
-      const res = await axios.get(`/api/coach-reviews/coach/${coachId}`, {
-        headers: token ? { Authorization: 'Bearer ' + token } : {}
-      });
-      
-      if (res.data?.status === 'success' || res.data?.message === 'Coach reviews retrieved successfully') {
-        setSelectedCoachReviews(res.data.data || []);
-        setLoadingReviews(false);
-        return;
-      }
-      */
-      
-      // MOCK DATA - Xóa khi đã có API thực
+      const token = localStorage.getItem('token');   
       const mockReviews = [
         {
           reviewId: 1,
@@ -110,35 +96,14 @@ function AdminCoaches() {
   const fetchReviewStats = async (coachId) => {
     try {
       const token = localStorage.getItem('token');
-      
-      // TODO: Uncomment khi đã implement API admin
-      /*
-      const res = await axios.get(`/api/coach-reviews/coach/${coachId}/statistics`, {
+      const res = await axios.get(`http://localhost:5175/api/coach-reviews/admin/statistics/${coachId}`, {
         headers: token ? { Authorization: 'Bearer ' + token } : {}
       });
-      
-      if (res.data?.status === 'success' || res.data?.message === 'Coach review statistics retrieved successfully') {
-        setReviewStats(res.data.data || {});
-        return;
+      if (res.data) {
+        setReviewStats(res.data);
+      } else {
+        setReviewStats({});
       }
-      */
-      
-      // MOCK DATA - Xóa khi đã có API thực
-      const mockStats = {
-        totalReviews: 3,
-        averageRating: 4.7,
-        ratingDistribution: {
-          "1": 0,
-          "2": 0,
-          "3": 0,
-          "4": 1,
-          "5": 2
-        },
-        positiveReviews: 3,
-        recentReviews: 3
-      };
-      
-      setReviewStats(mockStats);
     } catch (err) {
       console.error('Error fetching review stats:', err);
       setReviewStats({});
@@ -162,11 +127,11 @@ function AdminCoaches() {
       
       // MOCK: Remove from current state
       setSelectedCoachReviews(prev => prev.filter(r => r.reviewId !== reviewId));
-      alert('Đã xóa đánh giá thành công');
+      setSuccessMessage('Đã xóa đánh giá thành công');
       
     } catch (err) {
       console.error('Error deleting review:', err);
-      alert('Có lỗi khi xóa đánh giá');
+      setErrorMessage('Có lỗi khi xóa đánh giá');
     }
   };
 
@@ -188,14 +153,17 @@ function AdminCoaches() {
         body: JSON.stringify(payload)
       });
       if (res.status === 409) {
-        alert('Email hoặc username đã tồn tại!');
+        setErrorMessage('Email hoặc username đã tồn tại!');
+        setSuccessMessage('');
         return;
       }
       if (!res.ok) {
-        alert('Có lỗi khi tạo coach!');
+        setErrorMessage('Có lỗi khi tạo coach!');
+        setSuccessMessage('');
         return;
       }
-      alert('Tạo coach thành công, mật khẩu đã gửi về email!');
+      setSuccessMessage('Tạo coach thành công, mật khẩu đã gửi về email!');
+      setErrorMessage('');
       setCoaches([
         ...coaches,
         { ...form, id: Date.now(), status: 'active', plans: 0 }
@@ -203,7 +171,8 @@ function AdminCoaches() {
       setForm({ name: '', username: '', email: '', phone: '', exp: '', rating: '' });
       setShowAdd(false);
     } catch (err) {
-      alert('Có lỗi khi tạo coach!');
+      setErrorMessage('Có lỗi khi tạo coach!');
+      setSuccessMessage('');
     }
   };
 
@@ -227,6 +196,12 @@ function AdminCoaches() {
       {showAdd && (
         <div className="admin-modal">
           <form className="admin-modal-content" onSubmit={handleAdd}>
+            {successMessage && (
+              <div style={{background:'#e0fbe0',color:'#15803d',padding:'10px 18px',borderRadius:'8px',fontWeight:600,marginBottom:12,boxShadow:'0 2px 8px #0001',textAlign:'center'}}>{successMessage}</div>
+            )}
+            {errorMessage && (
+              <div style={{background:'#fee2e2',color:'#b91c1c',padding:'10px 18px',borderRadius:'8px',fontWeight:600,marginBottom:12,boxShadow:'0 2px 8px #0001',textAlign:'center'}}>{errorMessage}</div>
+            )}
             <button className="admin-modal-close" style={{top: 8, right: 12, fontSize: 28}} onClick={() => setShowAdd(false)} type="button">×</button>
             <h3>Thêm Coach mới</h3>
             <input required placeholder="Họ tên" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
@@ -239,83 +214,36 @@ function AdminCoaches() {
       <table className="admin-table">
         <thead>
           <tr>
-            <th>Họ tên</th><th>Email</th><th>Số điện thoại</th><th>Kinh nghiệm</th><th>Kế hoạch hỗ trợ</th><th>Đánh giá</th><th>Trạng thái</th><th>Thao tác</th>
+            <th>Họ tên</th>
+            <th>Email</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
           {coaches.map(c => (
             <tr key={c.id}>
-              <td>{c.fullName || c.name}</td><td>{c.email}</td><td>{c.phone}</td><td>{c.exp}</td><td>{c.plans}</td><td>{c.rating}</td>
+              <td>{c.fullName || c.name}</td>
+              <td>{c.email}</td>
               <td><span className={c.status === 'active' ? 'active' : 'inactive'}>{c.status === 'active' ? 'Hoạt động' : 'Không hoạt động'}</span></td>
-              <td style={{position:'relative'}}>
+              <td style={{position:'relative', display:'flex', gap:8}}>
                 <button
-                  className="admin-btn admin-btn-more"
-                  onClick={e => {
-                    e.stopPropagation();
-                    setOpenMenu(openMenu === c.id ? null : c.id);
-                  }}
-                  style={{padding: '6px 10px', borderRadius: '50%', background: '#f3f4f6', border: 'none', cursor: 'pointer', color: '#222', lineHeight: 1}}
-                  title="Thao tác"
+                  className="admin-btn admin-btn-menu"
+                  style={{display:'flex',alignItems:'center',gap:8,background:'#e0e7ff',border:'none',padding:'8px 16px',cursor:'pointer',color:'#222',fontSize:'1rem',borderRadius:8,fontWeight:500}}
+                  onClick={() => setSelected(c)}
+                  title="Xem hồ sơ"
                 >
-                  <FaEllipsisV size={18} color="#222" style={{verticalAlign:'middle'}} />
+                  <FaUser /> <span style={{color:'#222'}}>Xem hồ sơ</span>
                 </button>
-                {openMenu === c.id && (
-                  <div
-                    ref={menuRef}
-                    style={{
-                      position: 'fixed',
-                      top: (window.event && window.event.clientY ? window.event.clientY + 8 : 100),
-                      left: (window.event && window.event.clientX ? window.event.clientX - 160 : 100),
-                      background: '#fff',
-                      boxShadow: '0 2px 8px #0002',
-                      borderRadius: 8,
-                      zIndex: 1000,
-                      minWidth: 150,
-                      padding: '6px 0'
-                    }}
-                  >
-                    <button
-                      className="admin-btn admin-btn-menu"
-                      style={{
-                        display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
-                        color:'#222',fontSize:'1rem',textAlign:'left',fontWeight:500
-                      }}
-                      onClick={() => { setSelected(c); setOpenMenu(null); }}
-                    >
-                      <FaUser /> <span style={{color:'#222'}}>Xem hồ sơ</span>
-                    </button>
-                    <button
-                      className="admin-btn admin-btn-menu"
-                      style={{
-                        display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
-                        color:'#1e40af',fontSize:'1rem',textAlign:'left',fontWeight:500
-                      }}
-                      onClick={() => { handleViewReviews(c); setOpenMenu(null); }}
-                    >
-                      <FaStar /> <span style={{color:'#1e40af'}}>Xem đánh giá</span>
-                    </button>
-                    <button
-                      className="admin-btn admin-btn-menu"
-                      style={{
-                        display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
-                        color:'#222',fontSize:'1rem',textAlign:'left',fontWeight:500
-                      }}
-                      onClick={() => {  setOpenMenu(null); }}
-                    >
-                      <FaEdit /> <span style={{color:'#222'}}>Chỉnh sửa</span>
-                    </button>
-                    <button
-                      className="admin-btn admin-btn-menu"
-                      style={{
-                        display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
-                        color:'#ef4444',fontSize:'1rem',textAlign:'left',fontWeight:500
-                      }}
-                      onClick={() => {  setOpenMenu(null); }}
-                    >
-                      <FaPause /> <span style={{color:'#ef4444'}}>Tạm dừng</span>
-                    </button>
-                  </div>
-                )}
+                <button
+                  className="admin-btn admin-btn-menu"
+                  style={{display:'flex',alignItems:'center',gap:8,background:'#fef3c7',border:'none',padding:'8px 16px',cursor:'pointer',color:'#1e40af',fontSize:'1rem',borderRadius:8,fontWeight:500}}
+                  onClick={() => handleViewReviews(c)}
+                  title="Xem đánh giá"
+                >
+                  <FaStar /> <span style={{color:'#1e40af'}}>Xem đánh giá</span>
+                </button>
+                {/* Các thao tác khác nếu cần */}
               </td>
             </tr>
           ))}
@@ -329,9 +257,6 @@ function AdminCoaches() {
             <div><b>Họ tên:</b> {selected.name}</div>
             <div><b>Username:</b> {selected.username}</div>
             <div><b>Email:</b> {selected.email}</div>
-            <div><b>Kinh nghiệm:</b> {selected.exp}</div>
-            <div><b>Kế hoạch hỗ trợ:</b> {selected.plans}</div>
-            <div><b>Đánh giá:</b> {selected.rating}</div>
             <div><b>Trạng thái:</b> {selected.status === 'active' ? 'Hoạt động' : 'Không hoạt động'}</div>
           </div>
         </div>
@@ -373,11 +298,10 @@ function AdminCoaches() {
                 textAlign: 'center'
               }}>
                 <div style={{fontSize: '2rem', fontWeight: 'bold', color: '#0ea5e9', marginBottom: '4px'}}>
-                  {selectedCoachReviews.length}
+                  {reviewStats.totalReviews !== undefined ? reviewStats.totalReviews : '...'}
                 </div>
-                <div style={{fontSize: '0.9rem', color: '#0369a1'}}>Tổng đánh giá</div>
+                <div style={{fontSize: '0.9rem', color: '#0369a1'}}>Tổng người review</div>
               </div>
-              
               <div style={{
                 background: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
                 padding: '16px',
@@ -386,26 +310,10 @@ function AdminCoaches() {
                 textAlign: 'center'
               }}>
                 <div style={{fontSize: '2rem', fontWeight: 'bold', color: '#f59e0b', marginBottom: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'}}>
-                  {selectedCoachReviews.length > 0 
-                    ? (selectedCoachReviews.reduce((sum, r) => sum + r.rating, 0) / selectedCoachReviews.length).toFixed(1)
-                    : '0.0'
-                  }
+                  {reviewStats.averageRating !== undefined ? reviewStats.averageRating : '...'}
                   <FaStar size={20} />
                 </div>
                 <div style={{fontSize: '0.9rem', color: '#92400e'}}>Điểm trung bình</div>
-              </div>
-
-              <div style={{
-                background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-                padding: '16px',
-                borderRadius: '12px',
-                border: '1px solid #16a34a',
-                textAlign: 'center'
-              }}>
-                <div style={{fontSize: '2rem', fontWeight: 'bold', color: '#16a34a', marginBottom: '4px'}}>
-                  {selectedCoachReviews.filter(r => r.rating >= 4).length}
-                </div>
-                <div style={{fontSize: '0.9rem', color: '#15803d'}}>Đánh giá tích cực</div>
               </div>
             </div>
 

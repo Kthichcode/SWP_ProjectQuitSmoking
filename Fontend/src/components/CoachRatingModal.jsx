@@ -6,10 +6,13 @@ const CoachRatingModal = ({ isOpen, onClose, coach, onSubmit, existingReview = n
   const [comment, setComment] = useState(existingReview?.comment || '');
   const [hoverRating, setHoverRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (rating === 0) {
+      setShowSuccess(false);
       alert('Vui lòng chọn số sao để đánh giá');
       return;
     }
@@ -21,10 +24,20 @@ const CoachRatingModal = ({ isOpen, onClose, coach, onSubmit, existingReview = n
         comment: comment.trim(),
         coachId: coach?.coachId || coach?.userId || coach?.id
       });
-      onClose();
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        onClose();
+      }, 1800);
     } catch (error) {
       console.error('Error submitting review:', error);
-      alert('Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại.');
+      setShowSuccess(false);
+      // Nếu lỗi 500 và message là đã đánh giá rồi thì hiện UI
+      if (error?.response?.status === 500 && error?.response?.data?.message?.includes('already reviewed')) {
+        setShowError('Bạn đã đánh giá coach này trước đó.');
+      } else {
+        alert('Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -52,6 +65,17 @@ const CoachRatingModal = ({ isOpen, onClose, coach, onSubmit, existingReview = n
         </div>
 
         <div className="rating-modal-content">
+          {showSuccess && (
+            <div className="rating-success-message" style={{background:'#e0f7fa',color:'#047857',padding:'12px',borderRadius:'8px',marginBottom:'16px',textAlign:'center',fontWeight:600,fontSize:'1.1rem'}}>
+              {existingReview ? 'Cập nhật đánh giá thành công!' : 'Gửi đánh giá thành công!'}
+            </div>
+          )}
+          {showError && (
+            <div className="rating-error-message" style={{background:'#fee2e2',color:'#dc2626',padding:'12px',borderRadius:'8px',marginBottom:'16px',textAlign:'center',fontWeight:600,fontSize:'1.1rem'}}>
+              {showError}
+            </div>
+          )}
+
           <div className="coach-info-review">
             <div className="coach-avatar-small">
               {coach?.fullName?.charAt(0)?.toUpperCase() || 'C'}

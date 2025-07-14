@@ -59,7 +59,7 @@ function AdminUsers() {
       <table className="admin-table">
         <thead>
           <tr>
-            <th>Họ tên</th><th>Email</th><th>Số điện thoại</th><th>Vai trò</th><th>Ngày đăng ký</th><th>Kế hoạch</th><th>Trạng thái</th><th>Lần đăng nhập cuối</th><th>Thao tác</th>
+            <th>Họ tên</th><th>Email</th><th>Vai trò</th><th>Ngày đăng ký</th><th>Trạng thái</th><th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -71,12 +71,9 @@ function AdminUsers() {
             <tr key={u.id}>
               <td>{u.username || u.fullName || u.name}</td>
               <td>{u.email}</td>
-              <td>{u.phone || u.phoneNumber || ''}</td>
               <td>{u.role || (u.roles ? Array.isArray(u.roles) ? u.roles.join(', ') : u.roles : '')}</td>
               <td>{u.created_at ? new Date(u.created_at).toLocaleDateString('vi-VN') : (u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : (u.registered ? new Date(u.registered).toLocaleDateString('vi-VN') : ''))}</td>
-              <td>{u.plans || ''}</td>
               <td><span className={u.status === 'active' || u.status === 'ACTIVE' ? 'active' : u.status === 'pending' ? 'pending' : 'inactive'}>{u.status === 'active' || u.status === 'ACTIVE' ? 'Hoạt động' : u.status === 'pending' ? 'Chờ xác nhận' : 'Khóa'}</span></td>
-              <td>{u.lastLogin || ''}</td>
               <td style={{position:'relative'}}>
                 <button
                   className="admin-btn admin-btn-more"
@@ -145,12 +142,10 @@ function AdminUsers() {
             <h3>Thông tin chi tiết</h3>
             <div><b>Họ tên:</b> {selected.fullName || selected.name}</div>
             <div><b>Email:</b> {selected.email}</div>
-            <div><b>Số điện thoại:</b> {selected.phone || selected.phoneNumber || ''}</div>
+            {/* Số điện thoại đã bị xóa theo yêu cầu */}
             <div><b>Vai trò:</b> {selected.role || (selected.roles ? Array.isArray(selected.roles) ? selected.roles.join(', ') : selected.roles : '')}</div>
             <div><b>Ngày đăng ký:</b> {selected.created_at ? new Date(selected.created_at).toLocaleDateString('vi-VN') : (selected.createdAt ? new Date(selected.createdAt).toLocaleDateString('vi-VN') : (selected.registered ? new Date(selected.registered).toLocaleDateString('vi-VN') : 'Không rõ'))}</div>
-            <div><b>Kế hoạch đã tạo:</b> {selected.plans || ''}</div>
             <div><b>Trạng thái:</b> {selected.status}</div>
-            <div><b>Lần đăng nhập cuối:</b> {selected.lastLogin || ''}</div>
           </div>
         </div>
       )}

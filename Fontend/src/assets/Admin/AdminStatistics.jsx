@@ -19,17 +19,19 @@ function AdminStatistics() {
   // Gọi API lấy tổng tiền đã kiếm được
   const fetchTotalRevenue = async () => {
     try {
-      const res = await axios.get('/api/statistics/membership-total-revenue', {
+      const res = await axios.get('/api/user-memberships/revenue', {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
-      // Dữ liệu dạng { total: 123456789 }
-      if (typeof res.data?.total === 'number') {
-        setTotalRevenue(res.data.total);
+      // Dữ liệu dạng { data: 123456789 } hoặc { total: 123456789 }
+      if (typeof res.data?.data === 'number') {
+        setTotalRevenue(res.data.data / 2);
+      } else if (typeof res.data?.total === 'number') {
+        setTotalRevenue(res.data.total / 2);
       } else if (typeof res.data === 'number') {
-        setTotalRevenue(res.data);
+        setTotalRevenue(res.data / 2);
       } else {
         setTotalRevenue(0);
       }
@@ -170,12 +172,8 @@ function AdminStatistics() {
   };
 
   const formatNumber = (num) => {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + 'M';
-    } else if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'K';
-    }
-    return num?.toLocaleString('vi-VN') || 0;
+    if (typeof num !== 'number') return '0';
+    return num.toLocaleString('vi-VN');
   };
 
   if (loading) {
@@ -261,7 +259,26 @@ function AdminStatistics() {
   return (
     <div className="admin-page">
       <h2>Thống Kê Tổng Quan Hệ Thống</h2>
-      
+
+      {/* Card tổng tiền giao dịch */}
+      <div style={{
+        margin: '30px 0',
+        background: '#fff',
+        borderRadius: '10px',
+        border: '1px solid #e0e0e0',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+        padding: '24px',
+        maxWidth: '500px',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        textAlign: 'center'
+      }}>
+        <h3 style={{ fontSize: '1.3em', fontWeight: 600, margin: 0 }}>Tổng tiền giao dịch</h3>
+        <span style={{ color: '#007bff', fontWeight: 700, fontSize: '1.8em' }}>
+          {formatNumber(totalRevenue)} VND
+        </span>
+      </div>
+
       {useTestData && (
         <div style={{
           background: '#fff3cd',
@@ -287,7 +304,7 @@ function AdminStatistics() {
           ✅ Đang hiển thị dữ liệu thực từ backend. Cập nhật lần cuối: {new Date().toLocaleString('vi-VN')}
         </div>
       )}
-      
+
       {/* Overview Cards */}
       <div className="stats-overview" style={{
         display: 'grid',
@@ -295,6 +312,7 @@ function AdminStatistics() {
         gap: '20px',
         marginBottom: '30px'
       }}>
+        {/* ...existing code... */}
         <div className="stat-card" style={{
           background: '#f8f9fa',
           padding: '20px',
@@ -307,71 +325,7 @@ function AdminStatistics() {
           </h3>
           <p style={{ margin: '5px 0', color: '#6c757d' }}>Tổng số người dùng</p>
         </div>
-
-        <div className="stat-card" style={{
-          background: '#f8f9fa',
-          padding: '20px',
-          borderRadius: '8px',
-          textAlign: 'center',
-          border: '1px solid #e9ecef'
-        }}>
-          <h3 style={{ color: '#28a745', fontSize: '2em', margin: '0' }}>
-            {formatNumber(stats?.totalMembers)}
-          </h3>
-          <p style={{ margin: '5px 0', color: '#6c757d' }}>Thành viên</p>
-        </div>
-
-        <div className="stat-card" style={{
-          background: '#f8f9fa',
-          padding: '20px',
-          borderRadius: '8px',
-          textAlign: 'center',
-          border: '1px solid #e9ecef'
-        }}>
-          <h3 style={{ color: '#ffc107', fontSize: '2em', margin: '0' }}>
-            {formatNumber(stats?.totalCoaches)}
-          </h3>
-          <p style={{ margin: '5px 0', color: '#6c757d' }}>Huấn luyện viên</p>
-        </div>
-
-        <div className="stat-card" style={{
-          background: '#f8f9fa',
-          padding: '20px',
-          borderRadius: '8px',
-          textAlign: 'center',
-          border: '1px solid #e9ecef'
-        }}>
-          <h3 style={{ color: '#17a2b8', fontSize: '2em', margin: '0' }}>
-            {formatNumber(stats?.totalQuitPlans)}
-          </h3>
-          <p style={{ margin: '5px 0', color: '#6c757d' }}>Kế hoạch cai thuốc</p>
-        </div>
-
-        <div className="stat-card" style={{
-          background: '#f8f9fa',
-          padding: '20px',
-          borderRadius: '8px',
-          textAlign: 'center',
-          border: '1px solid #e9ecef'
-        }}>
-          <h3 style={{ color: '#6f42c1', fontSize: '2em', margin: '0' }}>
-            {formatNumber(stats?.totalNotifications)}
-          </h3>
-          <p style={{ margin: '5px 0', color: '#6c757d' }}>Tổng thông báo</p>
-        </div>
-
-        <div className="stat-card" style={{
-          background: '#f8f9fa',
-          padding: '20px',
-          borderRadius: '8px',
-          textAlign: 'center',
-          border: '1px solid #e9ecef'
-        }}>
-          <h3 style={{ color: '#fd7e14', fontSize: '2em', margin: '0' }}>
-            {formatNumber(stats?.newUsersThisMonth)}
-          </h3>
-          <p style={{ margin: '5px 0', color: '#6c757d' }}>Người dùng mới tháng này</p>
-        </div>
+        {/* ...existing code... */}
       </div>
 
       {/* Growth Rate */}
