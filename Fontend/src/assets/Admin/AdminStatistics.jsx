@@ -27,11 +27,11 @@ function AdminStatistics() {
       });
       // Dữ liệu dạng { data: 123456789 } hoặc { total: 123456789 }
       if (typeof res.data?.data === 'number') {
-        setTotalRevenue(res.data.data / 2);
+        setTotalRevenue(res.data.data);
       } else if (typeof res.data?.total === 'number') {
-        setTotalRevenue(res.data.total / 2);
+        setTotalRevenue(res.data.total);
       } else if (typeof res.data === 'number') {
-        setTotalRevenue(res.data / 2);
+        setTotalRevenue(res.data);
       } else {
         setTotalRevenue(0);
       }
