@@ -37,23 +37,38 @@ function Progress() {
   const [stages, setStages] = useState([]);
   const [expandedStage, setExpandedStage] = useState(null);
   const getStageStatusLabel = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'Hoàn thành';
-      case 'active':
-        return 'Đang thực hiện';
-      case 'inactive':
-        return 'Đang tạm dừng';
-      case 'pending':
-      case null:
-      case undefined:
-        return 'Chưa bắt đầu';
-      case 'cancelled':
-        return 'Đã huỷ';
-      default:
-        return 'Chưa bắt đầu';
-    }
-  };
+  switch (status) {
+    case 'completed':
+      return 'Hoàn thành';
+    case 'active':
+      return 'Đang thực hiện';
+    case 'inactive':
+      return 'Đang tạm dừng';
+    case 'pending':
+    case null:
+    case undefined:
+      return 'Chưa bắt đầu';
+    case 'cancelled':
+      return 'Đã huỷ';
+    default:
+      return 'Chưa bắt đầu';
+  }
+};
+
+const getStageDotColor = (status) => {
+  switch (status) {
+    case 'completed':
+      return '#2ecc40';     // xanh lá
+    case 'active':
+      return '#3498db';     // xanh dương
+    case 'inactive':
+      return '#f1c40f';     // vàng
+    case 'cancelled':
+      return '#e74c3c';     // đỏ
+    default:
+      return '#bdc3c7';     // xám
+  }
+};
   useEffect(() => {
     if (activeTab !== 'overview') return;
     const fetchStages = async () => {
@@ -801,7 +816,7 @@ function Progress() {
                           marginRight: 12
                         }}></span>
                         <strong style={{ fontSize: 16 }}>Giai đoạn {stage.stageNumber}: </strong>
-                        <span style={{ marginLeft: 8, color: '#666' }}>{stage.status === 'completed' ? 'Hoàn thành' : (stage.status === 'active' ? 'Đang thực hiện' : 'Chưa bắt đầu')}</span>
+                        
                        <span style={{ marginLeft: 8, color: '#666' }}>
                           {getStageStatusLabel(stage.status)}
                         </span>
