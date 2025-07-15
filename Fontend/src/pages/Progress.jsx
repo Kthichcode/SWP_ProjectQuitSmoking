@@ -11,7 +11,6 @@ import PlanStages from './PlanStages';
 import DailyDeclarationForm from '../components/DailyDeclarationForm';
 import '../assets/CSS/Progress.css';
 
-// Helper: lưu selectionId riêng cho từng user
 const getSelectionStorageKey = (userId) => `selectionId_${userId}`;
 
 function Progress() {
@@ -67,9 +66,6 @@ function Progress() {
   }, [user, navigate]);
 
   useEffect(() => {
-    // Nếu không có membership active, chuyển hướng sang trang Payment
-    // Việc gửi transaction_id về BE để kiểm tra và tạo membership chỉ thực hiện ở PaymentResult.jsx (sau khi thanh toán thành công)
-    // Không cần gửi transaction_id từ Progress.jsx
     if (!checkingMembership && !membershipStatus) {
       navigate('/payment', { replace: true });
     }
@@ -93,11 +89,6 @@ function Progress() {
       setCheckingMembership(false);
     }
   };
-
-  /**
-   * FIXED HERE:
-   * Load coach info từ selectionId
-   */
   const loadCoachInfo = () => {
     const selectionIdFromState = location.state?.selectionId;
     if (selectionIdFromState) {
@@ -110,7 +101,6 @@ function Progress() {
       if (savedSelectionId) {
         setSelectionId(parseInt(savedSelectionId));
       } else {
-        // NEW: GỌI API để lấy selectionId
         fetchSelectionIdOfCurrentUser();
       }
     }
@@ -132,8 +122,6 @@ function Progress() {
       console.error("Error fetching selectionId of current user:", error);
     }
   };
-
-  // NEW: Load coach từ API backend
   useEffect(() => {
     if (selectionId) {
       fetchCoachBySelectionId(selectionId);
@@ -218,7 +206,7 @@ function Progress() {
 
   useEffect(() => {
     if (activeTab === 'chat') {
-      setUnreadCount(0); // reset badge mỗi lần vào tab chat
+      setUnreadCount(0); 
       scrollToBottom();
       hasNewMessageRef.current = false;
     }
@@ -514,7 +502,6 @@ function Progress() {
         setShowRatingModal(false);
       }, 1800);
     } catch (error) {
-      // Nếu lỗi đã đánh giá rồi
       if (error?.response?.status === 500 && error?.response?.data?.message?.includes('already reviewed')) {
         setRatingMessage('Bạn đã đánh giá coach này trước đó.');
         setRatingType('error');
@@ -602,7 +589,6 @@ function Progress() {
     }
   };
 
-  // Khi chuyển sang tab chat, reset số tin nhắn chưa đọc
   useEffect(() => {
     if (activeTab === 'chat') {
       setUnreadCount(0);
@@ -638,7 +624,7 @@ function Progress() {
               <h2>Chưa có gói thành viên</h2>
               <p>Bạn cần mua gói membership để sử dụng các tính năng theo dõi tiến trình và nhận hỗ trợ từ coach.</p>
               <div className="notify-actions">
-                <button className="btn-main" onClick={() => navigate('/payment')}>
+                  <button className="btn-main" onClick={() => window.location.href = '/payment'}>
                   Mua gói membership
                 </button>
                 <button className="btn-secondary" onClick={() => navigate('/home')}>
