@@ -58,15 +58,15 @@ function Progress() {
 const getStageDotColor = (status) => {
   switch (status) {
     case 'completed':
-      return '#2ecc40';     // xanh lá
+      return '#2ecc40';     
     case 'active':
-      return '#3498db';     // xanh dương
+      return '#3498db';     
     case 'inactive':
-      return '#f1c40f';     // vàng
+      return '#f1c40f';   
     case 'cancelled':
-      return '#e74c3c';     // đỏ
+      return '#e74c3c';    
     default:
-      return '#bdc3c7';     // xám
+      return '#bdc3c7';     
   }
 };
   useEffect(() => {
