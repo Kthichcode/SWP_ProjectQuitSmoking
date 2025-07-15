@@ -14,9 +14,9 @@ function PaymentResult() {
   const [paymentInfo, setPaymentInfo] = useState({});
 
   useEffect(() => {
-    // Lấy thông tin từ URL params
+    
     let responseCode = searchParams.get('vnp_ResponseCode');
-    // Đảm bảo luôn là chuỗi
+    
     if (typeof responseCode !== 'string') responseCode = String(responseCode);
     if (responseCode === undefined || responseCode === null) responseCode = '';
     console.log('[PaymentResult] responseCode:', responseCode, typeof responseCode);
@@ -28,28 +28,28 @@ function PaymentResult() {
     setPaymentInfo({
       responseCode,
       transactionId,
-      amount: amount ? parseInt(amount) / 100 : 0, // VNPay trả về amount * 100
+      amount: amount ? parseInt(amount) / 100 : 0, 
       orderInfo,
       payDate
     });
 
-    // Sử dụng BroadcastChannel để đồng bộ trạng thái xử lý transactionId giữa các tab
+  
     const channel = new window.BroadcastChannel('payment_transaction_channel');
     let isProcessing = false;
 
     const processedKey = transactionId ? `payment_processed_${transactionId}` : '';
 
-    // Biến bảo vệ trạng thái đã thành công
+ 
     let paymentSuccessLocked = false;
     const verifyAndCreateMembership = async () => {
-      // Xử lý trường hợp nghi ngờ (07)
+    
       if (responseCode === '07') {
         setPaymentStatus('pending');
         console.log('Giao dịch nghi ngờ, cần xác thực lại với ngân hàng.');
         return;
       }
       if (responseCode === '00') {
-        // Kiểm tra transactionId đã xử lý chưa
+     
         const alreadyProcessed = localStorage.getItem(processedKey);
         if (alreadyProcessed) {
           if (!paymentSuccessLocked && paymentStatus !== 'success') {
@@ -60,7 +60,7 @@ function PaymentResult() {
           return;
         }
         if (isProcessing) {
-          // Đã có tab khác xử lý
+        
           return;
         }
         isProcessing = true;
@@ -111,7 +111,6 @@ function PaymentResult() {
       }
     };
 
-    // Lắng nghe các tab khác xử lý transactionId
     channel.onmessage = (event) => {
       if (event.data && event.data.transactionId == transactionId) {
         if (event.data.type == 'processing') {
@@ -155,7 +154,6 @@ function PaymentResult() {
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    // Format: yyyyMMddHHmmss -> dd/MM/yyyy HH:mm:ss
     const year = dateString.substring(0, 4);
     const month = dateString.substring(4, 6);
     const day = dateString.substring(6, 8);
@@ -165,11 +163,9 @@ function PaymentResult() {
     return `${day}/${month}/${year} ${hour}:${minute}:${second}`;
   };
 
-  // Add margin top to avoid header overlap
-  // Extract package name from orderInfo if possible
   let packageName = '';
   if (paymentInfo.orderInfo) {
-    // Try to extract PACKAGE_NAME:<name> from orderInfo string
+  
     const match = paymentInfo.orderInfo.match(/PACKAGE_NAME:([^|]+)/);
     if (match && match[1]) {
       packageName = match[1].trim();
