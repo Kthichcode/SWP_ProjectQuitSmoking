@@ -36,7 +36,13 @@ function PaymentResult() {
     const processedKey = transactionId ? `payment_processed_${transactionId}` : '';
 
     const verifyAndCreateMembership = async () => {
-      if (responseCode && transactionId && orderInfo) {
+      // Xử lý trường hợp nghi ngờ (07)
+      if (responseCode === '07') {
+        setPaymentStatus('pending');
+        console.log('Giao dịch nghi ngờ, cần xác thực lại với ngân hàng.');
+        return;
+      }
+      if (responseCode === '00') {
         // Kiểm tra transactionId đã xử lý chưa
         const alreadyProcessed = localStorage.getItem(processedKey);
         if (alreadyProcessed) {
@@ -183,6 +189,11 @@ function PaymentResult() {
                     ⚠️ Thanh toán thành công nhưng có lỗi khi kích hoạt membership: {paymentInfo.membershipError}
                     <br/>Vui lòng liên hệ support để được hỗ trợ.
                   </p>
+                ) : !paymentInfo.orderInfo ? (
+                  <p style={{color: '#ff9800', fontSize: '14px'}}>
+                    ⚠️ Thanh toán thành công nhưng không thể tự động kích hoạt gói membership do thiếu thông tin.
+                    <br/>Vui lòng liên hệ support để được hỗ trợ kích hoạt gói.
+                  </p>
                 ) : (
                   <p style={{color: '#ff9800', fontSize: '14px'}}>
                     🔄 Đang kích hoạt gói membership...
@@ -203,6 +214,20 @@ function PaymentResult() {
                   <span style={{textTransform: 'uppercase', color: '#1b7f3a'}}>Bước tiếp theo:</span> Hãy chọn Coach chuyên nghiệp cho bạn để bắt đầu hành trình cai thuốc!
                 </p>
               </div>
+            </>
+          ) : paymentStatus === 'pending' ? (
+            <>
+              <div className="payment-result-icon pending">
+                <AiOutlineCloseCircle size={80} />
+              </div>
+              <h2 className="payment-result-title pending">Giao dịch đang chờ xác thực!</h2>
+              <p className="payment-result-message">
+                Giao dịch của bạn đang được xác thực lại với ngân hàng.<br />
+                Vui lòng kiểm tra lại sau hoặc liên hệ hỗ trợ nếu cần.
+              </p>
+              <button className="btn-home" onClick={handleGoHome}>
+                <AiOutlineHome size={20} /> Về trang chủ
+              </button>
             </>
           ) : paymentStatus === 'failed' ? (
             <>

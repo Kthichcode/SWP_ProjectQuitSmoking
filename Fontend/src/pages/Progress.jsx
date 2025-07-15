@@ -66,6 +66,15 @@ function Progress() {
     checkUserMembership();
   }, [user, navigate]);
 
+  useEffect(() => {
+    // Nếu không có membership active, chuyển hướng sang trang Payment
+    // Việc gửi transaction_id về BE để kiểm tra và tạo membership chỉ thực hiện ở PaymentResult.jsx (sau khi thanh toán thành công)
+    // Không cần gửi transaction_id từ Progress.jsx
+    if (!checkingMembership && !membershipStatus) {
+      navigate('/payment', { replace: true });
+    }
+  }, [checkingMembership, membershipStatus, navigate]);
+
   const checkUserMembership = async () => {
     try {
       setCheckingMembership(true);
