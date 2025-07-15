@@ -777,14 +777,8 @@ const getStageDotColor = (status) => {
             {activeTab === 'overview' && (
               <div className="overview-content">
                 <h3>🎯 Mục tiêu của bạn</h3>
-                {/* Thêm form khai báo hằng ngày */}
-                <DailyDeclarationForm />
-
-                {/* Hiển thị lịch sử khai báo hàng ngày */}
-                <DailyLogsHistory />
-
-                {/* Hiển thị các giai đoạn tiến trình */}
-                <div style={{ marginTop: 32 }}>
+                {/* Hiển thị các giai đoạn tiến trình lên đầu */}
+                <div style={{ marginTop: 0 }}>
                   <h3>Các giai đoạn thực hiện</h3>
                   {stages.length === 0 && (
                     <div style={{ color: '#888', margin: '16px 0' }}>Chưa có dữ liệu tiến trình.</div>
@@ -816,8 +810,7 @@ const getStageDotColor = (status) => {
                           marginRight: 12
                         }}></span>
                         <strong style={{ fontSize: 16 }}>Giai đoạn {stage.stageNumber}: </strong>
-                        
-                       <span style={{ marginLeft: 8, color: '#666' }}>
+                        <span style={{ marginLeft: 8, color: '#666' }}>
                           {getStageStatusLabel(stage.status)}
                         </span>
                         <span style={{ marginLeft: 16, fontSize: 18 }}>{expandedStage === stage.stageId ? '▼' : '▶'}</span>
@@ -847,6 +840,12 @@ const getStageDotColor = (status) => {
                     </div>
                   ))}
                 </div>
+
+                {/* Thêm form khai báo hằng ngày */}
+                <DailyDeclarationForm />
+
+                {/* Hiển thị lịch sử khai báo hàng ngày */}
+                <DailyLogsHistory />
               </div>
             )}
 
