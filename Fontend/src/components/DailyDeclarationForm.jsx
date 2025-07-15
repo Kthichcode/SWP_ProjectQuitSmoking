@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import './DailyDeclarationForm.css';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const today = new Date().toISOString().slice(0, 10);
+const today = (() => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+})();
 
 const cravingLevels = [
   { value: 'LOW', label: 'Ít' },
@@ -12,7 +18,11 @@ const cravingLevels = [
   { value: 'HIGH', label: 'Nhiều' },
 ];
 
+// Nếu bạn có AuthContext, hãy import ở đây
+// import { AuthContext } from '../contexts/AuthContext';
 const DailyDeclarationForm = () => {
+  // Nếu bạn có AuthContext, hãy lấy user ở đây
+  // const { user } = useContext(AuthContext);
   const [date, setDate] = useState(today);
   const [smoked, setSmoked] = useState('Không');
   const [cigarettes, setCigarettes] = useState(0);
@@ -49,7 +59,7 @@ const DailyDeclarationForm = () => {
     setSuccess('');
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5175/api/smoking-logs', {
+      const res = await axios.post('http://localhost:5175/api/smoking-logs', {
         smoked: smoked === 'Có',
         smokeCount: Number(cigarettes),
         cravingLevel: craving,
@@ -59,6 +69,25 @@ const DailyDeclarationForm = () => {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      // Lấy userId từ response, nếu không có thì lấy từ localStorage, nếu vẫn không có thì lấy từ user context
+      let userId = res.data?.userId || res.data?.data?.userId;
+      if (!userId) {
+        userId = localStorage.getItem('userId');
+      }
+      // Nếu có user context, lấy từ đó
+      // if (!userId && user && user.id) {
+      //   userId = user.id;
+      // }
+      if (userId) {
+        try {
+          await axios.post(`http://localhost:5175/api/member-badge/check-and-award/${userId}`, {}, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        } catch (err) {
+          console.error('Check and award badge error:', err);
+        }
+      }
+
       setSuccess('Khai báo thành công!');
     } catch {
       setError('Khai báo thất bại. Vui lòng thử lại.');
@@ -78,7 +107,7 @@ const DailyDeclarationForm = () => {
           <div className="form-row">
             <div>
               <label>Ngày</label>
-              <input type="date" value={date} onChange={e => setDate(e.target.value)} required />
+              <input type="date" value={today} readOnly required />
             </div>
             <div>
               <label>Hôm nay bạn có hút thuốc không?</label>

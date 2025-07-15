@@ -7,7 +7,7 @@ const AdminBadges = () => {
   const { user } = useAuth();
   const [badges, setBadges] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ name: '', description: '', condition_description: '', score: '', icon: 'leaf', iconUrl: '', id: null });
+  const [form, setForm] = useState({ name: '', description: '', condition: '', type: '', score: '', icon: 'leaf', iconUrl: '', id: null });
   const [editing, setEditing] = useState(false);
  
   const iconOptions = {
@@ -53,15 +53,25 @@ const AdminBadges = () => {
 
   const handleSubmit = async e => {
     e.preventDefault();
+    // Validate required fields
     if (!form.name.trim()) return alert('Tên huy hiệu không được để trống!');
+    if (!form.type.trim()) return alert('Loại huy hiệu không được để trống!');
+    if (!form.description.trim()) return alert('Mô tả không được để trống!');
+    if (form.condition === '' || isNaN(Number(form.condition))) return alert('Điều kiện đạt phải là số!');
+    if (form.score === '' || isNaN(Number(form.score))) return alert('Điểm phải là số!');
+
+    // iconUrl: nếu không có ảnh, gửi chuỗi rỗng
+    const iconUrlToSend = form.iconUrl ? form.iconUrl : '';
+
     try {
       const token = user?.token || user?.accessToken || localStorage.getItem('token');
       const badgeData = {
         name: form.name,
         description: form.description,
-        condition_description: form.condition_description,
-        iconUrl: form.iconUrl, // Ensure iconUrl is included in the badge data
-        score: Number(form.score) || 0
+        condition: Number(form.condition),
+        type: form.type,
+        iconUrl: iconUrlToSend,
+        score: Number(form.score)
       };
       if (editing) {
         await axios.put(`/api/badges/UpdateById/${form.id}`, badgeData, {
@@ -72,12 +82,16 @@ const AdminBadges = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
-      setForm({ name: '', description: '', condition_description: '', score: '', icon: 'leaf', id: null });
-      setForm({ name: '', description: '', condition_description: '', score: '', icon: 'leaf', iconUrl: '', id: null });
+      setForm({ name: '', description: '', condition: '', type: '', score: '', icon: 'leaf', id: null });
+      setForm({ name: '', description: '', condition: '', type: '', score: '', icon: 'leaf', iconUrl: '', id: null });
       setEditing(false);
       fetchBadges();
-    } catch {
-      alert('Có lỗi xảy ra!');
+    } catch (err) {
+      if (err.response && err.response.data) {
+        alert('Lỗi: ' + (err.response.data.message || JSON.stringify(err.response.data)));
+      } else {
+        alert('Có lỗi xảy ra!');
+      }
     }
   };
 
@@ -85,10 +99,11 @@ const AdminBadges = () => {
     setForm({
       name: badge.name || '',
       description: badge.description || '',
-      condition_description: badge.condition_description || '',
+      condition: badge.condition || '',
+      type: badge.type || '',
       score: badge.score || '',
       icon: badge.icon || '',
-      iconUrl: badge.iconUrl || '', // Ensure iconUrl is set when editing a badge
+      iconUrl: badge.iconUrl || '',
       id: badge.id
     });
     setEditing(true);
@@ -108,7 +123,7 @@ const AdminBadges = () => {
   };
 
   const handleCancel = () => {
-    setForm({ name: '', description: '', condition_description: '', score: '', icon: 'leaf', iconUrl: '', id: null });
+    setForm({ name: '', description: '', condition: '', type: '', score: '', icon: 'leaf', iconUrl: '', id: null });
     setEditing(false);
   };
 
@@ -118,7 +133,12 @@ const AdminBadges = () => {
       <form onSubmit={handleSubmit} style={{marginBottom:24, display:'flex', alignItems:'center', flexWrap:'wrap'}}>
         <input name="name" value={form.name} onChange={handleChange} placeholder="Tên huy hiệu" required style={{marginRight:8}} />
         <input name="description" value={form.description} onChange={handleChange} placeholder="Mô tả" style={{marginRight:8}} />
-        <input name="condition_description" value={form.condition_description} onChange={handleChange} placeholder="Điều kiện đạt" style={{marginRight:8}} />
+        <input name="condition" value={form.condition} onChange={handleChange} placeholder="Điều kiện đạt (số)" type="number" min="0" style={{marginRight:8}} />
+        <select name="type" value={form.type} onChange={handleChange} style={{marginRight:8}} required>
+          <option value="">Chọn loại huy hiệu</option>
+          <option value="non-smoking">Không hút thuốc</option>
+          <option value="stage-completion">Hoàn thành giai đoạn</option>
+        </select>
         <input name="score" value={form.score} onChange={handleChange} placeholder="Điểm" type="number" min="0" style={{marginRight:8}} />
         <input name="iconUrl" type="file" accept="image/*" onChange={handleChange} style={{marginRight:8}} />
         {form.iconUrl && (
@@ -135,6 +155,7 @@ const AdminBadges = () => {
               <th>Tên huy hiệu</th>
               <th>Mô tả</th>
               <th>Điều kiện đạt</th>
+              <th>Loại</th>
               <th>Điểm</th>
               <th>Icon</th>
               <th>Hành động</th>
@@ -146,7 +167,8 @@ const AdminBadges = () => {
                 <td>{badge.id}</td>
                 <td>{badge.name}</td>
                 <td>{badge.description}</td>
-                <td>{badge.condition_description}</td>
+                <td>{badge.condition}</td>
+                <td>{badge.type}</td>
                 <td>{badge.score}</td>
                 <td style={{fontSize:24, textAlign:'center'}}>
                   {badge.iconUrl ? (
