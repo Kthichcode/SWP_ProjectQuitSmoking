@@ -15,7 +15,11 @@ function PaymentResult() {
 
   useEffect(() => {
     // Lấy thông tin từ URL params
-    const responseCode = searchParams.get('vnp_ResponseCode');
+    let responseCode = searchParams.get('vnp_ResponseCode');
+    // Đảm bảo luôn là chuỗi
+    if (typeof responseCode !== 'string') responseCode = String(responseCode);
+    if (responseCode === undefined || responseCode === null) responseCode = '';
+    console.log('[PaymentResult] responseCode:', responseCode, typeof responseCode);
     const transactionId = searchParams.get('vnp_TxnRef');
     const amount = searchParams.get('vnp_Amount');
     const orderInfo = searchParams.get('vnp_OrderInfo');
@@ -35,6 +39,8 @@ function PaymentResult() {
 
     const processedKey = transactionId ? `payment_processed_${transactionId}` : '';
 
+    // Biến bảo vệ trạng thái đã thành công
+    let paymentSuccessLocked = false;
     const verifyAndCreateMembership = async () => {
       // Xử lý trường hợp nghi ngờ (07)
       if (responseCode === '07') {
@@ -46,7 +52,10 @@ function PaymentResult() {
         // Kiểm tra transactionId đã xử lý chưa
         const alreadyProcessed = localStorage.getItem(processedKey);
         if (alreadyProcessed) {
-          setPaymentStatus('success');
+          if (!paymentSuccessLocked && paymentStatus !== 'success') {
+            setPaymentStatus('success');
+            paymentSuccessLocked = true;
+          }
           console.log('Transaction already processed, skipping callback:', transactionId);
           return;
         }
@@ -61,7 +70,10 @@ function PaymentResult() {
           const result = await processPaymentCallback(transactionId, responseCode, orderInfo);
           console.log('Payment callback result:', result);
           if (result.paymentVerified) {
-            setPaymentStatus('success');
+            if (!paymentSuccessLocked && paymentStatus !== 'success') {
+              setPaymentStatus('success');
+              paymentSuccessLocked = true;
+            }
             localStorage.setItem(processedKey, 'true');
             channel.postMessage({ type: 'processed', transactionId });
             if (result.membershipResult && result.membershipResult.success) {
@@ -80,28 +92,37 @@ function PaymentResult() {
               console.error('Membership creation failed:', result.membershipResult);
             }
           } else {
-            setPaymentStatus('failed');
+            if (!paymentSuccessLocked && paymentStatus !== 'success') {
+              setPaymentStatus('failed');
+            }
             console.error('Payment verification failed:', result.error);
           }
         } catch (error) {
           console.error('Error in verifyAndCreateMembership:', error);
-          setPaymentStatus('failed');
+          if (!paymentSuccessLocked && paymentStatus !== 'success') {
+            setPaymentStatus('failed');
+          }
         }
       } else if (responseCode !== '00') {
-        setPaymentStatus('failed');
+        if (!paymentSuccessLocked && paymentStatus !== 'success') {
+          setPaymentStatus('failed');
+        }
         console.log('Payment failed with response code:', responseCode);
       }
     };
 
     // Lắng nghe các tab khác xử lý transactionId
     channel.onmessage = (event) => {
-      if (event.data && event.data.transactionId === transactionId) {
-        if (event.data.type === 'processing') {
+      if (event.data && event.data.transactionId == transactionId) {
+        if (event.data.type == 'processing') {
           isProcessing = true;
         }
-        if (event.data.type === 'processed') {
+        if (event.data.type == 'processed') {
           localStorage.setItem(processedKey, 'true');
-          setPaymentStatus('success');
+          if (!paymentSuccessLocked && paymentStatus !== 'success') {
+            setPaymentStatus('success');
+            paymentSuccessLocked = true;
+          }
         }
       }
     };
@@ -159,7 +180,7 @@ function PaymentResult() {
     <div className="payment-result-bg" style={{ minHeight: '100vh', marginTop: 0, paddingTop: 80, boxSizing: 'border-box' }}>
       <div className="payment-result-container">
         <div className="payment-result-card">
-          {paymentStatus === 'success' ? (
+          {paymentStatus == 'success' ? (
             <>
               <div className="payment-result-icon success">
                 <AiOutlineCheckCircle size={80} />
@@ -182,7 +203,7 @@ function PaymentResult() {
                         margin:'0 1px'
                       }}>{packageName}</span></span>
                     )}
-                    {` đã được ${paymentInfo.membershipAction === 'updated' ? 'cập nhật' : 'kích hoạt'} thành công!`}
+                    {` đã được ${paymentInfo.membershipAction == 'updated' ? 'cập nhật' : 'kích hoạt'} thành công!`}
                   </p>
                 ) : paymentInfo.membershipError ? (
                   <p style={{color: '#f44336', fontSize: '14px'}}>
@@ -215,7 +236,7 @@ function PaymentResult() {
                 </p>
               </div>
             </>
-          ) : paymentStatus === 'pending' ? (
+          ) : paymentStatus == 'pending' ? (
             <>
               <div className="payment-result-icon pending">
                 <AiOutlineCloseCircle size={80} />
@@ -229,7 +250,7 @@ function PaymentResult() {
                 <AiOutlineHome size={20} /> Về trang chủ
               </button>
             </>
-          ) : paymentStatus === 'failed' ? (
+          ) : paymentStatus == 'failed' ? (
             <>
               <div className="payment-result-icon failed">
                 <AiOutlineCloseCircle size={80} />
@@ -292,7 +313,7 @@ function PaymentResult() {
           )}
 
           <div className="payment-result-actions">
-            {paymentStatus === 'success' ? (
+            {paymentStatus == 'success' ? (
               <>
                 <button className="btn-choose-coach" onClick={handleChooseCoach}>
                   🏆 Chọn Coach
