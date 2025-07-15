@@ -68,7 +68,9 @@ function DailyLogsHistory() {
                   <td style={{ padding: '8px 12px', textAlign: 'center' }}>{log.logDate}</td>
                   <td style={{ padding: '8px 12px', textAlign: 'center' }}>{log.smoked ? <span style={{color:'#e74c3c'}}>Có 🚬</span> : <span style={{color:'#27ae60'}}>Không</span>}</td>
                   <td style={{ padding: '8px 12px', textAlign: 'center' }}>{log.smokeCount}</td>
-                  <td style={{ padding: '8px 12px', textAlign: 'center' }}>{log.cravingLevel}</td>
+                  <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                    {log.cravingLevel === 'LOW' ? 'Ít' : log.cravingLevel === 'MEDIUM' ? 'Trung bình' : log.cravingLevel === 'HIGH' ? 'Nhiều' : log.cravingLevel}
+                  </td>
                   <td style={{ padding: '8px 12px', textAlign: 'center' }}>{log.healthStatus}</td>
                   <td style={{ padding: '8px 12px', textAlign: 'center' }}>{log.isImprovement ? <span style={{color:'#27ae60'}}>Có 👍</span> : <span style={{color:'#e74c3c'}}>Không</span>}</td>
                   <td style={{ padding: '8px 12px', textAlign: 'center' }}>{log.stageNumber}</td>
