@@ -169,21 +169,59 @@ function ReviewsModal({ open, onClose, reviews }) {
   if (!open) return null;
   return (
     <div className="modal-overlay" style={{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.3)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <div className="modal-content" style={{background:'#fff',padding:24,borderRadius:8,minWidth:350,maxWidth:500,position:'relative'}}>
-        <h3>Đánh giá của bạn</h3>
-        <button style={{position:'absolute',top:10,right:20}} onClick={onClose}>Đóng</button>
+      <div className="modal-content" style={{background:'#fff',padding:24,borderRadius:12,minWidth:350,maxWidth:600,position:'relative',boxShadow:'0 8px 32px rgba(44,108,223,0.10)'}}>
+        <h3 style={{marginBottom: '8px', color: '#1e40af', display: 'flex', alignItems: 'center', gap: '8px'}}>Đánh giá của bạn</h3>
+        <button style={{position:'absolute',top:10,right:20,background:'#f5f5f5',border:'none',borderRadius:4,padding:'4px 12px',fontWeight:500,cursor:'pointer',color:'#2d6cdf'}} onClick={onClose}>Đóng</button>
         {(!reviews || reviews.length === 0) ? (
-          <p>Chưa có đánh giá nào.</p>
+          <div style={{textAlign: 'center', padding: '40px', background: '#f9fafb', borderRadius: '8px', color: '#6b7280'}}>
+            <div style={{fontSize: '3rem', marginBottom: '12px'}}>📝</div>
+            <p>Chưa có đánh giá nào</p>
+          </div>
         ) : (
-          <ul style={{listStyle:'none',padding:0}}>
-            {reviews.map((r, idx) => (
-              <li key={r.reviewId || idx} style={{borderBottom:'1px solid #eee',marginBottom:8,paddingBottom:8}}>
-                <div><b>Điểm:</b> {r.rating} ⭐</div>
-                <div><b>Nội dung:</b> {(!r.comment || r.comment === 'string') ? 'Không có comment' : r.comment}</div>
-                <div style={{fontSize:12,color:'#888'}}>{r.createdAt ? new Date(r.createdAt).toLocaleDateString('vi-VN') : ''}</div>
-              </li>
+          <div style={{maxHeight: '400px', overflowY: 'auto'}}>
+            {reviews.map((review, index) => (
+              <div key={review.reviewId || index} style={{
+                background: '#fff',
+                border: '1px solid #e5e7eb',
+                borderRadius: '12px',
+                padding: '16px',
+                marginBottom: '12px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px'}}>
+                  <div>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px'}}>
+                      <div style={{display: 'flex', gap: '2px'}}>
+                        {Array.from({length: 5}, (_, i) => (
+                          <span key={i} style={{color: i < review.rating ? '#f59e0b' : '#e5e7eb', fontSize: 16}}>★</span>
+                        ))}
+                      </div>
+                      <span style={{fontWeight: '600', color: '#374151'}}>
+                        {review.rating}/5 sao
+                      </span>
+                    </div>
+                    <div style={{fontSize: '0.85rem', color: '#6b7280'}}>
+                      Bởi: Ẩn danh • {review.createdAt ? new Date(review.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
+                    </div>
+                  </div>
+                </div>
+                <div style={{
+                  background: '#f9fafb',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb',
+                  fontSize: '0.95rem',
+                  color: '#374151',
+                  lineHeight: '1.5'
+                }}>
+                  {review.comment && review.comment.trim() !== ''
+                    ? `"${review.comment}"`
+                    : <span style={{color:'#9ca3af'}}>Không có nhận xét nào.</span>
+                  }
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>

@@ -797,7 +797,6 @@ const getStageDotColor = (status) => {
                       } else {
                         icon = '⏳'; iconColor = '#bdc3c7';
                       }
-                      // Progress bar màu động
                       const progressPercent = stage.progressPercentage ?? 0;
                       return (
                         <div key={stage.stageId} className="timeline-stage-card" style={{
