@@ -364,7 +364,7 @@ function Payment() {
             textAlign: 'center'
           }}>
             <h3 style={{color: '#2e7d32', margin: '0 0 8px 0'}}>
-              Gói hiện tại: {currentMembership.membershipPackage?.name || 'N/A'}
+              Gói hiện tại: {currentMembership.membershipPackage?.name || currentMembership.membershipPackageName || 'N/A'}
             </h3>
             <p style={{margin: '0', color: '#555'}}>
               Hết hạn: {currentMembership.endDate ? new Date(currentMembership.endDate).toLocaleDateString('vi-VN') : 'N/A'}
