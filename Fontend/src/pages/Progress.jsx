@@ -776,75 +776,102 @@ const getStageDotColor = (status) => {
           <div className="tab-content">
             {activeTab === 'overview' && (
               <div className="overview-content">
-                <h3>🎯 Mục tiêu của bạn</h3>
-                {/* Hiển thị các giai đoạn tiến trình lên đầu */}
+                <h3>🎯 Mục tiêu của bạn</h3>               
                 <div style={{ marginTop: 0 }}>
-                  <h3>Các giai đoạn thực hiện</h3>
+                  <h3 style={{ marginBottom: 24 }}>Các giai đoạn thực hiện</h3>
                   {stages.length === 0 && (
                     <div style={{ color: '#888', margin: '16px 0' }}>Chưa có dữ liệu tiến trình.</div>
                   )}
-                  {stages.map(stage => (
-                    <div key={stage.stageId} style={{
-                      border: '1px solid #e0e0e0',
-                      borderRadius: 8,
-                      marginBottom: 16,
-                      background: '#fff',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
-                    }}>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: '12px 16px',
+                  <div className="timeline-stages">
+                    {stages.map((stage, idx) => {
+                      // Icon trạng thái
+                      let icon, iconColor;
+                      if (stage.status === 'completed') {
+                        icon = '✔️'; iconColor = '#2ecc40';
+                      } else if (stage.status === 'active') {
+                        icon = '🔥'; iconColor = '#3498db';
+                      } else if (stage.status === 'inactive') {
+                        icon = '⏸️'; iconColor = '#f1c40f';
+                      } else if (stage.status === 'cancelled') {
+                        icon = '❌'; iconColor = '#e74c3c';
+                      } else {
+                        icon = '⏳'; iconColor = '#bdc3c7';
+                      }
+                      // Progress bar màu động
+                      const progressPercent = stage.progressPercentage ?? 0;
+                      return (
+                        <div key={stage.stageId} className="timeline-stage-card" style={{
+                          position: 'relative',
+                          border: 'none',
+                          borderRadius: 16,
+                          marginBottom: 32,
+                          background: expandedStage === stage.stageId ? 'linear-gradient(90deg,#eaf6ff 60%,#f6fcfa 100%)' : '#fff',
+                          boxShadow: expandedStage === stage.stageId ? '0 4px 16px rgba(44,62,80,0.10)' : '0 2px 8px rgba(0,0,0,0.03)',
+                          transition: 'box-shadow 0.2s',
                           cursor: 'pointer',
-                          background: expandedStage === stage.stageId ? '#f6fcfa' : '#f9f9f9',
-                          borderBottom: expandedStage === stage.stageId ? '1px solid #b2f5ea' : '1px solid #e0e0e0'
+                          opacity: stage.status === 'pending' ? 0.7 : 1,
+                          borderLeft: `8px solid ${iconColor}`
                         }}
                         onClick={() => setExpandedStage(expandedStage === stage.stageId ? null : stage.stageId)}
-                      >
-                        <span style={{
-                          width: 12,
-                          height: 12,
-                          borderRadius: '50%',
-                          background: getStageDotColor(stage.status),
-                          marginRight: 12
-                        }}></span>
-                        <strong style={{ fontSize: 16 }}>Giai đoạn {stage.stageNumber}: </strong>
-                        <span style={{ marginLeft: 8, color: '#666' }}>
-                          {getStageStatusLabel(stage.status)}
-                        </span>
-                        <span style={{ marginLeft: 16, fontSize: 18 }}>{expandedStage === stage.stageId ? '▼' : '▶'}</span>
-                      </div>
-                      {expandedStage === stage.stageId && (
-                        <div style={{ padding: '16px', background: '#f6fcfa', borderTop: '1px solid #b2f5ea' }}>
-                          <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-                            <div>
-                              <span style={{ fontWeight: 500 }}>Ngày bắt đầu:</span> {stage.startDate}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', padding: '18px 24px 10px 24px' }}>
+                            <span style={{ fontSize: 32, marginRight: 18, color: iconColor }}>{icon}</span>
+                            <div style={{ flex: 1 }}>
+                              <strong style={{ fontSize: 18, color: '#222' }}>Giai đoạn {stage.stageNumber}: </strong>
+                              <span style={{ marginLeft: 10, color: iconColor, fontWeight: 500 }}>{getStageStatusLabel(stage.status)}</span>
+                              <div style={{ marginTop: 8, width: '100%' }}>
+                                <div style={{
+                                  height: 10,
+                                  borderRadius: 5,
+                                  background: '#e0e0e0',
+                                  overflow: 'hidden',
+                                  position: 'relative',
+                                }}>
+                                  <div style={{
+                                    width: `${progressPercent}%`,
+                                    height: '100%',
+                                    background: `linear-gradient(90deg,${iconColor} 60%,#fff 100%)`,
+                                    transition: 'width 0.6s',
+                                    boxShadow: progressPercent === 100 ? '0 0 8px #2ecc40' : undefined
+                                  }}></div>
+                                </div>
+                                <span style={{ fontSize: 13, color: '#666', marginLeft: 2 }}>{progressPercent}% hoàn thành</span>
+                              </div>
                             </div>
-                            <div>
-                              <span style={{ fontWeight: 500 }}>Ngày kết thúc:</span> {stage.endDate}
-                            </div>
-                            <div>
-                              <span style={{ fontWeight: 500 }}>Mục tiêu số điếu:</span> {stage.targetCigaretteCount} điếu/ngày
-                            </div>
-                            <div>
-                              <span style={{ fontWeight: 500 }}>Hoàn thành:</span> {stage.progressPercentage ?? 0}%
-                            </div>
+                            <span style={{ marginLeft: 18, fontSize: 22 }}>{expandedStage === stage.stageId ? '▼' : '▶'}</span>
                           </div>
-                          <div style={{ marginTop: 12 }}>
-                            <span style={{ fontWeight: 500 }}>Lời khuyên của Coach:</span>
-                            <div style={{ background: '#eaf6ff', padding: 8, borderRadius: 4, marginTop: 4 }}>{stage.advice}</div>
-                          </div>
+                          {expandedStage === stage.stageId && (
+                            <div style={{ padding: '18px 32px 18px 64px', background: '#f6fcfa', borderTop: `2px solid ${iconColor}` }}>
+                              <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', marginBottom: 12 }}>
+                                <div>
+                                  <span style={{ fontWeight: 500 }}>Ngày bắt đầu:</span> {stage.startDate}
+                                </div>
+                                <div>
+                                  <span style={{ fontWeight: 500 }}>Ngày kết thúc:</span> {stage.endDate}
+                                </div>
+                                <div>
+                                  <span style={{ fontWeight: 500 }}>Mục tiêu số điếu:</span> {stage.targetCigaretteCount} điếu/ngày
+                                </div>
+                                <div>
+                                  <span style={{ fontWeight: 500 }}>Hoàn thành:</span> {progressPercent}%
+                                </div>
+                              </div>
+                              <div style={{ marginTop: 8 }}>
+                                <span style={{ fontWeight: 500 }}>Lời khuyên của Coach:</span>
+                                <div style={{ background: '#eaf6ff', padding: 10, borderRadius: 6, marginTop: 4, fontStyle: 'italic', color: '#2d5fa7' }}>{stage.advice}</div>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                      );
+                    })}
+                  </div>
                 </div>
 
-                {/* Thêm form khai báo hằng ngày */}
+                
                 <DailyDeclarationForm />
 
-                {/* Hiển thị lịch sử khai báo hàng ngày */}
+                
                 <DailyLogsHistory />
               </div>
             )}
