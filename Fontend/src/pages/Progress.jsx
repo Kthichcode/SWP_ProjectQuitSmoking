@@ -11,6 +11,8 @@ import PlanStages from './PlanStages';
 import DailyDeclarationForm from '../components/DailyDeclarationForm';
 import '../assets/CSS/Progress.css';
 
+import DailyLogsHistory from './DailyLogsHistory';
+
 const getSelectionStorageKey = (userId) => `selectionId_${userId}`;
 
 function Progress() {
@@ -744,6 +746,9 @@ function Progress() {
                 <h3>🎯 Mục tiêu của bạn</h3>
                 {/* Thêm form khai báo hằng ngày */}
                 <DailyDeclarationForm />
+
+                {/* Hiển thị lịch sử khai báo hàng ngày */}
+                <DailyLogsHistory />
 
                 {/* Hiển thị các giai đoạn tiến trình */}
                 <div style={{ marginTop: 32 }}>
