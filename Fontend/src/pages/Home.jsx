@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { MdTimeline } from 'react-icons/md';
+import { FaHeartbeat } from 'react-icons/fa';
+import { BiTimeFive } from 'react-icons/bi';
 import '../assets/CSS/Home.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -175,7 +178,7 @@ function Home() {
           <div className="box">
             <img src="/src/assets/img1/android-chrome-192x192.png" alt="Tự do không khói thuốc" className="icon" />
             <h3>Tự do không khói thuốc</h3>
-            <p>Hơn 10,000+ người đã thành công cai nghiện thuốc lá với nền tảng của chúng tôi.</p>
+            <p>Nhiều người đã tham gia và nhận được sự hỗ trợ từ nền tảng của chúng tôi.</p>
           </div>
         </div>
       </div>
@@ -184,13 +187,24 @@ function Home() {
         <p>Nền tảng của chúng tôi cung cấp những công cụ và hỗ trợ thiết thực để giúp bạn từng bước cai nghiện thuốc lá thành công.</p>
         <div className="features">
           {[
-            { icon: 'progress.png', title: 'Theo dõi tiến trình', desc: 'Ghi lại và xem quá trình cai nghiện với các thống kê trực quan.' },
-            { icon: 'health.png', title: 'Cải thiện sức khỏe', desc: 'Xem những lợi ích sức khỏe và thay đổi tích cực sau khi bỏ thuốc.' },
-            { icon: 'time.png', title: 'Đếm thời gian thực', desc: 'Theo dõi chính xác thời gian bạn đã không hút thuốc và đạt được các cột mốc.' },
-            { icon: 'save-money.png', title: 'Tiết kiệm chi phí', desc: 'Tính toán số tiền bạn đã tiết kiệm được kể từ khi bỏ thuốc.' },
+            {
+              icon: <MdTimeline size={48} color="#1976d2" style={{ marginBottom: 12 }} />,
+              title: 'Theo dõi tiến trình',
+              desc: 'Ghi lại và xem quá trình cai nghiện với các thống kê trực quan.'
+            },
+            {
+              icon: <FaHeartbeat size={48} color="#d81b60" style={{ marginBottom: 12 }} />,
+              title: 'Cải thiện sức khỏe',
+              desc: 'Xem những lợi ích sức khỏe và thay đổi tích cực sau khi bỏ thuốc.'
+            },
+            {
+              icon: <BiTimeFive size={48} color="#43a047" style={{ marginBottom: 12 }} />,
+              title: 'Đếm thời gian thực',
+              desc: 'Theo dõi chính xác thời gian bạn đã không hút thuốc và đạt được các cột mốc.'
+            }
           ].map(f => (
             <div className="feature-box" key={f.title}>
-              <img src={`/src/assets/img/${f.icon}`} alt={f.title} />
+              {f.icon}
               <h4>{f.title}</h4>
               <p>{f.desc}</p>
             </div>
@@ -304,21 +318,42 @@ function Home() {
             <p>Đang tải...</p>
           ) : validBlogs.length > 0 ? (
             validBlogs.slice(0, 6).map(blog => (
-              <div className="blog-card" key={blog.id || blog._id}>
+              <div className="blog-card" key={blog.id || blog._id} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div
                   className="blog-card-image"
                   style={{
-                    backgroundImage: `url(${blog.coverImage || blog.image || '/default-image.jpg'})`
+                    backgroundImage: `url(${blog.coverImage || blog.image || '/default-image.jpg'})`,
+                    cursor: 'pointer'
                   }}
+                  onClick={() => handleReadMore(blog)}
+                  title="Xem chi tiết bài viết"
                 ></div>
-                <div className="blog-card-content">
-                  <h4 className="blog-card-title">{blog.title || 'Không có tiêu đề'}</h4>
-                  <p className="blog-card-summary">
-                    {blog.content?.slice(0, 100) || 'Không có nội dung.'}
+                <div className="blog-card-content" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                  <h4
+                    className="blog-card-title"
+                    style={{ cursor: 'pointer', marginBottom: 6, transition: 'text-decoration 0.15s' }}
+                    onClick={() => handleReadMore(blog)}
+                    title="Xem chi tiết bài viết"
+                    onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+                    onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
+                  >
+                    {blog.title || 'Không có tiêu đề'}
+                  </h4>
+                  <p className="blog-card-summary" style={{ marginBottom: 'auto' }}>
+                    {(() => {
+                      const content = blog.content || '';
+                      if (!content) return 'Không có nội dung.';
+                      if (content.length <= 100) return content;
+                      let preview = content.slice(0, 100);
+                      const lastSpace = preview.lastIndexOf(' ');
+                      if (lastSpace > 0) preview = preview.slice(0, lastSpace);
+                      return preview + '...';
+                    })()}
                   </p>
                   <span
                     className="blog-card-readmore"
                     onClick={() => handleReadMore(blog)}
+                    style={{ alignSelf: 'flex-end', marginTop: 16, cursor: 'pointer' }}
                   >
                     Đọc tiếp →
                   </span>

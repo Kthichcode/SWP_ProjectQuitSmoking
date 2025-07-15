@@ -157,6 +157,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  box-shadow: -1px 1px 5px 3px;
 }
 
 .messages-container .messages-chat-header {

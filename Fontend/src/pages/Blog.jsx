@@ -147,11 +147,20 @@ export default function Blog() {
             <p className="blog-subtitle">Khám phá các bài viết, câu chuyện thành công và lời khuyên từ chuyên gia</p>
 
             <div className="blog-filter-bar">
-                <input type="text" placeholder="Tìm kiếm bài viết..." className="blog-search" />
+                
                 <div className="blog-tags">
                     <button className={`tag-btn${!selectedCategoryId ? ' active' : ''}`} onClick={() => setSelectedCategoryId(null)}>Tất cả</button>
                     {categories.map(cat => (
-                        <button key={cat.id} className={`tag-btn${selectedCategoryId === cat.id ? ' active' : ''}`} onClick={() => setSelectedCategoryId(cat.id)}>{cat.name}</button>
+                        <button
+                          key={cat.id}
+                          className={`tag-btn${selectedCategoryId === cat.id ? ' active' : ''}`}
+                          onClick={() => {
+                            setSelectedCategoryId(cat.id);
+                            setCurrentPage(1); // Reset về trang đầu tiên khi đổi danh mục
+                          }}
+                        >
+                          {cat.name}
+                        </button>
                     ))}
                 </div>
             </div>
@@ -165,7 +174,62 @@ export default function Blog() {
                 margin: '24px 0'
             }}>
                 {loading ? <p>Đang tải...</p> : currentBlogs.map(blog => (
-                    <BlogCard key={blog.id || blog._id} blog={blog} onReadMore={handleReadMore} hasMembership={hasMembership()} />
+                    <div className="blog-card" key={blog.id || blog._id} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <div
+                            className="blog-card-image"
+                            style={{
+                                backgroundImage: `url(${blog.coverImage || blog.image || '/default-image.jpg'})`,
+                                cursor: 'pointer'
+                            }}
+                            onClick={() => handleReadMore(blog)}
+                            title="Xem chi tiết bài viết"
+                        ></div>
+                        
+                        <div className="blog-card-content" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                            <div style={{
+                                alignSelf: 'flex-start',
+                                background: '#e3f2fd',
+                                color: '#1976d2',
+                                fontWeight: 600,
+                                fontSize: '0.85rem',
+                                borderRadius: 12,
+                                padding: '3px 12px',
+                                marginBottom: 8,
+                                letterSpacing: 0.2,
+                                boxShadow: '0 1px 4px rgba(25, 118, 210, 0.07)'
+                            }}>
+                                {blog.categoryName || blog.category?.name || 'Không rõ danh mục'}
+                            </div>
+                            <h4
+                                className="blog-card-title"
+                                style={{ cursor: 'pointer', marginBottom: 6, transition: 'text-decoration 0.15s' }}
+                                onClick={() => handleReadMore(blog)}
+                                title="Xem chi tiết bài viết"
+                                onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+                                onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
+                            >
+                                {blog.title || 'Không có tiêu đề'}
+                            </h4>
+                            <p className="blog-card-summary" style={{ marginBottom: 'auto' }}>
+                                {(() => {
+                                    const content = blog.content || '';
+                                    if (!content) return 'Không có nội dung.';
+                                    if (content.length <= 100) return content;
+                                    let preview = content.slice(0, 100);
+                                    const lastSpace = preview.lastIndexOf(' ');
+                                    if (lastSpace > 0) preview = preview.slice(0, lastSpace);
+                                    return preview + '...';
+                                })()}
+                            </p>
+                            <span
+                                className="blog-card-readmore"
+                                onClick={() => handleReadMore(blog)}
+                                style={{ alignSelf: 'flex-end', marginTop: 16, cursor: 'pointer' }}
+                            >
+                                Đọc tiếp →
+                            </span>
+                        </div>
+                    </div>
                 ))}
             </div>
 
