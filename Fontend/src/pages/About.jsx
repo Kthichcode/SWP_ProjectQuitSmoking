@@ -1,7 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../assets/CSS/About.css'; 
 
 const About = () => {
+  const [coaches, setCoaches] = useState([]);
+
   useEffect(() => {
     const handlePageShow = (event) => {
       if (event.persisted || performance.getEntriesByType("navigation")[0]?.type === "back_forward") {
@@ -14,6 +16,20 @@ const About = () => {
       window.removeEventListener('pageshow', handlePageShow);
     };
   }, []);
+
+  useEffect(() => {
+    fetch('http://localhost:5175/api/coach/getAllCoachProfiles')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === 'success' && Array.isArray(data.data)) {
+          setCoaches(data.data);
+        }
+      })
+      .catch((err) => {
+        // Có thể xử lý lỗi ở đây nếu cần
+      });
+  }, []);
+
   return (
     <div className="about-container">
       <section className="intro">
@@ -57,19 +73,69 @@ const About = () => {
 
       <section className="team">
         <h3>Đội ngũ của chúng tôi</h3>
-        <div className="team-grid">
-          <div className="member">
-            <h4>TS. Nguyễn Văn A</h4>
-            <p>Bác sĩ nội trú & Quản lý Y tế</p>
-          </div>
-          <div className="member">
-            <h4>KS. Trần Thị B</h4>
-            <p>Kỹ sư dữ liệu & Chuyên gia công nghệ</p>
-          </div>
-          <div className="member">
-            <h4>ThS. Lê Văn C</h4>
-            <p>Chuyên gia giáo dục hành vi & tâm lý</p>
-          </div>
+        <div className="team-grid" style={{ display: 'flex', gap: 32, justifyContent: 'center', flexWrap: 'wrap', marginTop: 24 }}>
+          {coaches.length === 0 ? (
+            <div>Đang tải dữ liệu huấn luyện viên...</div>
+          ) : (
+            coaches
+              .slice(0, 3)
+              .map((coach) => (
+                <div
+                  className="member coach-card"
+                  key={coach.userId}
+                  style={{
+                    background: '#fff',
+                    borderRadius: 16,
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+                    padding: 24,
+                    minWidth: 220,
+                    maxWidth: 260,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-8px) scale(1.03)';
+                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.13)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)';
+                  }}
+                >
+                  {coach.imageUrl ? (
+                    <img
+                      src={coach.imageUrl.startsWith('http') ? coach.imageUrl : `data:image/webp;base64,${coach.imageUrl}`}
+                      alt={coach.fullName || 'Coach'}
+                      className="coach-avatar"
+                      style={{ width: 90, height: 90, borderRadius: '50%', objectFit: 'cover', marginBottom: 12, border: '3px solid #4caf50' }}
+                      onError={e => {
+                        e.target.onerror = null;
+                        e.target.style.display = 'none';
+                        const fallback = document.createElement('div');
+                        fallback.className = 'coach-avatar-placeholder';
+                        fallback.style.cssText = 'width:90px;height:90px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:40px;border:3px solid #bdbdbd;';
+                        fallback.innerHTML = '<span role="img" aria-label="avatar">👤</span>';
+                        e.target.parentNode.insertBefore(fallback, e.target.nextSibling);
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="coach-avatar-placeholder"
+                      style={{ width: 90, height: 90, borderRadius: '50%', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: 40, border: '3px solid #bdbdbd' }}
+                    >
+                      <span role="img" aria-label="avatar">👤</span>
+                    </div>
+                  )}
+                  <h4 style={{ margin: '8px 0 4px', fontSize: 20, color: '#222', fontWeight: 600 }}>{coach.fullName}</h4>
+                  <div style={{ color: '#888', fontSize: 15, marginBottom: 6 }}>{coach.specialization || 'Chuyên môn chưa cập nhật'}</div>
+                  {/* Không hiển thị rating */}
+                </div>
+              ))
+          )}
         </div>
       </section>
 
