@@ -4,6 +4,14 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './MakePlans.css';
 import axiosInstance from '../../../axiosInstance';
+
+// Helper to get local date string (yyyy-MM-dd) in local timezone
+function toLocalDateString(date) {
+  if (!date) return '';
+  const d = new Date(date);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().split('T')[0];
+}
 function MakePlans() {
   // ...existing code...
   const [clients, setClients] = useState([]);
@@ -447,13 +455,13 @@ function MakePlans() {
                                     <div style={{display:'flex',alignItems:'center',gap:8}}>
                                       <DatePicker
                                         selected={stageForm.startDate ? new Date(stageForm.startDate) : new Date()}
-                                        onChange={date => setStageForm(f => ({...f,startDate: date ? date.toISOString().split('T')[0] : ''}))}
+                                        onChange={date => setStageForm(f => ({...f,startDate: date ? toLocalDateString(date) : ''}))}
                                         minDate={new Date()}
                                         dateFormat="yyyy-MM-dd"
                                         disabled={editingStage.viewOnly}
                                         customInput={<input style={{padding:'6px 12px',borderRadius:6,border:'1px solid #ccc'}} />}
                                       />
-                                      <button type="button" style={{border:'none',background:'none',cursor:'pointer'}} onClick={() => setStageForm(f => ({...f,startDate: new Date().toISOString().split('T')[0]}))} disabled={editingStage.viewOnly}>
+                                      <button type="button" style={{border:'none',background:'none',cursor:'pointer'}} onClick={() => setStageForm(f => ({...f,startDate: toLocalDateString(new Date())}))} disabled={editingStage.viewOnly}>
                                         <span role="img" aria-label="calendar">📅</span>
                                       </button>
                                     </div>
@@ -463,13 +471,13 @@ function MakePlans() {
                                     <div style={{display:'flex',alignItems:'center',gap:8}}>
                                       <DatePicker
                                         selected={stageForm.endDate ? new Date(stageForm.endDate) : null}
-                                        onChange={date => setStageForm(f => ({...f,endDate: date ? date.toISOString().split('T')[0] : ''}))}
+                                        onChange={date => setStageForm(f => ({...f,endDate: date ? toLocalDateString(date) : ''}))}
                                         minDate={stageForm.startDate ? new Date(stageForm.startDate) : new Date()}
                                         dateFormat="yyyy-MM-dd"
                                         disabled={editingStage.viewOnly}
                                         customInput={<input style={{padding:'6px 12px',borderRadius:6,border:'1px solid #ccc'}} />}
                                       />
-                                      <button type="button" style={{border:'none',background:'none',cursor:'pointer'}} onClick={() => setStageForm(f => ({...f,endDate: stageForm.startDate || new Date().toISOString().split('T')[0]}))} disabled={editingStage.viewOnly}>
+                                      <button type="button" style={{border:'none',background:'none',cursor:'pointer'}} onClick={() => setStageForm(f => ({...f,endDate: stageForm.startDate || toLocalDateString(new Date())}))} disabled={editingStage.viewOnly}>
                                         <span role="img" aria-label="calendar">📅</span>
                                       </button>
                                     </div>
