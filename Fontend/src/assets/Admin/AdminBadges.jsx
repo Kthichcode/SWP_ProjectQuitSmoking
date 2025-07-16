@@ -257,9 +257,36 @@ const AdminBadges = () => {
                   <td style={{ textAlign: 'center' }}>{badge.score}</td>
                   <td style={{ fontSize: 28, textAlign: 'center' }}>
                     {badge.iconUrl ? (
-                      <img src={badge.iconUrl} alt="icon" style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 8, border: '1px solid #e5e7eb', boxShadow: '0 1px 4px #0001' }} />
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        background: 'radial-gradient(circle, #fff 60%, #e0e7ff 100%)',
+                        border: '2px solid #e3e72bff',
+                        boxShadow: '0 1px 4px #6366f11a',
+                        overflow: 'hidden',
+                      }}>
+                        <img src={badge.iconUrl} alt="icon" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: '50%' }} />
+                      </span>
                     ) : (
-                      <span title="Không có ảnh" style={{ fontSize: 32, color: '#a3a3a3' }}>{iconOptions[badge.icon] || '🏅'}</span>
+                      <span title="Không có ảnh" style={{
+                        display: 'inline-block',
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        background: 'radial-gradient(circle, #fff 60%, #e0e7ff 100%)',
+                        border: '2px solid #080806ff',
+                        boxShadow: '0 1px 4px #6366f11a',
+                        fontSize: 22,
+                        color: '#a3a3a3',
+                        lineHeight: '32px',
+                        textAlign: 'center',
+                        verticalAlign: 'middle',
+                        position: 'relative',
+                      }}>{iconOptions[badge.icon] || '🏅'}</span>
                     )}
                   </td>
                   <td>
