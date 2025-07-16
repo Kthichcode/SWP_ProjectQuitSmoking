@@ -231,37 +231,14 @@ const Profile = () => {
                   <div><span className="icon-home" /> <b>Địa chỉ:</b> {user.address || <span style={{color:'#888'}}>Chưa cập nhật</span>}</div>
                   <div className="profile-badges-card" style={{ marginTop: 18 }}>
                     <div className="profile-info-title" style={{ color: '#1976d2' }}>Huy hiệu cá nhân</div>
-                    <div className="profile-badges-list" style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                      gap: '18px 10px',
-                      alignItems: 'center',
-                      marginTop: 8
-                    }}>
+                    <div className="profile-badges-list">
                       {badges === undefined ? (
                         <div>Đang tải huy hiệu...</div>
                       ) : badges.length === 0 ? (
                         <div>Chưa có huy hiệu nào.</div>
                       ) : (
                         badges.map(badge => (
-                          <div key={badge.id} className="badge-item" style={{display:'flex',alignItems:'center',gap:10}}>
-                            {badge.iconUrl && (
-                              <img
-                                src={badge.iconUrl}
-                                alt={badge.badgeName}
-                                style={{
-                                  width: 34,
-                                  height: 34,
-                                  objectFit: 'cover',
-                                  marginRight: 10,
-                                  borderRadius: '50%',
-                                  border: '1.5px solid #ffd700',
-                                  boxShadow: '0 2px 8px rgba(33,150,243,0.13)',
-                                  background: 'linear-gradient(135deg,#fffbe6 60%,#ffe082 100%)',
-                                  padding: 2
-                                }}
-                              />
-                            )}
+                          <div key={badge.id} className="badge-item">
                             <div className="badge-title">{badge.badgeName}</div>
                           </div>
                         ))

@@ -33,7 +33,6 @@ const DailyDeclarationForm = () => {
   const [error, setError] = useState('');
   const [hasInitialInfo, setHasInitialInfo] = useState(true);
   const [checkingInitialInfo, setCheckingInitialInfo] = useState(true);
-  const [cigaretteError, setCigaretteError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -58,18 +57,11 @@ const DailyDeclarationForm = () => {
     setLoading(true);
     setError('');
     setSuccess('');
-    setCigaretteError('');
-    // Validate smokeCount
-    if (smoked === 'Có' && Number(cigarettes) <= 0) {
-      setCigaretteError('Vui lòng nhập số điếu thuốc đã hút lớn hơn 0.');
-      setLoading(false);
-      return;
-    }
     try {
       const token = localStorage.getItem('token');
       const res = await axios.post('http://localhost:5175/api/smoking-logs', {
         smoked: smoked === 'Có',
-        smokeCount: smoked === 'Có' ? Number(cigarettes) : 0,
+        smokeCount: Number(cigarettes),
         cravingLevel: craving,
         healthStatus: health,
         logDate: date,
@@ -125,15 +117,7 @@ const DailyDeclarationForm = () => {
           <div className="form-row">
             <div>
               <label>Số điếu thuốc đã hút</label>
-              <input
-                type="number"
-                min={smoked === 'Có' ? 1 : 0}
-                value={smoked === 'Có' ? cigarettes : 0}
-                onChange={e => setCigarettes(e.target.value)}
-                required
-                disabled={smoked !== 'Có'}
-              />
-              {cigaretteError && <div className="error-message">{cigaretteError}</div>}
+              <input type="number" min={0} value={cigarettes} onChange={e => setCigarettes(e.target.value)} required />
             </div>
             <div>
               <label>Mức độ thèm thuốc</label>

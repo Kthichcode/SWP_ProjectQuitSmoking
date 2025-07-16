@@ -125,8 +125,6 @@ function MakePlans() {
       return c;
     }));
   };
-
-  // Hủy chỉnh sửa
   const handleCancel = () => {
     if (selectedClient && selectedClient.planStages && selectedClient.planStages[planForm.stage - 1]) {
       setPlanForm({ ...selectedClient.planStages[planForm.stage - 1], stage: planForm.stage });
@@ -138,8 +136,7 @@ function MakePlans() {
 
   return (
     <div className="makeplans-container">
-      <h2>Kế hoạch cai thuốc cho khách hàng</h2>
-      {/* Form tạo kế hoạch mới */}
+      <h2>Kế hoạch cai thuốc cho khách hàng</h2>     
       <div className="create-plan-form" style={{marginBottom:32, padding:16, border:'1px solid #e3eefd', borderRadius:8, background:'lightgreen'}}>
         <h4>Tạo kế hoạch mới</h4>
         <div style={{display:'flex', gap:16, flexWrap:'wrap'}}>
@@ -209,7 +206,7 @@ function MakePlans() {
             setCreatePlanError('');
             setCreatePlanLoading(true);
             try {
-              // memberId có thể là client.memberId hoặc client.id, ưu tiên memberId nếu có
+            
               const memberId = Number(createPlanForm.memberId);
               await axiosInstance.post('/api/quitplan/create', {
                 memberId,
@@ -219,7 +216,7 @@ function MakePlans() {
               });
               setCreatePlanError('Tạo kế hoạch thành công!');
               setCreatePlanForm({ memberId: '', reasonToQuit: '', totalStages: 3, goal: '' });
-              // Cập nhật lại danh sách kế hoạch cho thành viên vừa tạo
+              
               try {
                 const res = await axiosInstance.get('http://localhost:5175/api/quitplan/coach');
                 let plans = [];
@@ -233,7 +230,7 @@ function MakePlans() {
                 });
                 setPlansByMember(grouped);
               } catch (err) {
-                // Nếu lỗi thì không cập nhật
+            
               }
             } catch (err) {
               setCreatePlanError('Tạo kế hoạch thất bại!');
@@ -243,7 +240,7 @@ function MakePlans() {
           }}
         >{createPlanLoading ? 'Đang tạo...' : 'Tạo kế hoạch'}</button>
       </div>
-      {/* ...existing code... */}
+     
       <div className="makeplans-content" style={{gap: '2.5rem'}}>
         <div className="makeplans-list" style={{boxShadow: '0 4px 16px rgba(33,150,243,0.07)', border: 'none', padding: '2rem 1.5rem', minHeight: 480}}>
           <h4 style={{fontSize:'1.15rem',marginBottom:'1.5rem',color:'#1976d2',letterSpacing:0.2}}>Danh sách thành viên</h4>
@@ -382,16 +379,15 @@ function MakePlans() {
                               {plan.stages.map(stage => (
                                 <li key={stage.stageId} style={{marginBottom:6}}>
                                   <span style={{fontWeight:500}}>Giai đoạn {stage.stageNumber}</span>
-                                  <button style={{marginLeft:10,padding:'2px 10px',borderRadius:6,border:'1px solid #2d6cdf',background:'#fff',color:'#2d6cdf',fontWeight:600,cursor:'pointer',fontSize:'0.96rem'}} onClick={() => {
-                                    setEditingStage(stage);
-                                    setStageForm({
-                                      startDate: stage.startDate || '',
-                                      endDate: stage.endDate || '',
-                                      targetCigaretteCount: stage.targetCigaretteCount || '',
-                                      advice: stage.advice || ''
-                                    });
-                                    setStageUpdateError('');
-                                  }}>Cập nhật</button>
+                                  {/* Chỉ hiện nút 'Cập nhật' khi đang ở chế độ xem (viewOnly: true) */}
+                                  {editingStage && editingStage.viewOnly && editingStage.stageId === stage.stageId && false && (
+                                    <button
+                                      style={{marginLeft:8,padding:'2px 10px',borderRadius:6,border:'1px solid #2d6cdf',background:'#fff',color:'#2d6cdf',fontWeight:600,cursor:'pointer',fontSize:'0.96rem'}}
+                                      onClick={() => {
+                                        setEditingStage(prev => prev ? { ...prev, viewOnly: false } : null);
+                                      }}
+                                    >Cập nhật</button>
+                                  )}
                                   <button style={{marginLeft:8,padding:'2px 10px',borderRadius:6,border:'1px solid #aaa',background:'#eee',color:'#333',fontWeight:600,cursor:'pointer',fontSize:'0.96rem'}} onClick={async () => {
                                     setStageUpdateError('');
                                     try {
@@ -408,6 +404,15 @@ function MakePlans() {
                                       setStageUpdateError('Không lấy được chi tiết giai đoạn!');
                                     }
                                   }}>Xem</button>
+                                  {/* Nếu đang xem (viewOnly), cho phép chuyển sang cập nhật */}
+                                  {editingStage && editingStage.viewOnly && editingStage.stageId === stage.stageId && (
+                                    <button
+                                      style={{marginLeft:8,padding:'2px 10px',borderRadius:6,border:'1px solid #2d6cdf',background:'#fff',color:'#2d6cdf',fontWeight:600,cursor:'pointer',fontSize:'0.96rem'}}
+                                      onClick={() => {
+                                        setEditingStage(prev => prev ? { ...prev, viewOnly: false } : null);
+                                      }}
+                                    >Cập nhật</button>
+                                  )}
                                   <button style={{marginLeft:8,padding:'2px 10px',borderRadius:6,border:'1px solid #e53935',background:'#fff',color:'#e53935',fontWeight:600,cursor:'pointer',fontSize:'0.96rem'}} onClick={async () => {
                                     if (!window.confirm('Bạn có chắc muốn xóa giai đoạn này?')) return;
                                     setStageUpdateError('');
