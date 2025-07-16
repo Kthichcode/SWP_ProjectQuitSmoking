@@ -220,7 +220,7 @@ function Home() {
           <div style={{ color: 'red', textAlign: 'center', margin: '40px 0', fontWeight: 600 }}>{rankingError}</div>
         ) : (
           <div className="ranking-list" style={{ display: 'flex', gap: '32px', justifyContent: 'center', marginBottom: 24 }}>
-            {ranking.slice(0, 4).map((user, i) => {
+            {ranking.slice(0, 3).map((user, i) => {
               let displayName = user.fullName;
               if (!displayName && user.email) {
                 displayName = user.email.replace(/@gmail\.com$/, '');
