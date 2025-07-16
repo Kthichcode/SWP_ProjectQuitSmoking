@@ -128,63 +128,180 @@ const AdminBadges = () => {
   };
 
   return (
-    <div style={{padding:32}}>
-      <h2>Quản lý Huy hiệu</h2>
-      <form onSubmit={handleSubmit} style={{marginBottom:24, display:'flex', alignItems:'center', flexWrap:'wrap'}}>
-        <input name="name" value={form.name} onChange={handleChange} placeholder="Tên huy hiệu" required style={{marginRight:8}} />
-        <input name="description" value={form.description} onChange={handleChange} placeholder="Mô tả" style={{marginRight:8}} />
-        <input name="condition" value={form.condition} onChange={handleChange} placeholder="Điều kiện đạt (số)" type="number" min="0" style={{marginRight:8}} />
-        <select name="type" value={form.type} onChange={handleChange} style={{marginRight:8}} required>
+    <div style={{ padding: 32, background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)', minHeight: '100vh' }}>
+      <h2 style={{ color: '#3b82f6', marginBottom: 24, fontWeight: 700, fontSize: 32, letterSpacing: 1 }}>Quản lý Huy hiệu</h2>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          marginBottom: 32,
+          display: 'flex',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          background: '#fff',
+          borderRadius: 12,
+          boxShadow: '0 2px 12px #0001',
+          padding: 16,
+          gap: 12
+        }}
+      >
+        <input name="name" value={form.name} onChange={handleChange} placeholder="Tên huy hiệu" required style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8 }} />
+        <input name="description" value={form.description} onChange={handleChange} placeholder="Mô tả" style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8 }} />
+        <input name="condition" value={form.condition} onChange={handleChange} placeholder="Điều kiện đạt (số)" type="number" min="0" style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8, width: 120 }} />
+        <select name="type" value={form.type} onChange={handleChange} style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8, width: 170 }} required>
           <option value="">Chọn loại huy hiệu</option>
           <option value="non-smoking">Không hút thuốc</option>
           <option value="stage-completion">Hoàn thành giai đoạn</option>
         </select>
-        <input name="score" value={form.score} onChange={handleChange} placeholder="Điểm" type="number" min="0" style={{marginRight:8}} />
-        <input name="iconUrl" type="file" accept="image/*" onChange={handleChange} style={{marginRight:8}} />
+        <input name="score" value={form.score} onChange={handleChange} placeholder="Điểm" type="number" min="0" style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8, width: 90 }} />
+        <input name="iconUrl" type="file" accept="image/*" onChange={handleChange} style={{ marginRight: 8 }} />
         {form.iconUrl && (
-          <img src={form.iconUrl} alt="icon preview" style={{width:32, height:32, objectFit:'contain', marginRight:8}} />
+          <img src={form.iconUrl} alt="icon preview" style={{ width: 32, height: 32, objectFit: 'contain', marginRight: 8, borderRadius: 8, border: '1px solid #e5e7eb', boxShadow: '0 1px 4px #0001' }} />
         )}
-        <button type="submit">{editing ? 'Cập nhật' : 'Thêm mới'}</button>
-        {editing && <button type="button" onClick={handleCancel} style={{marginLeft:8}}>Hủy</button>}
+        <button
+          type="submit"
+          style={{
+            background: editing ? '#f59e42' : '#22c55e',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 6,
+            padding: '8px 18px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'background 0.2s',
+            boxShadow: '0 1px 4px #0001',
+          }}
+        >
+          {editing ? 'Cập nhật' : 'Thêm mới'}
+        </button>
+        {editing && (
+          <button
+            type="button"
+            onClick={handleCancel}
+            style={{
+              marginLeft: 8,
+              background: '#e11d48',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              padding: '8px 18px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'background 0.2s',
+              boxShadow: '0 1px 4px #0001',
+            }}
+          >
+            Hủy
+          </button>
+        )}
       </form>
-      {loading ? <div>Đang tải...</div> : (
-        <table border="1" cellPadding="8" style={{width:'100%',background:'#fff'}}>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Tên huy hiệu</th>
-              <th>Mô tả</th>
-              <th>Điều kiện đạt</th>
-              <th>Loại</th>
-              <th>Điểm</th>
-              <th>Icon</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {badges.map(badge => (
-              <tr key={badge.id}>
-                <td>{badge.id}</td>
-                <td>{badge.name}</td>
-                <td>{badge.description}</td>
-                <td>{badge.condition}</td>
-                <td>{badge.type}</td>
-                <td>{badge.score}</td>
-                <td style={{fontSize:24, textAlign:'center'}}>
-                  {badge.iconUrl ? (
-                    <img src={badge.iconUrl} alt="icon" style={{width:32, height:32, objectFit:'contain'}} />
-                  ) : (
-                    <span style={{color:'#ccc'}}>Không có ảnh</span>
-                  )}
-                </td>
-                <td>
-                  <button onClick={() => handleEdit(badge)}>Sửa</button>
-                  <button onClick={() => handleDelete(badge.id)} style={{marginLeft:8}}>Xóa</button>
-                </td>
+      {loading ? (
+        <div style={{ color: '#64748b', fontWeight: 500, fontSize: 18 }}>Đang tải...</div>
+      ) : (
+        <div style={{ overflowX: 'auto' }}>
+          <table
+            border="0"
+            cellPadding="8"
+            style={{
+              width: '100%',
+              background: '#fff',
+              borderRadius: 12,
+              boxShadow: '0 2px 12px #0001',
+              borderCollapse: 'separate',
+              borderSpacing: 0,
+              overflow: 'hidden',
+              marginTop: 8
+            }}
+          >
+            <thead style={{ background: '#f1f5f9' }}>
+              <tr>
+                <th>ID</th>
+                <th>Tên huy hiệu</th>
+                <th>Mô tả</th>
+                <th>Điều kiện đạt</th>
+                <th>Loại</th>
+                <th>Điểm</th>
+                <th>Icon</th>
+                <th>Hành động</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {badges.map((badge, idx) => (
+                <tr
+                  key={badge.id}
+                  style={{
+                    background: idx % 2 === 0 ? '#f8fafc' : '#fff',
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#e0e7ff')}
+                  onMouseLeave={e => (e.currentTarget.style.background = idx % 2 === 0 ? '#f8fafc' : '#fff')}
+                >
+                  <td>{badge.id}</td>
+                  <td style={{ fontWeight: 600 }}>{badge.name}</td>
+                  <td>{badge.description}</td>
+                  <td style={{ textAlign: 'center' }}>{badge.condition}</td>
+                  <td>
+                    <span
+                      style={{
+                        background: badge.type === 'non-smoking' ? '#22d3ee' : '#fbbf24',
+                        color: '#fff',
+                        borderRadius: 12,
+                        padding: '4px 12px',
+                        fontWeight: 600,
+                        fontSize: 14,
+                        boxShadow: '0 1px 4px #0001',
+                      }}
+                    >
+                      {badge.type === 'non-smoking' ? 'Không hút thuốc' : badge.type === 'stage-completion' ? 'Hoàn thành giai đoạn' : badge.type}
+                    </span>
+                  </td>
+                  <td style={{ textAlign: 'center' }}>{badge.score}</td>
+                  <td style={{ fontSize: 28, textAlign: 'center' }}>
+                    {badge.iconUrl ? (
+                      <img src={badge.iconUrl} alt="icon" style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 8, border: '1px solid #e5e7eb', boxShadow: '0 1px 4px #0001' }} />
+                    ) : (
+                      <span title="Không có ảnh" style={{ fontSize: 32, color: '#a3a3a3' }}>{iconOptions[badge.icon] || '🏅'}</span>
+                    )}
+                  </td>
+                  <td>
+                    <button
+                      onClick={() => handleEdit(badge)}
+                      style={{
+                        background: '#3b82f6',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 6,
+                        padding: '6px 14px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        marginRight: 6,
+                        transition: 'background 0.2s',
+                        boxShadow: '0 1px 4px #0001',
+                      }}
+                    >
+                      Sửa
+                    </button>
+                    <button
+                      onClick={() => handleDelete(badge.id)}
+                      style={{
+                        background: '#e11d48',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 6,
+                        padding: '6px 14px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'background 0.2s',
+                        boxShadow: '0 1px 4px #0001',
+                      }}
+                    >
+                      Xóa
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
