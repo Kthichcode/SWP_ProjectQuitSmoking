@@ -238,7 +238,24 @@ const Profile = () => {
                         <div>Chưa có huy hiệu nào.</div>
                       ) : (
                         badges.map(badge => (
-                          <div key={badge.id} className="badge-item">
+                          <div key={badge.id} className="badge-item" style={{display:'flex',alignItems:'center',gap:10}}>
+                            {badge.iconUrl && (
+                              <img
+                                src={badge.iconUrl}
+                                alt={badge.badgeName}
+                                style={{
+                                  width: 34,
+                                  height: 34,
+                                  objectFit: 'cover',
+                                  marginRight: 10,
+                                  borderRadius: '50%',
+                                  border: '1.5px solid #ffd700',
+                                  boxShadow: '0 2px 8px rgba(33,150,243,0.13)',
+                                  background: 'linear-gradient(135deg,#fffbe6 60%,#ffe082 100%)',
+                                  padding: 2
+                                }}
+                              />
+                            )}
                             <div className="badge-title">{badge.badgeName}</div>
                           </div>
                         ))
