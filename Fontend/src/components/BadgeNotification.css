@@ -1,0 +1,91 @@
+/* Thêm các hiệu ứng animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translate(-50%, 20px); }
+  to { transform: translate(-50%, -50%); }
+}
+
+.badge-notification-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  
+  /* Thêm hiệu ứng */
+  animation: 
+    fadeIn 0.3s ease-out,
+    slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  /* Thêm transition cho khi đóng */
+  transition: all 0.3s ease;
+}
+
+/* Thêm class cho khi đóng */
+.badge-notification-container.closing {
+  animation: 
+    fadeIn 0.3s ease-out reverse,
+    slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse;
+}
+
+/* Giữ nguyên các phần còn lại */
+.badge-notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* ... (giữ nguyên các style khác như trước) ... */
+
+.badge-notification-header h3 {
+  color: #2ecc71;
+  margin: 0;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #7f8c8d;
+}
+
+.badge-list {
+  margin: 20px 0;
+}
+
+.badge-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.badge-icon {
+  font-size: 32px;
+  margin-right: 16px;
+}
+
+.badge-info h4 {
+  margin: 0 0 4px 0;
+  color: #2c3e50;
+}
+
+.badge-info p {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 0.9em;
+}

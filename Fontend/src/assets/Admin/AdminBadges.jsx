@@ -147,7 +147,7 @@ const AdminBadges = () => {
         <input name="name" value={form.name} onChange={handleChange} placeholder="Tên huy hiệu" required style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8 }} />
         <input name="description" value={form.description} onChange={handleChange} placeholder="Mô tả" style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8 }} />
         <input name="condition" value={form.condition} onChange={handleChange} placeholder="Điều kiện đạt (số)" type="number" min="0" style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8, width: 120 }} />
-        <select name="type" value={form.type} onChange={handleChange} style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8, width: 170 }} required>
+        <select name="type" value={form.type} onChange={handleChange} style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8, width: 170, color: '#000', background: '#fff' }} required>
           <option value="">Chọn loại huy hiệu</option>
           <option value="non-smoking">Không hút thuốc</option>
           <option value="stage-completion">Hoàn thành giai đoạn</option>
@@ -214,14 +214,14 @@ const AdminBadges = () => {
           >
             <thead style={{ background: '#f1f5f9' }}>
               <tr>
-                <th>ID</th>
-                <th>Tên huy hiệu</th>
-                <th>Mô tả</th>
-                <th>Điều kiện đạt</th>
-                <th>Loại</th>
-                <th>Điểm</th>
-                <th>Icon</th>
-                <th>Hành động</th>
+                <th style={{ minWidth: 40, textAlign: 'center', verticalAlign: 'middle' }}>ID</th>
+                <th style={{ minWidth: 120, textAlign: 'left', verticalAlign: 'middle' }}>Tên huy hiệu</th>
+                <th style={{ minWidth: 180, textAlign: 'left', verticalAlign: 'middle' }}>Mô tả</th>
+                <th style={{ minWidth: 80, textAlign: 'center', verticalAlign: 'middle' }}>Điều kiện đạt</th>
+                <th style={{ minWidth: 120, textAlign: 'center', verticalAlign: 'middle' }}>Loại</th>
+                <th style={{ minWidth: 60, textAlign: 'center', verticalAlign: 'middle' }}>Điểm</th>
+                <th style={{ minWidth: 70, textAlign: 'center', verticalAlign: 'middle' }}>Icon</th>
+                <th style={{ minWidth: 120, textAlign: 'center', verticalAlign: 'middle' }}>Hành động</th>
               </tr>
             </thead>
             <tbody>
@@ -235,11 +235,11 @@ const AdminBadges = () => {
                   onMouseEnter={e => (e.currentTarget.style.background = '#e0e7ff')}
                   onMouseLeave={e => (e.currentTarget.style.background = idx % 2 === 0 ? '#f8fafc' : '#fff')}
                 >
-                  <td>{badge.id}</td>
-                  <td style={{ fontWeight: 600 }}>{badge.name}</td>
-                  <td>{badge.description}</td>
-                  <td style={{ textAlign: 'center' }}>{badge.condition}</td>
-                  <td>
+                  <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{badge.id}</td>
+                  <td style={{ fontWeight: 600, verticalAlign: 'middle' }}>{badge.name}</td>
+                  <td style={{ verticalAlign: 'middle' }}>{badge.description}</td>
+                  <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{badge.condition}</td>
+                  <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                     <span
                       style={{
                         background: badge.type === 'non-smoking' ? '#22d3ee' : '#fbbf24',
@@ -249,13 +249,16 @@ const AdminBadges = () => {
                         fontWeight: 600,
                         fontSize: 14,
                         boxShadow: '0 1px 4px #0001',
+                        display: 'inline-block',
+                        minWidth: 110,
+                        textAlign: 'center',
                       }}
                     >
                       {badge.type === 'non-smoking' ? 'Không hút thuốc' : badge.type === 'stage-completion' ? 'Hoàn thành giai đoạn' : badge.type}
                     </span>
                   </td>
-                  <td style={{ textAlign: 'center' }}>{badge.score}</td>
-                  <td style={{ fontSize: 28, textAlign: 'center' }}>
+                  <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{badge.score}</td>
+                  <td style={{ fontSize: 28, textAlign: 'center', verticalAlign: 'middle' }}>
                     {badge.iconUrl ? (
                       <span style={{
                         display: 'inline-flex',
@@ -268,6 +271,7 @@ const AdminBadges = () => {
                         border: '2px solid #e3e72bff',
                         boxShadow: '0 1px 4px #6366f11a',
                         overflow: 'hidden',
+                        margin: '0 auto',
                       }}>
                         <img src={badge.iconUrl} alt="icon" style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: '50%' }} />
                       </span>
@@ -286,43 +290,46 @@ const AdminBadges = () => {
                         textAlign: 'center',
                         verticalAlign: 'middle',
                         position: 'relative',
+                        margin: '0 auto',
                       }}>{iconOptions[badge.icon] || '🏅'}</span>
                     )}
                   </td>
-                  <td>
-                    <button
-                      onClick={() => handleEdit(badge)}
-                      style={{
-                        background: '#3b82f6',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 6,
-                        padding: '6px 14px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        marginRight: 6,
-                        transition: 'background 0.2s',
-                        boxShadow: '0 1px 4px #0001',
-                      }}
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      onClick={() => handleDelete(badge.id)}
-                      style={{
-                        background: '#e11d48',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 6,
-                        padding: '6px 14px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        transition: 'background 0.2s',
-                        boxShadow: '0 1px 4px #0001',
-                      }}
-                    >
-                      Xóa
-                    </button>
+                  <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
+                      <button
+                        onClick={() => handleEdit(badge)}
+                        style={{
+                          background: '#3b82f6',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 6,
+                          padding: '6px 14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          marginRight: 0,
+                          transition: 'background 0.2s',
+                          boxShadow: '0 1px 4px #0001',
+                        }}
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        onClick={() => handleDelete(badge.id)}
+                        style={{
+                          background: '#e11d48',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 6,
+                          padding: '6px 14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'background 0.2s',
+                          boxShadow: '0 1px 4px #0001',
+                        }}
+                      >
+                        Xóa
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -1,16 +1,18 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import './DailyDeclarationForm.css';
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BadgeNotification from './BadgeNotification';
 
-const today = (() => {
+const getTodayDate = () => {
   const d = new Date();
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
-})();
+};
 
 const cravingLevels = [
   { value: 'LOW', label: 'Ít' },
@@ -18,12 +20,8 @@ const cravingLevels = [
   { value: 'HIGH', label: 'Nhiều' },
 ];
 
-// Nếu bạn có AuthContext, hãy import ở đây
-// import { AuthContext } from '../contexts/AuthContext';
 const DailyDeclarationForm = () => {
-  // Nếu bạn có AuthContext, hãy lấy user ở đây
-  // const { user } = useContext(AuthContext);
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState(new Date());
   const [smoked, setSmoked] = useState('Không');
   const [cigarettes, setCigarettes] = useState(0);
   const [craving, setCraving] = useState('LOW');
@@ -34,6 +32,8 @@ const DailyDeclarationForm = () => {
   const [hasInitialInfo, setHasInitialInfo] = useState(true);
   const [checkingInitialInfo, setCheckingInitialInfo] = useState(true);
   const [cigaretteError, setCigaretteError] = useState('');
+  const [newBadges, setNewBadges] = useState([]);
+  const [showBadgeNotification, setShowBadgeNotification] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,40 +53,53 @@ const DailyDeclarationForm = () => {
     };
     checkInitialInfo();
   }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setSuccess('');
     setCigaretteError('');
+
     if (smoked === 'Có' && Number(cigarettes) <= 0) {
       setCigaretteError('Vui lòng nhập số điếu thuốc đã hút lớn hơn 0.');
       setLoading(false);
       return;
     }
+
     try {
       const token = localStorage.getItem('token');
+      const formattedDate = date.toISOString().split('T')[0];
       const res = await axios.post('http://localhost:5175/api/smoking-logs', {
         smoked: smoked === 'Có',
         smokeCount: smoked === 'Có' ? Number(cigarettes) : 0,
         cravingLevel: craving,
         healthStatus: health,
-        logDate: date,
+        logDate: formattedDate,
         frequency: 'DAILY',
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       let userId = res.data?.userId || res.data?.data?.userId;
       if (!userId) {
         userId = localStorage.getItem('userId');
       }
-      
+
       if (userId) {
         try {
-          await axios.post(`http://localhost:5175/api/member-badge/check-and-award/${userId}`, {}, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          const badgeResponse = await axios.post(
+            `http://localhost:5175/api/member-badge/check-and-award/${userId}`,
+            {},
+            {
+              headers: { Authorization: `Bearer ${token}` }
+            }
+          );
+
+          if (badgeResponse.data.status === 'success' && badgeResponse.data.data?.length > 0) {
+            setNewBadges(badgeResponse.data.data);
+            setShowBadgeNotification(true);
+          }
         } catch (err) {
           console.error('Check and award badge error:', err);
         }
@@ -103,7 +116,7 @@ const DailyDeclarationForm = () => {
   return (
     <div className="daily-declaration-form">
       <h3>✔️ Khai báo hằng ngày</h3>
-      <p className="desc">Ghi nhận tiến trình của bạn hôm nay</p>
+      <p className="desc">Ghi nhận tiến trình của bạn</p>
       {checkingInitialInfo ? (
         <div>Đang kiểm tra thông tin khai báo...</div>
       ) : hasInitialInfo ? (
@@ -111,10 +124,16 @@ const DailyDeclarationForm = () => {
           <div className="form-row">
             <div>
               <label>Ngày</label>
-              <input type="date" value={today} readOnly required />
+              <DatePicker
+                selected={date}
+                onChange={(newDate) => setDate(newDate)}
+                dateFormat="yyyy-MM-dd"
+                className="date-picker"
+                required
+              />
             </div>
             <div>
-              <label>Hôm nay bạn có hút thuốc không?</label>
+              <label>Bạn có hút thuốc không?</label>
               <select value={smoked} onChange={e => setSmoked(e.target.value)}>
                 <option value="Không">Không</option>
                 <option value="Có">Có</option>
@@ -124,7 +143,7 @@ const DailyDeclarationForm = () => {
           <div className="form-row">
             <div>
               <label>Số điếu thuốc đã hút</label>
-               <input
+              <input
                 type="number"
                 min={smoked === 'Có' ? 1 : 0}
                 value={smoked === 'Có' ? cigarettes : 0}
@@ -143,17 +162,30 @@ const DailyDeclarationForm = () => {
           </div>
           <div>
             <label>Tình trạng sức khỏe</label>
-            <textarea value={health} onChange={e => setHealth(e.target.value)} placeholder="Mô tả cảm giác và tình trạng sức khỏe của bạn hôm nay..." />
+            <textarea
+              value={health}
+              onChange={e => setHealth(e.target.value)}
+              placeholder="Mô tả cảm giác và tình trạng sức khỏe của bạn..."
+            />
           </div>
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}
-          <button type="submit" className="btn-main" disabled={loading}>{loading ? 'Đang lưu...' : 'Lưu khai báo hằng ngày'}</button>
+          <button type="submit" className="btn-main" disabled={loading}>
+            {loading ? 'Đang lưu...' : 'Lưu khai báo'}
+          </button>
         </form>
       ) : (
         <div className="initial-info-required">
-          <div style={{color: 'red', marginBottom: 12}}>Bạn cần khai báo thông tin ban đầu trước khi ghi nhật ký hằng ngày.</div>
+          <div style={{ color: 'red', marginBottom: 12 }}>Bạn cần khai báo thông tin ban đầu trước khi ghi nhật ký hằng ngày.</div>
           <button className="btn-main" onClick={() => navigate('/initial-info')}>Chuyển đến trang khai báo thông tin</button>
         </div>
+      )}
+
+      {showBadgeNotification && (
+        <BadgeNotification
+          badges={newBadges}
+          onClose={() => setShowBadgeNotification(false)}
+        />
       )}
     </div>
   );

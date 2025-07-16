@@ -298,11 +298,11 @@ function Payment() {
       price: Number(pkg.price),
       priceLabel:
         idx === 0
-          ? `${Number(pkg.price).toLocaleString('vi-VN')}đ/tháng`
+          ? `${Number(pkg.price).toLocaleString('vi-VN')}đ/6tháng`
           : idx === 1
-            ? `${Number(pkg.price).toLocaleString('vi-VN')}đ/6 tháng`
+            ? `${Number(pkg.price).toLocaleString('vi-VN')}đ/12 tháng`
             : idx === 2
-              ? `${Number(pkg.price).toLocaleString('vi-VN')}đ/9 tháng`
+              ? `${Number(pkg.price).toLocaleString('vi-VN')}đ/18 tháng`
               : `${Number(pkg.price).toLocaleString('vi-VN')}đ/tháng`,
       icon: idx === 0 ? <AiFillHeart size={60} color="#2e7d32" style={{background:'#fff',borderRadius:'50%',padding:6}} />
         : idx === 1 ? <AiFillStar size={60} color="#1976d2" style={{background:'#fff',borderRadius:'50%',padding:6}} />

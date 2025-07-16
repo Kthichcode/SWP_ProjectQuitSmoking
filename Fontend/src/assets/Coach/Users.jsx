@@ -69,37 +69,37 @@ function Users() {
           const memberId = user.id || user.memberId;
           return (
             <div className="user-card" key={memberId || idx}>
-              <div className="user-info">
-                <div className="user-info-header">
-                  <span className="user-name">{user.fullName || user.name}</span>
+              <div className="user-info" style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:24,flexWrap:'wrap'}}>
+                <div style={{display:'flex',flexDirection:'column',gap:8,minWidth:260,flex:1}}>
+                  <span className="user-name" style={{fontWeight:700,fontSize:'1.13rem',color:'#222',marginBottom:2}}>{user.fullName || user.name}</span>
+                  <span className="user-contact" style={{fontSize:'1rem',color:'#444'}}>Email: <b>{user.email}</b> | SĐT: <b>{user.phone || user.phoneNumber || '-'}</b></span>
+                  {openDeclarations[memberId] && (
+                    <div className="member-declaration-info" style={{marginTop:12,background:'#fff',borderRadius:12,padding:'18px 22px',boxShadow:'0 2px 8px rgba(33,150,243,0.06)',maxWidth:420}}>
+                      {loadingDeclarations[memberId] && <div>Đang tải thông tin khai báo...</div>}
+                      {errorDeclarations[memberId] && <div style={{color:'red'}}>{errorDeclarations[memberId]}</div>}
+                      {memberDeclarations[memberId]
+                        ? (
+                          memberDeclarations[memberId].memberId === memberId || memberDeclarations[memberId].id === memberId
+                            ? <>
+                                <h3 style={{fontSize:'1.13rem',marginBottom:10}}>Thông tin khai báo của thành viên</h3>
+                                <div style={{marginBottom:3}}><b>Họ tên:</b> {memberDeclarations[memberId].fullName}</div>
+                                <div style={{marginBottom:3}}><b>Số năm hút thuốc:</b> {memberDeclarations[memberId].yearsSmoking}</div>
+                                <div style={{marginBottom:3}}><b>Số điếu mỗi ngày:</b> {memberDeclarations[memberId].cigarettesPerDay}</div>
+                                <div style={{marginBottom:3}}><b>Lý do cai thuốc:</b> {memberDeclarations[memberId].reasonToQuit}</div>
+                                <div style={{marginBottom:8}}><b>Tình trạng sức khỏe:</b> {memberDeclarations[memberId].healthStatus}</div>
+                              </>
+                            : <div style={{color:'orange'}}>Thông tin khai báo không khớp với thành viên này. Vui lòng kiểm tra lại dữ liệu!</div>
+                        )
+                        : <div style={{color:'gray'}}>Không có thông tin khai báo cho thành viên này.</div>
+                      }
+                      <button className="action-button" style={{marginTop:8,padding:'7px 22px',borderRadius:7,border:'none',background:'#2d6cdf',color:'#fff',fontWeight:600,fontSize:'1rem',cursor:'pointer'}} onClick={() => handleCloseDeclaration(memberId)}>Đóng</button>
+                    </div>
+                  )}
                 </div>
-                <div className="user-contact">Email: <b>{user.email}</b> | SĐT: <b>{user.phone || user.phoneNumber || '-'}</b></div>
-                <div className="user-actions">
-                  <button className="action-button" onClick={() => handleViewDeclaration(memberId)}>Xem khai báo</button>
-                  <button className="action-button" onClick={handleGoToMessages}>Tin nhắn</button>
+                <div className="user-actions" style={{display:'flex',flexDirection:'column',gap:12,minWidth:160,alignItems:'flex-end',marginTop:8}}>
+                  <button className="action-button" style={{padding:'8px 22px',borderRadius:8,border:'none',background:'#43a047',color:'#fff',fontWeight:600,fontSize:'1rem',cursor:'pointer',boxShadow:'0 2px 8px rgba(67,160,71,0.10)',transition:'all 0.16s',minWidth:120}} onClick={() => handleViewDeclaration(memberId)}>Xem khai báo</button>
+                  <button className="action-button" style={{padding:'8px 22px',borderRadius:8,border:'none',background:'#43a047',color:'#fff',fontWeight:600,fontSize:'1rem',cursor:'pointer',boxShadow:'0 2px 8px rgba(67,160,71,0.10)',transition:'all 0.16s',minWidth:120}} onClick={handleGoToMessages}>Tin nhắn</button>
                 </div>
-                {openDeclarations[memberId] && (
-                  <div className="member-declaration-info">
-                    {loadingDeclarations[memberId] && <div>Đang tải thông tin khai báo...</div>}
-                    {errorDeclarations[memberId] && <div style={{color:'red'}}>{errorDeclarations[memberId]}</div>}
-                    {memberDeclarations[memberId]
-                      ? (
-                        memberDeclarations[memberId].memberId === memberId || memberDeclarations[memberId].id === memberId
-                          ? <>
-                              <h3>Thông tin khai báo của thành viên</h3>
-                              <div><b>Họ tên:</b> {memberDeclarations[memberId].fullName}</div>
-                              <div><b>Số năm hút thuốc:</b> {memberDeclarations[memberId].yearsSmoking}</div>
-                              <div><b>Số điếu mỗi ngày:</b> {memberDeclarations[memberId].cigarettesPerDay}</div>
-                              <div><b>Lý do cai thuốc:</b> {memberDeclarations[memberId].reasonToQuit}</div>
-                              <div><b>Tình trạng sức khỏe:</b> {memberDeclarations[memberId].healthStatus}</div>
-                            </>
-                          : <div style={{color:'orange'}}>Thông tin khai báo không khớp với thành viên này. Vui lòng kiểm tra lại dữ liệu!</div>
-                      )
-                      : <div style={{color:'gray'}}>Không có thông tin khai báo cho thành viên này.</div>
-                    }
-                    <button className="action-button" onClick={() => handleCloseDeclaration(memberId)}>Đóng</button>
-                  </div>
-                )}
               </div>
             </div>
           );

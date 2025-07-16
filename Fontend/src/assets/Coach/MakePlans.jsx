@@ -259,40 +259,59 @@ function MakePlans() {
               {clients.map(client => (
                 <li
                   key={client.id}
-                  className={selectedClient && selectedClient.id === client.id ? 'active' : ''}
-                  onClick={() => setSelectedClient(client)}
+                  className={selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) ? 'active-member' : ''}
+                  onClick={() => {
+                    setSelectedClient(client);
+                    setActiveTab('plan'); // Khi chọn thành viên, luôn show tab kế hoạch
+                  }}
                   style={{
-                    background: selectedClient && selectedClient.id === client.id ? '#e3f2fd' : '#f8fbff',
-                    border: selectedClient && selectedClient.id === client.id ? '2px solid #2196F3' : '2px solid transparent',
-                    borderRadius: 10,
+                    background: selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) ? '#e3f2fd' : '#f8fbff',
+                    border: selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) ? '2.5px solid #1976d2' : '2px solid transparent',
+                    borderRadius: 12,
                     marginBottom: 14,
                     padding: '1rem 1.2rem',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 8,
-                    boxShadow: selectedClient && selectedClient.id === client.id ? '0 2px 8px rgba(33,150,243,0.10)' : 'none',
+                    boxShadow: selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) ? '0 4px 18px rgba(25,118,210,0.10)' : '0 2px 8px rgba(33,150,243,0.04)',
                     cursor: 'pointer',
-                    transition: 'all 0.18s'
+                    transition: 'all 0.18s',
+                    position: 'relative',
+                  }}
+                  onMouseEnter={e => {
+                    if (!(selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id))) {
+                      e.currentTarget.style.background = '#f0f7ff';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(33,150,243,0.08)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!(selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id))) {
+                      e.currentTarget.style.background = '#f8fbff';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(33,150,243,0.04)';
+                    }
                   }}
                 >
                   <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
-                    <span style={{fontWeight:600,fontSize:'1.05rem',color:'#222'}}>{client.fullName || client.name || client.username || client.email}</span>
-                    <span className={`status ${plansByMember[client.memberId || client.id] ? 'has-plan' : 'no-plan'}`} style={{marginLeft:8}}>{plansByMember[client.memberId || client.id] ? 'Đã có kế hoạch' : 'Chưa có kế hoạch'}</span>
+                    <span style={{fontWeight:600,fontSize:'1.08rem',color: selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) ? '#1976d2' : '#222', letterSpacing:0.2}}>{client.fullName || client.name || client.username || client.email}</span>
+                    <span className={`status ${plansByMember[client.memberId || client.id] ? 'has-plan' : 'no-plan'}`} style={{marginLeft:8, fontWeight:600, fontSize:'0.98rem', color: plansByMember[client.memberId || client.id] ? '#388e3c' : '#e67e22', background: plansByMember[client.memberId || client.id] ? '#e8f5e9' : '#fffbe6', borderRadius:6, padding:'2px 10px'}}>{plansByMember[client.memberId || client.id] ? 'Đã có kế hoạch' : 'Chưa có kế hoạch'}</span>
                   </div>
                   <div style={{display:'flex',gap:10,marginTop:2}}>
                     <button
                       style={{
                         padding:'4px 14px',
                         borderRadius:6,
-                        border:'1px solid #2d6cdf',
-                        background: selectedClient && selectedClient.id === client.id && activeTab === 'plan' ? '#1976d2' : '#e3eefd',
-                        color: selectedClient && selectedClient.id === client.id && activeTab === 'plan' ? '#fff' : '#2d6cdf',
-                        fontWeight:600,
-                        cursor:'pointer',
-                        fontSize:'0.97rem',
-                        boxShadow: selectedClient && selectedClient.id === client.id && activeTab === 'plan' ? '0 2px 8px rgba(33,150,243,0.10)' : 'none',
-                        outline: selectedClient && selectedClient.id === client.id && activeTab === 'plan' ? '2px solid #1976d2' : 'none'
+                        border:'1.5px solid #1976d2',
+                        background: selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) && activeTab === 'plan' ? '#1976d2' : '#e3eefd',
+                        color: selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) && activeTab === 'plan' ? '#fff' : '#1976d2',
+                        fontWeight:700,
+                        cursor: 'pointer',
+                        fontSize:'0.99rem',
+                        boxShadow: selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) && activeTab === 'plan' ? '0 2px 8px rgba(25,118,210,0.10)' : 'none',
+                        outline: selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) && activeTab === 'plan' ? '2px solid #1976d2' : 'none',
+                        transition:'all 0.18s',
+                        opacity: selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) ? 1 : 0.7
                       }}
+                      // Cho phép click vào nút của bất kỳ user nào
                       onClick={e => {
                         e.stopPropagation();
                         setSelectedClient(client);
@@ -304,15 +323,18 @@ function MakePlans() {
                       style={{
                         padding:'4px 14px',
                         borderRadius:6,
-                        border:'1px solid #43a047',
-                        background: selectedClient && selectedClient.id === client.id && activeTab === 'logs' ? '#43a047' : '#e8f5e9',
-                        color: selectedClient && selectedClient.id === client.id && activeTab === 'logs' ? '#fff' : '#43a047',
-                        fontWeight:600,
-                        cursor:'pointer',
-                        fontSize:'0.97rem',
-                        boxShadow: selectedClient && selectedClient.id === client.id && activeTab === 'logs' ? '0 2px 8px rgba(67,160,71,0.10)' : 'none',
-                        outline: selectedClient && selectedClient.id === client.id && activeTab === 'logs' ? '2px solid #43a047' : 'none'
+                        border:'1.5px solid #43a047',
+                        background: selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) && activeTab === 'logs' ? '#43a047' : '#e8f5e9',
+                        color: selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) && activeTab === 'logs' ? '#fff' : '#43a047',
+                        fontWeight:700,
+                        cursor: 'pointer',
+                        fontSize:'0.99rem',
+                        boxShadow: selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) && activeTab === 'logs' ? '0 2px 8px rgba(67,160,71,0.10)' : 'none',
+                        outline: selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) && activeTab === 'logs' ? '2px solid #43a047' : 'none',
+                        transition:'all 0.18s',
+                        opacity: selectedClient && (selectedClient.memberId || selectedClient.id) === (client.memberId || client.id) ? 1 : 0.7
                       }}
+                      // Cho phép click vào nút của bất kỳ user nào
                       onClick={async e => {
                         e.stopPropagation();
                         setSelectedClient(client);
