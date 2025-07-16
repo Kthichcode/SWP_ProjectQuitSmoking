@@ -33,6 +33,7 @@ const DailyDeclarationForm = () => {
   const [error, setError] = useState('');
   const [hasInitialInfo, setHasInitialInfo] = useState(true);
   const [checkingInitialInfo, setCheckingInitialInfo] = useState(true);
+  const [cigaretteError, setCigaretteError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,11 +58,18 @@ const DailyDeclarationForm = () => {
     setLoading(true);
     setError('');
     setSuccess('');
+    setCigaretteError('');
+    // Validate smokeCount
+    if (smoked === 'Có' && Number(cigarettes) <= 0) {
+      setCigaretteError('Vui lòng nhập số điếu thuốc đã hút lớn hơn 0.');
+      setLoading(false);
+      return;
+    }
     try {
       const token = localStorage.getItem('token');
       const res = await axios.post('http://localhost:5175/api/smoking-logs', {
         smoked: smoked === 'Có',
-        smokeCount: Number(cigarettes),
+        smokeCount: smoked === 'Có' ? Number(cigarettes) : 0,
         cravingLevel: craving,
         healthStatus: health,
         logDate: date,
@@ -69,15 +77,12 @@ const DailyDeclarationForm = () => {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Lấy userId từ response, nếu không có thì lấy từ localStorage, nếu vẫn không có thì lấy từ user context
+      
       let userId = res.data?.userId || res.data?.data?.userId;
       if (!userId) {
         userId = localStorage.getItem('userId');
       }
-      // Nếu có user context, lấy từ đó
-      // if (!userId && user && user.id) {
-      //   userId = user.id;
-      // }
+      
       if (userId) {
         try {
           await axios.post(`http://localhost:5175/api/member-badge/check-and-award/${userId}`, {}, {
@@ -120,7 +125,15 @@ const DailyDeclarationForm = () => {
           <div className="form-row">
             <div>
               <label>Số điếu thuốc đã hút</label>
-              <input type="number" min={0} value={cigarettes} onChange={e => setCigarettes(e.target.value)} required />
+              <input
+                type="number"
+                min={smoked === 'Có' ? 1 : 0}
+                value={smoked === 'Có' ? cigarettes : 0}
+                onChange={e => setCigarettes(e.target.value)}
+                required
+                disabled={smoked !== 'Có'}
+              />
+              {cigaretteError && <div className="error-message">{cigaretteError}</div>}
             </div>
             <div>
               <label>Mức độ thèm thuốc</label>

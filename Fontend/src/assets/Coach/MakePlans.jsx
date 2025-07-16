@@ -180,11 +180,12 @@ function MakePlans() {
             <label>Số giai đoạn</label><br/>
             <input
               type="number"
-              min={1}
-              max={10}
-              value={createPlanForm.totalStages}
-              onChange={e => setCreatePlanForm(prev => ({ ...prev, totalStages: Number(e.target.value) }))}
-              style={{padding:'6px 12px', borderRadius:6, border:'1px solid #ccc', width:80}}
+              min={3}
+              max={3}
+              value={3}
+              readOnly
+              disabled
+              style={{padding:'6px 12px', borderRadius:6, border:'1px solid #ccc', width:80, background:'#f5f5f5', color:'#888'}}
             />
           </div>
         </div>
