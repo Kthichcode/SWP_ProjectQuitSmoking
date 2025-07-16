@@ -231,7 +231,13 @@ const Profile = () => {
                   <div><span className="icon-home" /> <b>Địa chỉ:</b> {user.address || <span style={{color:'#888'}}>Chưa cập nhật</span>}</div>
                   <div className="profile-badges-card" style={{ marginTop: 18 }}>
                     <div className="profile-info-title" style={{ color: '#1976d2' }}>Huy hiệu cá nhân</div>
-                    <div className="profile-badges-list">
+                    <div className="profile-badges-list" style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                      gap: '18px 10px',
+                      alignItems: 'center',
+                      marginTop: 8
+                    }}>
                       {badges === undefined ? (
                         <div>Đang tải huy hiệu...</div>
                       ) : badges.length === 0 ? (
