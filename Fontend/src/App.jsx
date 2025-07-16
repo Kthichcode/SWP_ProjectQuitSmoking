@@ -33,7 +33,7 @@ import AdminBlogCategories from './assets/Admin/AdminBlogCategories';
 import BlogDetail from './pages/BlogDetail';
 import Profile from './pages/Profile';
 import AdminBadges from './assets/Admin/AdminBadges';
-import Checkout from './pages/Checkout';
+// ...existing code...
 import PaymentResult from './pages/PaymentResult';
 import VNPayCallback from './pages/VNPayCallback';
 import MembershipDebug from './components/MembershipDebug';
@@ -120,7 +120,7 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/payment" element={<Payment />} />
                 <Route path="/payment-result" element={<PaymentResult />} />
-                <Route path="/checkout" element={<Checkout />} />
+                // ...existing code...
                 <Route path="/debug-membership" element={<MembershipDebug />} />
                 <Route path="/login/oauth2/code/google" element={<Navigate to="/login" />} />
                 <Route path="/blog/:id" element={<BlogDetail />} />

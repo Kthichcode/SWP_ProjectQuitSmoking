@@ -15,7 +15,7 @@ export default function Blog() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-    const [showMembershipMessage, setShowMembershipMessage] = useState(false);
+    // ...existing code...
 
     useEffect(() => {
         setLoading(true);
@@ -82,55 +82,12 @@ export default function Blog() {
     };
 
     
-    // Kiểm tra membership từ API mỗi lần user thay đổi hoặc trang được focus/visibilitychange
-    const [membershipStatus, setMembershipStatus] = useState(null);
-    const [checkingMembership, setCheckingMembership] = useState(false);
-    useEffect(() => {
-        let isMounted = true;
-        const checkMembership = async () => {
-            if (!user) {
-                setMembershipStatus(null);
-                return;
-            }
-            setCheckingMembership(true);
-            try {
-                const userId = user.userId || user.id;
-                const res = await axiosInstance.get(`/api/user-memberships/check-active/${userId}`);
-                if (isMounted && res.data?.status === 'success' && res.data.data === true) {
-                    setMembershipStatus('ACTIVE');
-                } else if (isMounted) {
-                    setMembershipStatus(null);
-                }
-            } catch {
-                if (isMounted) setMembershipStatus(null);
-            } finally {
-                if (isMounted) setCheckingMembership(false);
-            }
-        };
-
-        checkMembership();
-
-        const handleVisibility = () => {
-            checkMembership();
-        };
-        window.addEventListener('focus', handleVisibility);
-        document.addEventListener('visibilitychange', handleVisibility);
-        return () => {
-            isMounted = false;
-            window.removeEventListener('focus', handleVisibility);
-            document.removeEventListener('visibilitychange', handleVisibility);
-        };
-    }, [user]);
-
-    const hasMembership = () => membershipStatus === 'ACTIVE';
+    // ...đã xóa kiểm tra membership...
 
     const handleReadMore = (blog) => {
         const blogId = blog.id || blog._id;
         if (!token) {
             navigate('/login');
-        } else if (!hasMembership()) {
-            setShowMembershipMessage(true);
-            setTimeout(() => setShowMembershipMessage(false), 3000);
         } else if (blogId) {
             navigate(`/blog/${blogId}`);
         }
@@ -138,11 +95,7 @@ export default function Blog() {
 
     return (
         <div className="blog-container">
-            {showMembershipMessage && (
-                <div style={{position:'fixed',bottom:32,right:32,zIndex:9999,background:'#fffbe6',color:'#d35400',padding:'16px 28px',borderRadius:12,boxShadow:'0 2px 8px rgba(0,0,0,0.12)',fontWeight:600}}>
-                    Bạn cần đăng ký gói thành viên để có thể sử dụng chức năng này
-                </div>
-            )}
+            {/* Đã xóa thông báo yêu cầu membership */}
             <h2 className="blog-title">Blog chia sẻ kinh nghiệm</h2>
             <p className="blog-subtitle">Khám phá các bài viết, câu chuyện thành công và lời khuyên từ chuyên gia</p>
 
