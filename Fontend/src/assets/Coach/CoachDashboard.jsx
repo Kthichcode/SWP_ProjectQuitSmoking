@@ -234,8 +234,8 @@ function MembersModal({ open, onClose, members }) {
   return (
     <div className="modal-overlay" style={{position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.3)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center'}}>
       <div className="modal-content" style={{background:'#fff',padding:32,borderRadius:16,minWidth:350,maxWidth:480,position:'relative',boxShadow:'0 8px 32px rgba(0,0,0,0.18)'}}>
-        <h3 style={{marginBottom:20,fontWeight:600,fontSize:22,textAlign:'center',color:'#2d6cdf'}}>Danh sách thành viên đang kết nối</h3>
-        <button style={{position:'absolute',top:16,right:24,background:'#f5f5f5',border:'none',borderRadius:4,padding:'4px 12px',fontWeight:500,cursor:'pointer',color:'#2d6cdf'}} onClick={onClose}>Đóng</button>
+        <h3 style={{marginBottom:20,fontWeight:600,fontSize:22,textAlign:'center',color:'#22c55e'}}>Danh sách thành viên đang kết nối</h3>
+        <button style={{position:'absolute',top:16,right:24,background:'#f5f5f5',border:'none',borderRadius:4,padding:'4px 12px',fontWeight:500,cursor:'pointer',color:'#22c55e'}} onClick={onClose}>Đóng</button>
         {(!members || members.length === 0) ? (
           <p style={{textAlign:'center',color:'#888'}}>Chưa có thành viên nào.</p>
         ) : (
@@ -246,11 +246,11 @@ function MembersModal({ open, onClose, members }) {
                 const name = m.fullName || m.full_name || m.username || m.email || 'Ẩn danh';
                 const firstLetter = name.charAt(0).toUpperCase();
                 return (
-                  <li key={m.id || m.memberId || idx} style={{display:'flex',alignItems:'center',gap:12,background:'#f6f8fa',borderRadius:8,padding:'12px 16px',marginBottom:10,boxShadow:'0 1px 4px rgba(44,108,223,0.04)'}}>
-                    <div style={{width:36,height:36,borderRadius:'50%',background:'#e3eefd',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:600,color:'#2d6cdf',fontSize:18}}>
+                  <li key={m.id || m.memberId || idx} style={{display:'flex',alignItems:'center',gap:12,background:'#f6f8fa',borderRadius:8,padding:'12px 16px',marginBottom:10,boxShadow:'0 1px 4px #22c55e11'}}>
+                    <div style={{width:36,height:36,borderRadius:'50%',background:'#e5f9ee',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:600,color:'#22c55e',fontSize:18,flexShrink:0}}>
                       {firstLetter}
                     </div>
-                    <div style={{fontSize:17,fontWeight:500,color:'#2d6cdf'}}>{name}</div>
+                    <span style={{fontSize:17,fontWeight:500,color:'#22c55e',marginLeft:0,whiteSpace:'nowrap',display:'inline-block'}}>{name}</span>
                   </li>
                 );
               })}
@@ -695,15 +695,15 @@ function CoachDashboard() {
             ) : (
               <>
                 <div className="welcome-section">
-                  <h2>Chào mừng bạn trở lại bảng điều khiển huấn luyện viên, {user?.fullName || 'Coach'}!</h2>
-                  <div className="rating">
-                    <FaStar />
-                    <span>{dashboardData.averageRating}</span>
+                  <div className="welcome-title-group">
+                    <h2>Chào mừng bạn trở lại bảng điều khiển huấn luyện viên, {user?.fullName || 'Coach'}!</h2>
+                    <div className="rating">
+                      <FaStar />
+                      <span>{dashboardData.averageRating}</span>
+                    </div>
                   </div>
-                </div>
-                <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
-                  <button onClick={() => { setShowMembers(true); fetchMyMembers(); }} style={{marginRight:8,background:'#e3eefd',color:'#2d6cdf',padding:'8px 16px',border:'none',borderRadius:6,fontWeight:600,cursor:'pointer'}}>Xem thành viên</button>
                   <button
+                    className="send-notification-btn"
                     onClick={async () => {
                       setShowSendModal(true);
                       setLoadingSendMembers(true);
@@ -723,13 +723,13 @@ function CoachDashboard() {
                         setLoadingSendMembers(false);
                       }
                     }}
-                    style={{background:'#2d6cdf',color:'#fff',padding:'8px 16px',border:'none',borderRadius:6,fontWeight:600,cursor:'pointer'}}
                   >
+                    <svg style={{marginRight:4}} width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="20" rx="10" fill="#fff" fillOpacity=".12"/><path d="M5.5 10.5l9-4-4 9-1.5-3-3-2z" stroke="#fff" strokeWidth="1.5" strokeLinejoin="round"/><circle cx="15.5" cy="4.5" r="1.5" fill="#fff"/></svg>
                     Gửi thông báo cho member
                   </button>
                 </div>
                 <div className="cards-container">
-                  <div className="card">
+                  <div className="card" style={{cursor:'pointer'}} onClick={() => { setShowMembers(true); fetchMyMembers(); }}>
                     <FaUsers />
                     <h3>{dashboardData.totalMembers}</h3>
                     <p>Thành viên</p>
@@ -746,12 +746,6 @@ function CoachDashboard() {
                   </div>
                   <ReviewsModal open={showReviews} onClose={() => setShowReviews(false)} reviews={myReviews} />
                   <MembersModal open={showMembers} onClose={() => setShowMembers(false)} members={myMembers} />
-                </div>
-                {/* Biểu đồ thành viên trong tháng với Ant Design Plots */}
-                <div style={{marginTop: 36, background: '#fff', borderRadius: 16, boxShadow: '0 2px 12px rgba(44,108,223,0.06)', padding: 24}}>
-                  <h3 style={{marginBottom: 16, color: '#2d6cdf', fontWeight: 600}}>Số thành viên mới theo tháng</h3>
-                  <MembersMonthChart data={getMembersByMonth(myMembers)} />
-                  <div style={{fontSize:13, color:'#888', marginTop:8}}>Biểu đồ này dựa trên danh sách thành viên bạn đã xem gần nhất.</div>
                 </div>
               </>
             )}

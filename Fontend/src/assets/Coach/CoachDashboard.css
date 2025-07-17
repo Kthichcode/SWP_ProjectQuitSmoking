@@ -1,5 +1,36 @@
-
-
+/* Fix: Member list modal - use green theme and correct specificity */
+.modal-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.modal-content ul li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f6f8fa;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 4px #22c55e11;
+}
+.modal-content ul li div {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e5f9ee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #22c55e;
+  font-size: 18px;
+}
+.modal-content ul li div + div {
+  font-size: 17px;
+  font-weight: 500;
+  color: #22c55e;
+}
 body, html {
   font-family: 'Segoe UI', Arial, sans-serif;
   background: #f6f8fa;
@@ -99,6 +130,14 @@ body, html {
 }
 .welcome-section {
   margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+.welcome-title-group {
+  display: flex;
+  flex-direction: column;
 }
 .welcome-section h2 {
   font-size: 2rem;
@@ -134,6 +173,33 @@ body, html {
   display: flex;
   gap: 24px;
   margin-bottom: 32px;
+}
+
+/* New lively style for Send Notification button */
+.send-notification-btn {
+  background: #22c55e;
+  color: #fff;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 22px;
+  font-weight: 600;
+  font-size: 0.98rem;
+  box-shadow: 0 2px 8px #22c55e22, 0 1px 3px #22c55e22;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  position: relative;
+  top: 0;
+  right: 0;
+  margin-left: 8px;
+  z-index: 2;
+}
+.send-notification-btn:hover, .send-notification-btn:focus {
+  background: #16a34a;
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 24px #22c55e33, 0 2px 8px #22c55e33;
 }
 .card {
   background: #f3f4f6;
@@ -252,5 +318,24 @@ body, html {
 
 .appointment-list {
   margin-top: 24px;
+}
+
+/* Member avatar in modal: green theme */
+.modal-content ul li div {
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:#e5f9ee;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:600;
+  color:#22c55e;
+  font-size:18px;
+}
+.modal-content ul li div + div {
+  font-size:17px;
+  font-weight:500;
+  color:#22c55e;
 }
 
