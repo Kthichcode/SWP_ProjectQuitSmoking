@@ -81,7 +81,7 @@ function Users() {
                         ? (
                           memberDeclarations[memberId].memberId === memberId || memberDeclarations[memberId].id === memberId
                             ? <>
-                                <h3 style={{fontSize:'1.13rem',marginBottom:10}}>Thông tin khai báo của thành viên</h3>
+                                <h3 style={{fontSize:'1.13rem',marginBottom:10}}>Thông tin khai báo ban đầu của thành viên</h3>
                                 <div style={{marginBottom:3}}><b>Họ tên:</b> {memberDeclarations[memberId].fullName}</div>
                                 <div style={{marginBottom:3}}><b>Số năm hút thuốc:</b> {memberDeclarations[memberId].yearsSmoking}</div>
                                 <div style={{marginBottom:3}}><b>Số điếu mỗi ngày:</b> {memberDeclarations[memberId].cigarettesPerDay}</div>

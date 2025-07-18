@@ -181,25 +181,40 @@ const Header = () => {
                 >
                   <FaBell size={22} color='black' />
                   {unreadCount > 0 && (
-                    <span className="notification-badge">{unreadCount}</span>
+                    <span className="notification-badge" style={{
+                      background:'red', color:'#fff', fontWeight:700, fontSize:13, minWidth:22, height:22, borderRadius:'50%', display:'inline-flex', alignItems:'center', justifyContent:'center', position:'absolute', top:-8, right:-8, boxShadow:'0 2px 8px rgba(255,193,7,0.15)', border:'2px solid #fff', transition:'none', animation:'none'
+                    }}>{unreadCount}</span>
                   )}
                 </button>
                 {showNotification && (
-                  <div className="notification-dropdown" style={{position:'relative'}}>
-                    <div className="notification-dropdown-title" style={{paddingRight:32}}>Thông báo</div>
-                    <button
-                      style={{position:'absolute',top:8,right:8,background:'#f5f5f5',border:'none',borderRadius:4,padding:'2px 10px',fontWeight:500,cursor:'pointer',color:'#22c55e',fontSize:18,zIndex:2}}
-                      onClick={() => setShowNotification(false)}
-                      title="Đóng thông báo"
-                    >×</button>
+                  <div className="notification-dropdown" style={{position:'absolute',top:40,right:0,minWidth:340,maxWidth:400,background:'#fff',borderRadius:14,boxShadow:'0 8px 32px rgba(44,62,80,0.18)',padding:'0 0 8px 0',zIndex:1000}}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'16px 20px 8px 20px',borderBottom:'1px solid #f0f0f0'}}>
+                      <span style={{fontWeight:800,fontSize:'1.1rem',color:'black',letterSpacing:0.5}}>Thông báo</span>
+                      <button
+                        style={{background:'none',border:'none',fontSize:22,cursor:'pointer',color:'#e53935',fontWeight:700,lineHeight:1}}
+                        onClick={() => setShowNotification(false)}
+                        title="Đóng thông báo"
+                      >×</button>
+                    </div>
                     {notifications.length === 0 ? (
-                      <div className="notification-dropdown-empty">Không có thông báo nào.</div>
+                      <div style={{padding:'24px 0',textAlign:'center',color:'#888',fontSize:'1rem'}}>Không có thông báo nào.</div>
                     ) : (
-                      <ul className="notification-dropdown-list">
+                      <ul style={{listStyle:'none',margin:0,padding:0,maxHeight:350,overflowY:'auto'}}>
                         {notifications.map(n => (
                           <li
                             key={n.userNotificationId}
-                            className={`notification-dropdown-item${n.isRead ? ' read' : ' unread'}`}
+                            style={{
+                              background: n.isRead ? '#f8f9fa' : '#fffbe6',
+                              borderLeft: n.isRead ? '4px solid #e0e0e0' : '4px solid #ffc107',
+                              margin:'0 0 8px 0',
+                              padding:'14px 18px 10px 14px',
+                              borderRadius:10,
+                              boxShadow:'0 2px 8px rgba(44,62,80,0.04)',
+                              cursor:'pointer',
+                              transition:'background 0.2s',
+                              position:'relative',
+                              fontFamily:'inherit'
+                            }}
                             onClick={async () => {
                               if (!n.isRead) {
                                 try {
@@ -213,11 +228,13 @@ const Header = () => {
                               }
                             }}
                           >
-                            <div className="notification-dropdown-item-title">{n.title}</div>
-                            <div className="notification-dropdown-item-content">{n.content}</div>
-                            {n.sender && <div className="notification-dropdown-item-sender">Từ: {n.sender}</div>}
-                            <div className="notification-dropdown-item-time">{n.createdAt ? new Date(n.createdAt).toLocaleString('vi-VN') : ''}</div>
-                            {!n.isRead && <span className="notification-dropdown-item-unread">Chưa đọc</span>}
+                            <div style={{fontWeight:700,fontSize:'1.05rem',color:'#222',marginBottom:4}}>{n.title}</div>
+                            <div style={{color:'#444',fontSize:'0.97rem',marginBottom:6,whiteSpace:'pre-line'}}>{n.content}</div>
+                            <div style={{display:'flex',alignItems:'center',fontSize:'0.93rem',marginTop:2,flexWrap:'wrap'}}>
+                              {n.sender && <span style={{color:'navy',fontWeight:600,marginRight:12}}>Từ: {n.sender}</span>}
+                              <span style={{color:'#888',fontSize:'0.93rem'}}>{n.createdAt ? new Date(n.createdAt).toLocaleString('vi-VN') : ''}</span>
+                              {!n.isRead && <span style={{marginLeft:10,color:'#e53935',fontWeight:600,fontSize:'0.97rem'}}>Chưa đọc</span>}
+                            </div>
                           </li>
                         ))}
                       </ul>

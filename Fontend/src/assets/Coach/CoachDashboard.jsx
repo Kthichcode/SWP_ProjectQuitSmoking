@@ -95,7 +95,7 @@ function SendNotificationModal({ open, onClose, members, onSend, loading, loadin
             </div>
             <div style={{marginBottom:12}}>
               <label>Nội dung thông báo:</label><br/>
-              <textarea value={content} onChange={e => setContent(e.target.value)} style={{width:'100%',padding:6,borderRadius:4,minHeight:60}}/>
+              <textarea value={content} onChange={e => setContent(e.target.value)} style={{width:'100%',padding:6,borderRadius:4,minHeight:60, color:'#333', background:'white'}}/>
             </div>
             {error && <div style={{color:'red',marginBottom:8}}>{error}</div>}
             <button onClick={handleCreateNotification} disabled={creating} style={{background:'#2d6cdf',color:'#fff',padding:'8px 20px',border:'none',borderRadius:6,fontWeight:600,cursor:'pointer'}}>
@@ -161,7 +161,7 @@ function SendNotificationModal({ open, onClose, members, onSend, loading, loadin
     </div>
   );
 }
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import MembersBarChart from '../../components/MembersBarChart';
 import MembersMonthChart from '../../components/MembersMonthChart';
 // Modal hiển thị đánh giá
@@ -319,7 +319,6 @@ function NotificationModal({ open, onClose, notifications, onMarkRead }) {
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../../axiosInstance';
-import WebSocketService from '../../services/websocketService';
 
 
 function CoachDashboard() {
@@ -338,11 +337,6 @@ function CoachDashboard() {
   const [showNotification, setShowNotification] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [hasUnread, setHasUnread] = useState(false);
-
-  // Unread messages state for sidebar
-  const [unreadMsgCount, setUnreadMsgCount] = useState(0);
-  const [conversations, setConversations] = useState([]);
-  const globalSubscriptionRef = useRef(null);
 
   // Fetch unread notifications for dot (on mount and when user changes)
   useEffect(() => {
@@ -364,86 +358,6 @@ function CoachDashboard() {
     };
     fetchUnread();
   }, [user]);
-
-  // Fetch conversations for unread messages count
-  useEffect(() => {
-    const fetchConvs = async () => {
-      try {
-        if (!user) return;
-        const currentCoachId = user.userId || user.id;
-        if (!currentCoachId) return;
-        const res = await axiosInstance.get(`/api/users/coaches/${currentCoachId}/selections`);
-        if (res.data.status === 'success' && res.data.data) {
-          const formatted = await Promise.all(res.data.data.map(async (sel) => {
-            let unread = sel.unreadCount || 0;
-            return {
-              id: sel.selectionId,
-              selectionId: sel.selectionId,
-              unreadCount: unread,
-              userId: sel.member?.userId || sel.member?.id,
-            };
-          }));
-          setConversations(formatted);
-          // Tổng số tin nhắn chưa đọc
-          const totalUnread = formatted.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
-          setUnreadMsgCount(totalUnread);
-        } else {
-          setConversations([]);
-          setUnreadMsgCount(0);
-        }
-      } catch (e) {
-        setConversations([]);
-        setUnreadMsgCount(0);
-      }
-    };
-    fetchConvs();
-  }, [user]);
-
-  // WebSocket global: tăng badge khi có tin nhắn mới từ user
-  useEffect(() => {
-    if (!user) return;
-    let isMounted = true;
-    const connectGlobalWS = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      await WebSocketService.connect(token);
-      const globalSub = WebSocketService.subscribe(
-        `/user/queue/messages/global`,
-        (message) => {
-          try {
-            const receivedMessage = JSON.parse(message.body);
-            // Chỉ tăng nếu là tin nhắn từ MEMBER (user)
-            if (receivedMessage.senderType === 'MEMBER') {
-              // Nếu coach đang ở trang chat với user này thì không tăng
-              const currentPath = window.location.pathname;
-              const isInChat = currentPath.startsWith('/coach/messages');
-              if (!isInChat) {
-                // Tăng tổng số unread
-                if (isMounted) setUnreadMsgCount((prev) => prev + 1);
-              }
-            }
-          } catch (err) {
-            // ignore parse error
-          }
-        }
-      );
-      globalSubscriptionRef.current = globalSub;
-    };
-    connectGlobalWS();
-    return () => {
-      if (globalSubscriptionRef.current) {
-        globalSubscriptionRef.current.unsubscribe();
-      }
-      isMounted = false;
-    };
-  }, [user]);
-
-  // Khi vào trang messages, reset unread count về 0
-  useEffect(() => {
-    if (location.pathname.startsWith('/coach/messages')) {
-      setUnreadMsgCount(0);
-    }
-  }, [location.pathname]);
 
   // Fetch notifications from API when modal opens
   useEffect(() => {
@@ -597,23 +511,9 @@ function CoachDashboard() {
               <FaCalendarAlt style={{marginRight:8}}/> Kế hoạch cai thuốc
             </NavLink>
           </li>
-          <li style={{position:'relative'}}>
+          <li>
             <NavLink to="/coach/messages" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
               <FaEnvelope style={{marginRight:8}}/> Tin nhắn
-              {unreadMsgCount > 0 && (
-                <span style={{
-                  position: 'absolute',
-                  top: 10,
-                  right: 18,
-                  background: '#e74c3c',
-                  color: '#fff',
-                  borderRadius: '50%',
-                  padding: '2px 7px',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.15)'
-                }}>{unreadMsgCount}</span>
-              )}
             </NavLink>
           </li>
           <li>

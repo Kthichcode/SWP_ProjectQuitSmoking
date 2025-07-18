@@ -235,7 +235,7 @@
 }
 
 .messages-container .message.coach-right .message-content {
-  background: linear-gradient(90deg,#2d6cdf 60%,#3498db 100%);
+  background: steelblue;
   color: #fff;
   box-shadow: 0 2px 12px #2d6cdf22;
 }

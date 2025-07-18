@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../../axiosInstance';
 import WebSocketService from '../../services/websocketService';
@@ -12,10 +12,19 @@ function Messages() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(0); // Thêm force update trigger
 
   const messagesEndRef = useRef(null);
   const globalSubscriptionRef = useRef(null);
   const inputRef = useRef(null);
+  const selectedConversationRef = useRef(null);
+  // Ref để lưu các messageId đã xử lý, tránh double count
+  const processedMessageIdsRef = useRef(new Set());
+
+  // Cập nhật ref mỗi khi selectedConversation thay đổi
+  useEffect(() => {
+    selectedConversationRef.current = selectedConversation;
+  }, [selectedConversation]);
 
   useEffect(() => {
     if (user) {
@@ -29,9 +38,13 @@ function Messages() {
         const globalSub = WebSocketService.subscribe(
           `/user/queue/messages/global`,
           (message) => {
-            const receivedMessage = JSON.parse(message.body);
-            console.log('Global subscription received:', receivedMessage);
-            handleIncomingGlobalMessage(receivedMessage);
+            try {
+              const receivedMessage = JSON.parse(message.body);
+              console.log('🌍 Global subscription received:', receivedMessage);
+              handleIncomingGlobalMessage(receivedMessage);
+            } catch (error) {
+              console.error('❌ Error parsing global message:', error);
+            }
           }
         );
 
@@ -82,6 +95,16 @@ function Messages() {
     }
   }, [selectedConversation, sendingMessage]);
 
+  // Debug: Log conversations changes
+  useEffect(() => {
+    console.log('Conversations state changed:', conversations);
+  }, [conversations]);
+
+  // Debug: Log selected conversation changes
+  useEffect(() => {
+    console.log('Selected conversation changed:', selectedConversation);
+  }, [selectedConversation]);
+
   const scrollToBottom = () => {
     setTimeout(() => {
       if (messagesEndRef.current) {
@@ -104,13 +127,19 @@ function Messages() {
       const subscription = WebSocketService.subscribe(
         `/user/queue/messages/${selectionId}`,
         (message) => {
-          console.log('Messages.jsx received WebSocket message:', message);
+          console.log('📨 Messages.jsx received WebSocket message:', message);
           try {
             const receivedMessage = JSON.parse(message.body);
-            console.log('Parsed message:', receivedMessage);
+            console.log('📝 Parsed message:', receivedMessage);
 
             if (receivedMessage.senderType === 'COACH') {
-              console.log('Skipping own COACH message in Messages.jsx');
+              console.log('❌ Skipping own COACH message in Messages.jsx');
+              return;
+            }
+
+            // Chỉ xử lý tin nhắn thuộc cuộc trò chuyện hiện tại
+            if (receivedMessage.selectionId !== selectionId) {
+              console.log('⚠️ Message not for current conversation, ignoring in specific handler');
               return;
             }
 
@@ -138,33 +167,29 @@ function Messages() {
                     Math.abs(new Date(m.timestamp).getTime() - new Date(formattedMessage.timestamp).getTime()) < 3000)
               );
               if (exists) {
-                console.log('Message already exists, skipping');
+                console.log('⚠️ Message already exists, skipping');
                 return prev;
               }
+              console.log('✅ Adding new message to current conversation');
               return [...prev, formattedMessage];
             });
 
+            // Specific handler chỉ cập nhật lastMessage, KHÔNG tăng unreadCount
             setConversations((prevConvs) =>
               prevConvs.map((conv) => {
                 if (conv.selectionId === receivedMessage.selectionId) {
                   return {
                     ...conv,
                     lastMessage: receivedMessage.content,
-                    lastMessageTime: new Date(receivedMessage.sentAt).toLocaleTimeString('vi-VN', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    }),
-                    unreadCount:
-                      conv.selectionId === selectedConversation?.selectionId
-                        ? 0
-                        : (conv.unreadCount || 0) + 1,
+                    lastMessageTime: receivedMessage.sentAt || new Date().toISOString(),
+                    lastMessageTimestamp: new Date(receivedMessage.sentAt || new Date().toISOString()).getTime(),
                   };
                 }
                 return conv;
               })
             );
           } catch (err) {
-            console.error('Lỗi parse WebSocket message:', err);
+            console.error('❌ Lỗi parse WebSocket message:', err);
           }
         }
       );
@@ -178,32 +203,51 @@ function Messages() {
   };
 
   const handleIncomingGlobalMessage = (receivedMessage) => {
+    console.log('🌍 Global message received:', receivedMessage);
     if (receivedMessage.senderType === 'COACH') {
+      console.log('❌ Skipping COACH message in global handler');
       return;
     }
-
-    // If the message belongs to the currently selected conversation, do not update unread
-    if (receivedMessage.selectionId === selectedConversation?.selectionId) {
-      console.log('Global message belongs to current conversation → skip updating unread');
+    // Kiểm tra messageId đã xử lý chưa
+    const msgId = receivedMessage.messageId || (receivedMessage.content + receivedMessage.sentAt);
+    if (processedMessageIdsRef.current.has(msgId)) {
+      console.log('⚠️ Message already processed, skip unreadCount:', msgId);
       return;
     }
-
-    setConversations((prevConvs) =>
-      prevConvs.map((conv) => {
+    processedMessageIdsRef.current.add(msgId);
+    // Giới hạn size tránh memory leak
+    if (processedMessageIdsRef.current.size > 200) {
+      const arr = Array.from(processedMessageIdsRef.current);
+      arr.slice(0, 100).forEach(id => processedMessageIdsRef.current.delete(id));
+    }
+    // Sử dụng ref để lấy selectedConversation hiện tại
+    const currentSelectedConversation = selectedConversationRef.current;
+    const isCurrentConversation = currentSelectedConversation?.selectionId === receivedMessage.selectionId;
+    setConversations((prevConvs) => {
+      return prevConvs.map((conv) => {
         if (conv.selectionId === receivedMessage.selectionId) {
+          const newUnreadCount = isCurrentConversation ? 0 : (conv.unreadCount || 0) + 1;
           return {
             ...conv,
             lastMessage: receivedMessage.content,
-            lastMessageTime: new Date(receivedMessage.sentAt).toLocaleTimeString('vi-VN', {
-              hour: '2-digit',
-              minute: '2-digit',
-            }),
-            unreadCount: (conv.unreadCount || 0) + 1,
+            lastMessageTime: receivedMessage.sentAt || new Date().toISOString(),
+            lastMessageTimestamp: new Date(receivedMessage.sentAt || new Date().toISOString()).getTime(),
+            unreadCount: newUnreadCount,
           };
         }
         return conv;
-      })
-    );
+      });
+    });
+
+    // QUAN TRỌNG: Nếu đang ở conversation hiện tại, fetch lại lịch sử để đồng bộ
+    if (isCurrentConversation && currentSelectedConversation) {
+      console.log('🔄 Refreshing messages for current conversation');
+      fetchMessages(
+        currentSelectedConversation.selectionId,
+        currentSelectedConversation.userId,
+        currentSelectedConversation.userFullName
+      );
+    }
   };
 
   const fetchConversations = async () => {
@@ -221,17 +265,14 @@ function Messages() {
       if (res.data.status === 'success' && res.data.data) {
         const formatted = await Promise.all(res.data.data.map(async (sel) => {
           let lastMsg = 'Bắt đầu cuộc trò chuyện...';
-          let lastMsgTime = new Date(sel.selectedAt).toLocaleTimeString('vi-VN', {
-            hour: '2-digit',
-            minute: '2-digit',
-          });
+          let lastMsgTime = sel.selectedAt || new Date().toISOString();
+          let lastMsgTimestamp = new Date(sel.selectedAt).getTime();
+          
           // Ưu tiên lấy lastMessage từ API nếu có
           if (sel.lastMessage && sel.lastMessage.content) {
             lastMsg = sel.lastMessage.content;
-            lastMsgTime = new Date(sel.lastMessage.sentAt).toLocaleTimeString('vi-VN', {
-              hour: '2-digit',
-              minute: '2-digit',
-            });
+            lastMsgTime = sel.lastMessage.sentAt || new Date().toISOString();
+            lastMsgTimestamp = new Date(sel.lastMessage.sentAt).getTime();
           } else {
             // Nếu API không trả về lastMessage, fetch thủ công tin nhắn cuối cùng
             try {
@@ -240,15 +281,14 @@ function Messages() {
               if (history.length > 0) {
                 const last = history[history.length - 1];
                 lastMsg = last.content;
-                lastMsgTime = new Date(last.sentAt).toLocaleTimeString('vi-VN', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                });
+                lastMsgTime = last.sentAt || new Date().toISOString();
+                lastMsgTimestamp = new Date(last.sentAt).getTime();
               }
             } catch (e) {
               // Nếu lỗi thì giữ nguyên mặc định
             }
           }
+          
           return {
             id: sel.selectionId,
             selectionId: sel.selectionId,
@@ -260,7 +300,8 @@ function Messages() {
               'Người dùng',
             userOnline: false,
             lastMessage: lastMsg,
-            lastMessageTime: lastMsgTime,
+            lastMessageTime: lastMsgTime, // Lưu timestamp đầy đủ
+            lastMessageTimestamp: lastMsgTimestamp, // Thêm timestamp số để sort
             unreadCount: sel.unreadCount || 0,
           };
         }));
@@ -294,13 +335,13 @@ function Messages() {
     if (selectedConversation?.id === conversation.id) return;
 
     setSelectedConversation(conversation);
-    await fetchMessages(conversation.selectionId);
+    // Truyền userId, userFullName trực tiếp để tránh race condition
+    await fetchMessages(conversation.selectionId, conversation.userId, conversation.userFullName);
     await markConversationAsRead(conversation.selectionId);
-    // Mark as read locally immediately when selected
     markAsReadLocally(conversation.id);
   };
 
-  const fetchMessages = async (selectionId) => {
+  const fetchMessages = async (selectionId, userId, userFullName) => {
     try {
       const res = await axiosInstance.get(`/api/chat/history/${selectionId}`);
       const history = res.data?.data || [];
@@ -309,14 +350,14 @@ function Messages() {
         id: msg.messageId,
         senderId:
           msg.senderType === 'MEMBER'
-            ? selectedConversation?.userId
+            ? userId || selectedConversation?.userId
             : user.id,
         senderType: msg.senderType,
         content: msg.content,
         timestamp: msg.sentAt,
         senderName:
           msg.senderType === 'MEMBER'
-            ? selectedConversation?.userFullName
+            ? userFullName || selectedConversation?.userFullName
             : user.fullName || 'Coach',
         isOptimistic: false,
       }));
@@ -396,7 +437,8 @@ function Messages() {
               ? {
                   ...conv,
                   lastMessage: messageContent,
-                  lastMessageTime: formatTime(res.data.data.sentAt || messageTimestamp),
+                  lastMessageTime: res.data.data.sentAt || messageTimestamp,
+                  lastMessageTimestamp: new Date(res.data.data.sentAt || messageTimestamp).getTime(),
                   unreadCount: 0,
                 }
               : conv
@@ -428,23 +470,54 @@ function Messages() {
 
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
+    
     const date = new Date(timestamp);
     const now = new Date();
-    const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-    if (isToday) {
-      return date.toLocaleTimeString('vi-VN', {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } else {
-      return date.toLocaleString('vi-VN', {
-        hour: '2-digit',
-        minute: '2-digit',
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    // Nếu là trong vòng 1 phút
+    if (diffMinutes < 1) {
+      return 'Vừa xong';
+    }
+    
+    // Nếu là trong vòng 1 giờ
+    if (diffMinutes < 60) {
+      return `${diffMinutes} phút trước`;
+    }
+    
+    // Nếu là trong vòng 24 giờ
+    if (diffHours < 24) {
+      return `${diffHours} giờ trước`;
+    }
+    
+    // Nếu là hôm qua
+    if (diffDays === 1) {
+      return 'Hôm qua';
+    }
+    
+    // Nếu là trong tuần này
+    if (diffDays < 7) {
+      return `${diffDays} ngày trước`;
+    }
+    
+    // Nếu là cùng năm
+    const isCurrentYear = date.getFullYear() === now.getFullYear();
+    if (isCurrentYear) {
+      return date.toLocaleDateString('vi-VN', {
         day: '2-digit',
         month: '2-digit',
-        year: 'numeric',
       });
     }
+    
+    // Nếu là năm khác
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
   };
 
   const getInitials = (name) => {
@@ -461,6 +534,22 @@ function Messages() {
     );
   }
 
+  // Sắp xếp hội thoại: Ưu tiên tin nhắn chưa đọc → Thời gian mới nhất
+  const sortedConversations = [...conversations].sort((a, b) => {
+    // Ưu tiên tin nhắn chưa đọc lên đầu
+    const aHasUnread = a.unreadCount > 0;
+    const bHasUnread = b.unreadCount > 0;
+    
+    if (aHasUnread && !bHasUnread) return -1;
+    if (!aHasUnread && bHasUnread) return 1;
+    
+    // Nếu cả hai đều có hoặc không có tin nhắn chưa đọc, sắp xếp theo thời gian mới nhất
+    const aTimestamp = a.lastMessageTimestamp || new Date(a.lastMessageTime).getTime() || 0;
+    const bTimestamp = b.lastMessageTimestamp || new Date(b.lastMessageTime).getTime() || 0;
+    
+    return bTimestamp - aTimestamp;
+  });
+
   return (
     <div className="messages-container">
       <div className="messages-list">
@@ -472,27 +561,80 @@ function Messages() {
             <p>Chưa có cuộc trò chuyện nào</p>
           </div>
         ) : (
-          conversations.map((conv) => (
+          sortedConversations.map((conv) => (
             <div
               key={conv.id}
               onClick={() => selectConversation(conv)}
               className={`messages-list-item ${
                 selectedConversation?.id === conv.id ? 'selected' : ''
               }`}
+              style={{
+                background: selectedConversation?.id === conv.id 
+                  ? '#e3f2fd' 
+                  : conv.unreadCount > 0 
+                    ? '#fff3e0' 
+                    : '#fff',
+                fontWeight: conv.unreadCount > 0 && selectedConversation?.id !== conv.id ? 600 : 400,
+                borderLeft: conv.unreadCount > 0 && selectedConversation?.id !== conv.id 
+                  ? '4px solid #2196f3' 
+                  : '4px solid transparent',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
             >
-              
               <div className="conversation-info">
-                <div className="conversation-name">
+                <div 
+                  className="conversation-name"
+                  style={{
+                    fontWeight: conv.unreadCount > 0 && selectedConversation?.id !== conv.id ? 700 : 500,
+                    color: conv.unreadCount > 0 && selectedConversation?.id !== conv.id ? '#1976d2' : '#333',
+                  }}
+                >
                   {conv.userName || conv.userFullName}
                 </div>
-                <div className="last-message">
+                <div 
+                  className="last-message"
+                  style={{
+                    fontWeight: conv.unreadCount > 0 && selectedConversation?.id !== conv.id ? 600 : 400,
+                    color: conv.unreadCount > 0 && selectedConversation?.id !== conv.id ? '#424242' : '#666',
+                  }}
+                >
                   {conv.lastMessage?.slice(0, 40)}
+                  {conv.lastMessage && conv.lastMessage.length > 40 && '...'}
                 </div>
-                <div className="last-time">{conv.lastMessageTime}</div>
+                <div 
+                  className="last-time"
+                  style={{
+                    color: conv.unreadCount > 0 && selectedConversation?.id !== conv.id ? '#1976d2' : '#888',
+                    fontSize: 12,
+                    fontWeight: conv.unreadCount > 0 && selectedConversation?.id !== conv.id ? 600 : 400,
+                  }}
+                >
+                  {formatTime(conv.lastMessageTime)}
+                </div>
               </div>
-              {/* Show unread dot if there are unread messages and this conversation is NOT selected */}
+              {/* Hiển thị số tin nhắn chưa đọc */}
               {conv.unreadCount > 0 && selectedConversation?.id !== conv.id && (
-                <span className="unread-dot" style={{ color: 'red', fontSize: 18, marginLeft: 8 }}>●</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span 
+                    className="unread-count"
+                    style={{
+                      background: '#2196f3',
+                      color: '#fff',
+                      borderRadius: '50%',
+                      minWidth: 20,
+                      height: 20,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      padding: '0 6px',
+                    }}
+                  >
+                    {conv.unreadCount > 99 ? '99+' : conv.unreadCount}
+                  </span>
+                </div>
               )}
             </div>
           ))
