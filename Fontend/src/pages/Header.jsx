@@ -159,8 +159,13 @@ const Header = () => {
                 )}
               </button>
               {showNotification && (
-                <div className="notification-dropdown">
-                  <div className="notification-dropdown-title">Thông báo</div>
+                <div className="notification-dropdown" style={{position:'relative'}}>
+                  <div className="notification-dropdown-title" style={{paddingRight:32}}>Thông báo</div>
+                  <button
+                    style={{position:'absolute',top:8,right:8,background:'#f5f5f5',border:'none',borderRadius:4,padding:'2px 10px',fontWeight:500,cursor:'pointer',color:'#22c55e',fontSize:18,zIndex:2}}
+                    onClick={() => setShowNotification(false)}
+                    title="Đóng thông báo"
+                  >×</button>
                   {notifications.length === 0 ? (
                     <div className="notification-dropdown-empty">Không có thông báo nào.</div>
                   ) : (
