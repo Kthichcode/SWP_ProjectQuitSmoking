@@ -84,18 +84,39 @@ export default function Blog() {
     
     // ...đã xóa kiểm tra membership...
 
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [pendingBlogId, setPendingBlogId] = useState(null);
     const handleReadMore = (blog) => {
         const blogId = blog.id || blog._id;
         if (!token) {
-            navigate('/login');
+            setShowLoginModal(true);
+            setPendingBlogId(blogId);
         } else if (blogId) {
             navigate(`/blog/${blogId}`);
         }
     };
+    const handleStartJourney = () => {
+        setShowLoginModal(false);
+        navigate('/login');
+    };
+    const handleCloseModal = () => {
+        setShowLoginModal(false);
+        setPendingBlogId(null);
+    };
 
     return (
         <div className="blog-container">
-            {/* Đã xóa thông báo yêu cầu membership */}
+            {/* Modal thông báo chưa đăng nhập */}
+            {showLoginModal && (
+        <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(0,0,0,0.25)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <div style={{background:'#fff',borderRadius:16,padding:'32px 28px',boxShadow:'0 4px 32px rgba(0,0,0,0.15)',minWidth:320,maxWidth:360,textAlign:'center',position:'relative'}}>
+            <button onClick={handleCloseModal} style={{position:'absolute',top:12,right:16,border:'none',background:'none',fontSize:22,cursor:'pointer',color:'#888'}}>&times;</button>
+            <h3 style={{fontWeight:800,fontSize:'1.2rem',marginBottom:12}}>Bạn chưa đăng nhập</h3>
+            <p style={{color:'#555',marginBottom:24}}>Hãy bắt đầu hành trình của bạn ngay bây giờ để đọc các bài viết, chia sẻ kinh nghiệm và nhận hỗ trợ từ các tư vấn viên!</p>
+            <button onClick={handleStartJourney} style={{background:'#43a047',color:'#fff',fontWeight:700,padding:'10px 32px',border:'none',borderRadius:10,fontSize:'1rem',cursor:'pointer',boxShadow:'0 2px 8px rgba(67,160,71,0.10)'}}>Bắt đầu</button>
+          </div>
+        </div>
+      )}
             <h2 className="blog-title">Blog chia sẻ kinh nghiệm</h2>
             <p className="blog-subtitle">Khám phá các bài viết, câu chuyện thành công và lời khuyên từ chuyên gia</p>
 
