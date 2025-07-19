@@ -1,3 +1,13 @@
+import React, { useState, useEffect } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import axiosInstance from '../../../axiosInstance';
+import { FaUsers, FaCalendarAlt, FaEnvelope, FaStar, FaTachometerAlt, FaSignOutAlt, FaPenNib, FaUserCircle, FaBell } from 'react-icons/fa';
+import MembersBarChart from '../../components/MembersBarChart';
+import MembersMonthChart from '../../components/MembersMonthChart';
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Area } from 'recharts';
+import './CoachDashboard.css';
+
 // Modal gửi thông báo cho member
 // Modal gửi thông báo cho member (tạo notification mới trước khi gửi)
 function SendNotificationModal({ open, onClose, members, onSend, loading, loadingMembers }) {
@@ -161,9 +171,7 @@ function SendNotificationModal({ open, onClose, members, onSend, loading, loadin
     </div>
   );
 }
-import React, { useState, useEffect } from 'react';
-import MembersBarChart from '../../components/MembersBarChart';
-import MembersMonthChart from '../../components/MembersMonthChart';
+
 // Modal hiển thị đánh giá
 function ReviewsModal({ open, onClose, reviews }) {
   if (!open) return null;
@@ -261,13 +269,12 @@ function MembersModal({ open, onClose, members }) {
     </div>
   );
 }
-import './CoachDashboard.css';
-import { FaUsers, FaCalendarAlt, FaEnvelope, FaStar, FaTachometerAlt, FaSignOutAlt, FaPenNib, FaUserCircle, FaBell } from 'react-icons/fa';
+
 // Notification Modal for Coach (similar to user)
 function NotificationModal({ open, onClose, notifications, onMarkRead }) {
   if (!open) return null;
   return (
-    <div className="admin-modal" style={{zIndex: 2000, background: 'rgba(0,0,0,0.18)', position: 'fixed', top:0, left:0, right:0, bottom:0, display:'flex', alignItems:'center', justifyContent:'center'}}>
+    <div className="admin-modal" style={{zIndex: 2000, background: 'rgba(0,0,0,0.18)', position: 'fixed', top:0, left: 0, right: 0, bottom: 0, display:'flex', alignItems:'center', justifyContent:'center'}}>
       <div className="admin-modal-content" style={{maxWidth: 420, minWidth: 320, padding: 28, position: 'relative', borderRadius: 16, background:'#fff', boxShadow:'0 8px 32px rgba(44,108,223,0.10)'}}>
         <button
           className="admin-modal-close"
@@ -316,10 +323,6 @@ function NotificationModal({ open, onClose, notifications, onMarkRead }) {
     </div>
   );
 }
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import axiosInstance from '../../../axiosInstance';
-
 
 function CoachDashboard() {
   // State cho modal gửi thông báo
@@ -401,6 +404,73 @@ function CoachDashboard() {
   const [showMembers, setShowMembers] = useState(false);
   const [myMembers, setMyMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
+  // State cho doanh thu tháng hiện tại của coach
+  const [currentMonthRevenue, setCurrentMonthRevenue] = useState({ totalRevenue: 0, totalTransactions: 0, period: null });
+  const [loadingMonthRevenue, setLoadingMonthRevenue] = useState(false);
+  // State cho doanh thu năm hiện tại của coach
+  const [currentYearRevenue, setCurrentYearRevenue] = useState({ totalRevenue: 0, totalTransactions: 0, year: null });
+  const [loadingYearRevenue, setLoadingYearRevenue] = useState(false);
+  // State cho dữ liệu biểu đồ doanh thu 12 tháng
+  const [revenueChartData, setRevenueChartData] = useState([]);
+  const [loadingRevenueChart, setLoadingRevenueChart] = useState(false);
+  // Hàm lấy doanh thu tháng hiện tại
+  const fetchCurrentMonthRevenue = async () => {
+    if (!user || !user.userId) return;
+    setLoadingMonthRevenue(true);
+    try {
+      const res = await axiosInstance.get(`/api/revenue/coach/current-month?coachId=${user.userId}`);
+      if (res.data?.data) {
+        setCurrentMonthRevenue(res.data.data);
+      } else {
+        setCurrentMonthRevenue({ totalRevenue: 0, totalTransactions: 0, period: null });
+      }
+    } catch {
+      setCurrentMonthRevenue({ totalRevenue: 0, totalTransactions: 0, period: null });
+    } finally {
+      setLoadingMonthRevenue(false);
+    }
+  };
+  // Hàm lấy doanh thu năm hiện tại
+  const fetchCurrentYearRevenue = async () => {
+    if (!user || !user.userId) return;
+    setLoadingYearRevenue(true);
+    try {
+      const res = await axiosInstance.get(`/api/revenue/coach/current-year?coachId=${user.userId}`);
+      if (res.data?.data) {
+        setCurrentYearRevenue(res.data.data);
+      } else {
+        setCurrentYearRevenue({ totalRevenue: 0, totalTransactions: 0, year: null });
+      }
+    } catch {
+      setCurrentYearRevenue({ totalRevenue: 0, totalTransactions: 0, year: null });
+    } finally {
+      setLoadingYearRevenue(false);
+    }
+  };
+  // Hàm lấy dữ liệu biểu đồ doanh thu 12 tháng cho coach
+  const fetchRevenueChart = async () => {
+    if (!user || !user.userId) return;
+    setLoadingRevenueChart(true);
+    try {
+      const res = await axiosInstance.get(`/api/revenue/coach/chart?months=12&coachId=${user.userId}`);
+      if (res.data?.data?.monthlyData && Array.isArray(res.data.data.monthlyData)) {
+        setRevenueChartData(res.data.data.monthlyData);
+      } else {
+        setRevenueChartData([]);
+      }
+    } catch {
+      setRevenueChartData([]);
+    } finally {
+      setLoadingRevenueChart(false);
+    }
+  };
+
+  // Hàm format số cho hiển thị VND
+  const formatNumber = (num) => {
+    if (typeof num !== 'number') return '0';
+    return num.toLocaleString('vi-VN');
+  };
+
   // Hàm lấy danh sách thành viên
   const fetchMyMembers = async () => {
     setLoadingMembers(true);
@@ -459,6 +529,9 @@ function CoachDashboard() {
   useEffect(() => {
     if (user && isOverview) {
       fetchDashboardData();
+      fetchCurrentMonthRevenue();
+      fetchCurrentYearRevenue();
+      fetchRevenueChart();
     }
   }, [user, isOverview]);
 
@@ -628,7 +701,8 @@ function CoachDashboard() {
                     Gửi thông báo cho member
                   </button>
                 </div>
-                <div className="cards-container">
+                {/* Cards: Thành viên, Kế hoạch cai thuốc, Đánh giá */}
+                <div className="cards-container" style={{marginBottom: '32px'}}>
                   <div className="card" style={{cursor:'pointer'}} onClick={() => { setShowMembers(true); fetchMyMembers(); }}>
                     <FaUsers />
                     <h3>{dashboardData.totalMembers}</h3>
@@ -646,6 +720,86 @@ function CoachDashboard() {
                   </div>
                   <ReviewsModal open={showReviews} onClose={() => setShowReviews(false)} reviews={myReviews} />
                   <MembersModal open={showMembers} onClose={() => setShowMembers(false)} members={myMembers} />
+                </div>
+
+                {/* Doanh thu tháng và năm hiện tại nằm ngang nhau */}
+                <div style={{
+                  display: 'flex',
+                  gap: '24px',
+                  justifyContent: 'center',
+                  margin: '24px 0',
+                  flexWrap: 'wrap'
+                }}>
+                  {/* Bảng doanh thu tháng hiện tại của coach */}
+                  <div style={{
+                    background: '#e3f2fd',
+                    borderRadius: '10px',
+                    border: '1px solid #90caf9',
+                    boxShadow: '0 2px 8px rgba(33,150,243,0.05)',
+                    padding: '20px',
+                    minWidth: '320px',
+                    maxWidth: '400px',
+                    textAlign: 'center',
+                    flex: '1 1 320px'
+                  }}>
+                    <h3 style={{ fontSize: '1.1em', fontWeight: 600, margin: 0, color: '#1976d2' }}>
+                      Doanh thu tháng hiện tại {currentMonthRevenue.period ? `(${currentMonthRevenue.period})` : ''}
+                    </h3>
+                    <div style={{ marginTop: 10, fontSize: '1.3em', color: '#1976d2', fontWeight: 700 }}>
+                      {loadingMonthRevenue ? 'Đang tải...' : formatNumber(currentMonthRevenue.totalRevenue)} VND
+                    </div>
+                    <div style={{ marginTop: 4, color: '#555' }}>
+                      Số giao dịch: <b>{currentMonthRevenue.totalTransactions}</b>
+                    </div>
+                  </div>
+                  {/* Bảng doanh thu năm hiện tại của coach */}
+                  <div style={{
+                    background: '#fffde7',
+                    borderRadius: '10px',
+                    border: '1px solid #ffe082',
+                    boxShadow: '0 2px 8px rgba(255,193,7,0.05)',
+                    padding: '20px',
+                    minWidth: '320px',
+                    maxWidth: '400px',
+                    textAlign: 'center',
+                    flex: '1 1 320px'
+                  }}>
+                    <h3 style={{ fontSize: '1.1em', fontWeight: 600, margin: 0, color: '#f9a825' }}>
+                      Doanh thu năm hiện tại {currentYearRevenue.year ? `(${currentYearRevenue.year})` : ''}
+                    </h3>
+                    <div style={{ marginTop: 10, fontSize: '1.3em', color: '#f9a825', fontWeight: 700 }}>
+                      {loadingYearRevenue ? 'Đang tải...' : formatNumber(currentYearRevenue.totalRevenue)} VND
+                    </div>
+                    <div style={{ marginTop: 4, color: '#555' }}>
+                      Số giao dịch: <b>{currentYearRevenue.totalTransactions}</b>
+                    </div>
+                  </div>
+                </div>
+                {/* Biểu đồ đường doanh thu 12 tháng gần nhất cho coach */}
+                <div style={{ margin: '30px 0', background: '#fff', borderRadius: '10px', border: '1px solid #e0e0e0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', padding: '24px' }}>
+                  <h3 style={{ fontSize: '1.3em', fontWeight: 600, margin: 0, marginBottom: 16 }}>Biểu đồ doanh thu 12 tháng gần nhất</h3>
+                  {loadingRevenueChart ? (
+                    <div style={{ color: '#888', margin: '16px 0' }}>Đang tải dữ liệu doanh thu...</div>
+                  ) : revenueChartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={320}>
+                      <LineChart data={revenueChartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" tick={{ fontSize: 13 }} />
+                        <YAxis tickFormatter={v => formatNumber(v)} />
+                        <Tooltip formatter={v => `${v.toLocaleString('vi-VN')} VND`} />
+                        <Line type="monotone" dataKey="revenue" stroke="#007bff" strokeWidth={3} dot={{ r: 5 }} activeDot={{ r: 7 }} name="Doanh thu" fillOpacity={0.2} />
+                        <defs>
+                          <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#007bff" stopOpacity={0.2}/>
+                            <stop offset="100%" stopColor="#007bff" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <Area type="monotone" dataKey="revenue" stroke={false} fill="url(#colorRevenue)" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div style={{ color: '#888', margin: '16px 0' }}>Chưa có dữ liệu doanh thu 12 tháng.</div>
+                  )}
                 </div>
               </>
             )}
