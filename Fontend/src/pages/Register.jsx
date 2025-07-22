@@ -25,6 +25,7 @@ function Register() {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [passwordLengthError, setPasswordLengthError] = useState('');
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -38,6 +39,13 @@ function Register() {
     e.preventDefault();
     setSuccessMessage('');
     setErrorMessage('');
+    setPasswordLengthError('');
+
+    // Kiểm tra mật khẩu và xác nhận mật khẩu phải có ít nhất 6 ký tự
+    if (formData.password.length < 6 || formData.confirmPassword.length < 6) {
+      setPasswordLengthError("Mật khẩu và xác nhận mật khẩu phải có ít nhất 6 ký tự.");
+      return;
+    }
 
     if (!formData.agree) {
       setErrorMessage("Bạn cần đồng ý với điều khoản.");
@@ -155,6 +163,9 @@ function Register() {
                   </span>
                 </div>
               </div>
+              {passwordLengthError && (
+                <div style={{ color: 'red', marginTop: 4, marginBottom: 8, fontWeight: 500, textAlign: 'left' }}>{passwordLengthError}</div>
+              )}
 
               <div className="register-checkbox">
                 <label htmlFor="agree">
