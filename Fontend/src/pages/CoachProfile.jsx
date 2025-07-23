@@ -12,6 +12,9 @@ function CoachProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tab, setTab] = useState('overview');
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
 
   console.log('CoachProfile - ID from params:', id);
 
@@ -19,8 +22,24 @@ function CoachProfile() {
     if (id) {
       console.log('Fetching coach profile for ID:', id);
       fetchCoachProfile();
+      fetchCoachReviews(id);
     }
   }, [id]);
+
+  const fetchCoachReviews = async (coachId) => {
+    try {
+      const response = await axiosInstance.get(`http://localhost:5175/api/coach-reviews/public/coach/${coachId}`);
+      if (response.data) {
+        setReviews(response.data.reviews || []);
+        setAverageRating(response.data.averageRating || 0);
+        setTotalReviews(response.data.totalReviews || 0);
+      }
+    } catch (error) {
+      setReviews([]);
+      setAverageRating(0);
+      setTotalReviews(0);
+    }
+  };
 
   const fetchCoachProfile = async () => {
     try {
@@ -230,10 +249,21 @@ function CoachProfile() {
             {tab === 'review' && (
               <div style={{fontSize: 16}}>
                 <b>Đánh giá từ khách hàng:</b>
+                <div style={{marginTop: 8}}>
+                  <span>Trung bình: <b>{averageRating.toFixed(1)}</b>/5 ⭐ ({totalReviews} đánh giá)</span>
+                </div>
                 <ul style={{marginTop: 8}}>
-                  <li>"Coach rất tận tâm, nhờ có coach mà tôi đã bỏ thuốc thành công!"</li>
-                  <li>"Phản hồi nhanh, tư vấn rõ ràng, dễ hiểu."</li>
-                  <li>"Phương pháp hiệu quả, phù hợp với từng người."</li>
+                  {reviews.length > 0 ? (
+                    reviews.map((review, idx) => (
+                      <li key={idx}>
+                        <span style={{color:'#f59e42'}}>⭐ {review.rating}</span> - {review.comment}
+                        <br/>
+                        <span style={{fontSize:13, color:'#888'}}>Bởi: {review.reviewerName || 'Ẩn danh'} {review.createdAt ? `(${new Date(review.createdAt).toLocaleDateString()})` : ''}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li>Chưa có đánh giá nào cho coach này.</li>
+                  )}
                 </ul>
               </div>
             )}
