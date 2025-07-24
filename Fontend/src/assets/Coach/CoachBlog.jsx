@@ -136,6 +136,13 @@ export default function CoachBlog() {
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setEditForm(prev => ({ ...prev, [name]: value }));
+    if (name === 'coverImage') {
+      if (!isValidImageUrl(value)) {
+        setEditCoverImageError('Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).');
+      } else {
+        setEditCoverImageError('');
+      }
+    }
   };
 
   
