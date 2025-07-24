@@ -21,6 +21,7 @@ function AdminBlogs() {
   // Pagination state
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 8;
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     axios.get('/api/blog-categories/getAll')
@@ -97,6 +98,8 @@ function AdminBlogs() {
       });
       resetForm();
       fetchBlogs();
+      setSuccessMessage('Tạo blog thành công!');
+      setTimeout(() => setSuccessMessage(''), 2500);
     } catch (error) {
       console.error('Lỗi khi thêm blog:', error);
     }
@@ -127,6 +130,8 @@ function AdminBlogs() {
       });
       resetForm();
       fetchBlogs();
+      setSuccessMessage('Cập nhật blog thành công!');
+      setTimeout(() => setSuccessMessage(''), 2500);
     } catch (error) {
       console.error('Lỗi khi cập nhật blog:', error);
     }
@@ -138,6 +143,8 @@ function AdminBlogs() {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchBlogs();
+      setSuccessMessage('Xóa blog thành công!');
+      setTimeout(() => setSuccessMessage(''), 2500);
     } catch (error) {
       console.error('Lỗi khi xóa blog:', error);
     }
@@ -157,6 +164,8 @@ function AdminBlogs() {
     })
       .then(() => {       
         setBlogs((prev) => prev.filter((b) => b.id !== id));
+        setSuccessMessage('Đã từ chối blog!');
+        setTimeout(() => setSuccessMessage(''), 2500);
       })
       .catch((err) => console.error('Lỗi từ chối blog:', err));
   };
@@ -173,6 +182,11 @@ function AdminBlogs() {
 
   return (
     <div className="admin-blogs-container">
+      {successMessage && (
+        <div style={{position:'fixed',top:24,right:24,zIndex:3000,background:'#4CAF50',color:'#fff',padding:'14px 32px',borderRadius:8,fontWeight:600,boxShadow:'0 2px 12px #4CAF5040',fontSize:17}}>
+          {successMessage}
+        </div>
+      )}
       <h2 className="admin-blogs-title">Quản lý Blog</h2>
       <div className="admin-blogs-desc">Quản lý và duyệt các bài blog của người dùng</div>
 
