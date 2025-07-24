@@ -135,8 +135,15 @@
   box-shadow: 0 2px 8px #0001;
 }
 
+
 .coach-blog-badge.draft {
   background: #f59e0b;
+}
+
+.coach-blog-badge.rejected {
+  background: #d32f2f;
+  color: white;
+  border: 1.5px solid #d32f2f;
 }
 
 .coach-blog-badge.pending {

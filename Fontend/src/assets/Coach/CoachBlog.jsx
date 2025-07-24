@@ -29,6 +29,28 @@ export default function CoachBlog() {
   const [editCoverImageError, setEditCoverImageError] = useState('');
   const [blogs, setBlogs] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteBlogId, setDeleteBlogId] = useState(null);
+
+  // Hàm xóa blog
+  const handleDeleteBlog = async () => {
+    if (!deleteBlogId) return;
+    setDeleteLoading(true);
+    try {
+      await axios.delete(`/api/blog/delete/${deleteBlogId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setShowDeleteModal(false);
+      setDeleteBlogId(null);
+      fetchBlogs();
+    } catch (error) {
+      alert('Lỗi khi xóa blog.');
+      console.error('Lỗi khi xóa blog:', error);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
   const [loading, setLoading] = useState(false);
   // Pagination state
   const [page, setPage] = useState(1);
@@ -214,11 +236,13 @@ export default function CoachBlog() {
       <div className="coach-blog-list">
         {loading ? <p>Đang tải...</p> : pagedBlogs.map(blog => (
           <div className="coach-blog-card" key={blog.id}>
-            <div className={`coach-blog-badge${blog.status === "draft" ? " draft" : blog.status === "PENDING" ? " pending" : ""}`}>
+            <div className={`coach-blog-badge${blog.status === "draft" ? " draft" : blog.status === "PENDING" ? " pending" : blog.status === "REJECTED" ? " rejected" : ""}`}>
               {blog.status === "draft"
                 ? "Bản nháp"
                 : blog.status === "PENDING"
                 ? "Chờ duyệt"
+                : blog.status === "REJECTED"
+                ? "Từ chối"
                 : "Đã xuất bản"}
             </div>
             {blog.coverImage && (
@@ -233,8 +257,44 @@ export default function CoachBlog() {
             </div>
             <div className="coach-blog-footer">
               <span className="coach-blog-readtime">{blog.readTime}</span>
-              <div className="coach-blog-actions-card">
+              <div className="coach-blog-actions-card" style={{display:'flex',gap:8}}>
                 <button className="coach-blog-btn-icon" title="Chỉnh sửa" onClick={() => handleEdit(blog)}><FaEdit /></button>
+                {blog.status === "REJECTED" && (
+                  <button
+                    className="coach-blog-btn-icon"
+                    title="Xóa bài viết"
+                    style={{ color: '#e53935', borderColor: '#e53935' }}
+                    onClick={() => { setShowDeleteModal(true); setDeleteBlogId(blog.id); }}
+                    disabled={deleteLoading}
+                  >
+                    Xóa
+                  </button>
+                )}
+      {/* Modal xác nhận xóa */}
+      {showDeleteModal && (
+        <div className="modal-overlay" style={{zIndex:2000}}>
+          <div className="modal-edit-blog" style={{maxWidth:400,padding:'32px 24px',textAlign:'center'}}>
+            <div style={{fontWeight:700,fontSize:20,marginBottom:16}}>Xác nhận xóa bài viết</div>
+            <div style={{color:'#d32f2f',marginBottom:24}}>Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.</div>
+            <div style={{display:'flex',justifyContent:'center',gap:16}}>
+              <button
+                onClick={handleDeleteBlog}
+                style={{padding:'10px 24px',background:'#d32f2f',color:'#fff',border:'none',borderRadius:6,fontWeight:600,fontSize:16,minWidth:90}}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? 'Đang xóa...' : 'Xóa'}
+              </button>
+              <button
+                onClick={() => { setShowDeleteModal(false); setDeleteBlogId(null); }}
+                style={{padding:'10px 24px',background:'#ccc',border:'none',borderRadius:6,fontWeight:600,fontSize:16,minWidth:90}}
+                disabled={deleteLoading}
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
               </div>
             </div>
           </div>
