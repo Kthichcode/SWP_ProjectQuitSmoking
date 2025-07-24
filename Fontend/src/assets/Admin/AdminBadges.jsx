@@ -8,7 +8,9 @@ const AdminBadges = () => {
   const [badges, setBadges] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: '', description: '', condition: '', type: '', score: '', icon: 'leaf', iconUrl: '', id: null });
+  const [errors, setErrors] = useState({});
   const [editing, setEditing] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
  
   const iconOptions = {
     leaf: '🍃', 
@@ -38,27 +40,75 @@ const AdminBadges = () => {
     
   }, []);
 
+  // Regex: chỉ cho phép chữ, số, khoảng trắng
+  const validText = value => /^[a-zA-Z0-9\sÀ-ỹ]+$/.test(value);
+
+  const validateField = (name, value, typeValue) => {
+    switch (name) {
+      case 'name':
+        if (!value || value.trim() === '') return 'Tên huy hiệu không được bỏ trống.';
+        if (value.length < 5) return 'Tên huy hiệu phải có ít nhất 5 ký tự.';
+        if (value.length > 50) return 'Tên huy hiệu tối đa 50 ký tự.';
+        if (!validText(value)) return 'Tên huy hiệu không được chứa ký tự đặc biệt.';
+        return '';
+      case 'description':
+        if (!value || value.trim() === '') return 'Mô tả không được bỏ trống.';
+        if (value.length < 5) return 'Mô tả phải có ít nhất 5 ký tự.';
+        if (!validText(value)) return 'Mô tả không được chứa ký tự đặc biệt.';
+        return '';
+      case 'type':
+        if (!value || value === '') return 'Bạn chưa chọn loại huy hiệu.';
+        return '';
+      case 'score':
+        if (!value || value.trim() === '') return 'Điểm không được bỏ trống.';
+        if (!/^[1-9][0-9]*$/.test(value)) return 'Điểm phải là số nguyên dương.';
+        if (Number(value) < 5) return 'Điểm phải ít nhất là 5.';
+        if (Number(value) > 50) return 'Điểm tối đa là 50.';
+        return '';
+      case 'condition':
+        if (!value || value.trim() === '') return 'Điều kiện không được bỏ trống.';
+        if (!/^[1-9][0-9]*$/.test(value)) return 'Điều kiện phải là số nguyên dương.';
+        if (typeValue === 'stage-completion') {
+          if (Number(value) < 1 || Number(value) > 3) return 'Điều kiện cho loại "Hoàn thành giai đoạn" phải từ 1 đến 3.';
+        } else {
+          if (Number(value) < 1) return 'Điều kiện phải ít nhất là 1.';
+        }
+        return '';
+      
+      default:
+        return '';
+    }
+  };
+
   const handleChange = e => {
     const { name, value, type, files } = e.target;
+    let newValue = value;
     if (name === 'iconUrl' && type === 'file' && files && files[0]) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setForm(f => ({ ...f, iconUrl: reader.result }));
       };
       reader.readAsDataURL(files[0]);
-    } else {
-      setForm({ ...form, [name]: value });
+      return;
     }
+    // Validate field
+    let errorMsg = validateField(name, newValue, name === 'condition' ? form.type : form.type);
+    setErrors(prev => ({ ...prev, [name]: errorMsg }));
+    setForm({ ...form, [name]: newValue });
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
-    // Validate required fields
-    if (!form.name.trim()) return alert('Tên huy hiệu không được để trống!');
-    if (!form.type.trim()) return alert('Loại huy hiệu không được để trống!');
-    if (!form.description.trim()) return alert('Mô tả không được để trống!');
-    if (form.condition === '' || isNaN(Number(form.condition))) return alert('Điều kiện đạt phải là số!');
-    if (form.score === '' || isNaN(Number(form.score))) return alert('Điểm phải là số!');
+    // Validate all fields
+    const newErrors = {};
+    newErrors.name = validateField('name', form.name);
+    newErrors.type = validateField('type', form.type);
+    newErrors.description = validateField('description', form.description);
+    newErrors.condition = validateField('condition', form.condition, form.type);
+    newErrors.score = validateField('score', form.score);
+    setErrors(newErrors);
+    // Nếu có lỗi, không submit
+    if (Object.values(newErrors).some(msg => msg)) return;
 
     // iconUrl: nếu không có ảnh, gửi chuỗi rỗng
     const iconUrlToSend = form.iconUrl ? form.iconUrl : '';
@@ -77,21 +127,20 @@ const AdminBadges = () => {
         await axios.put(`/api/badges/UpdateById/${form.id}`, badgeData, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        setSuccessMsg('Cập nhật huy hiệu thành công!');
       } else {
         await axios.post('/api/badges/Create', badgeData, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        setSuccessMsg('Thêm mới huy hiệu thành công!');
       }
-      setForm({ name: '', description: '', condition: '', type: '', score: '', icon: 'leaf', id: null });
       setForm({ name: '', description: '', condition: '', type: '', score: '', icon: 'leaf', iconUrl: '', id: null });
       setEditing(false);
+      setErrors({});
       fetchBadges();
+      setTimeout(() => setSuccessMsg(''), 10000);
     } catch (err) {
-      if (err.response && err.response.data) {
-        alert('Lỗi: ' + (err.response.data.message || JSON.stringify(err.response.data)));
-      } else {
-        alert('Có lỗi xảy ra!');
-      }
+      setErrors(prev => ({ ...prev, submit: 'Có lỗi xảy ra!' }));
     }
   };
 
@@ -135,64 +184,87 @@ const AdminBadges = () => {
         style={{
           marginBottom: 32,
           display: 'flex',
-          alignItems: 'center',
-          flexWrap: 'wrap',
+          flexDirection: 'column',
           background: '#fff',
           borderRadius: 12,
           boxShadow: '0 2px 12px #0001',
-          padding: 16,
-          gap: 12
+          padding: 24,
+          gap: 16,
+          width: '100%',
+          maxWidth: '100%',
         }}
       >
-        <input name="name" value={form.name} onChange={handleChange} placeholder="Tên huy hiệu" required style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8 }} />
-        <input name="description" value={form.description} onChange={handleChange} placeholder="Mô tả" style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8 }} />
-        <input name="condition" value={form.condition} onChange={handleChange} placeholder="Điều kiện đạt (số)" type="number" min="0" style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8, width: 120 }} />
-        <select name="type" value={form.type} onChange={handleChange} style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8, width: 170, color: '#000', background: '#fff' }} required>
-          <option value="">Chọn loại huy hiệu</option>
-          <option value="non-smoking">Không hút thuốc</option>
-          <option value="stage-completion">Hoàn thành giai đoạn</option>
-        </select>
-        <input name="score" value={form.score} onChange={handleChange} placeholder="Điểm" type="number" min="0" style={{ marginRight: 8, borderRadius: 6, border: '1px solid #cbd5e1', padding: 8, width: 90 }} />
-        <input name="iconUrl" type="file" accept="image/*" onChange={handleChange} style={{ marginRight: 8 }} />
-        {form.iconUrl && (
-          <img src={form.iconUrl} alt="icon preview" style={{ width: 32, height: 32, objectFit: 'contain', marginRight: 8, borderRadius: 8, border: '1px solid #e5e7eb', boxShadow: '0 1px 4px #0001' }} />
-        )}
-        <button
-          type="submit"
-          style={{
-            background: editing ? '#f59e42' : '#22c55e',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 6,
-            padding: '8px 18px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'background 0.2s',
-            boxShadow: '0 1px 4px #0001',
-          }}
-        >
-          {editing ? 'Cập nhật' : 'Thêm mới'}
-        </button>
-        {editing && (
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+          <input name="name" value={form.name} onChange={handleChange} placeholder="Tên huy hiệu" style={{ borderRadius: 6, border: '1px solid #cbd5e1', padding: 10, fontSize: 16, width: '100%' }} />
+          <span style={{ minHeight: 18, display: 'block' }}>{errors.name && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.name}</span>}</span>
+        </div>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+          <input name="description" value={form.description} onChange={handleChange} placeholder="Mô tả" style={{ borderRadius: 6, border: '1px solid #cbd5e1', padding: 10, fontSize: 16, width: '100%' }} />
+          <span style={{ minHeight: 18, display: 'block' }}>{errors.description && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.description}</span>}</span>
+        </div>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+          <input name="condition" value={form.condition} onChange={handleChange} placeholder="Điều kiện đạt (số)" type="number" min="0" style={{ borderRadius: 6, border: '1px solid #cbd5e1', padding: 10, fontSize: 16, width: '100%' }} />
+          <span style={{ minHeight: 18, display: 'block' }}>{errors.condition && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.condition}</span>}</span>
+        </div>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+          <select name="type" value={form.type} onChange={handleChange} style={{ borderRadius: 6, border: '1px solid #cbd5e1', padding: 10, fontSize: 16, color: '#000', background: '#fff', width: '100%' }}>
+            <option value="">Chọn loại huy hiệu</option>
+            <option value="non-smoking">Không hút thuốc</option>
+            <option value="stage-completion">Hoàn thành giai đoạn</option>
+          </select>
+          <span style={{ minHeight: 18, display: 'block' }}>{errors.type && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.type}</span>}</span>
+        </div>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+          <input name="score" value={form.score} onChange={handleChange} placeholder="Điểm" type="number" min="0" style={{ borderRadius: 6, border: '1px solid #cbd5e1', padding: 10, fontSize: 16, width: '100%' }} />
+          <span style={{ minHeight: 18, display: 'block' }}>{errors.score && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.score}</span>}</span>
+        </div>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <input name="iconUrl" type="file" accept="image/*" onChange={handleChange} style={{ marginBottom: 8 }} />
+          {form.iconUrl && (
+            <img src={form.iconUrl} alt="icon preview" style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 8, border: '1px solid #e5e7eb', boxShadow: '0 1px 4px #0001', marginBottom: 4 }} />
+          )}
+        </div>
+        <span style={{ minHeight: 18, display: 'block', width: '100%' }}>{errors.submit && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.submit}</span>}</span>
+        {successMsg && <span style={{ color: '#22c55e', fontSize: 15, fontWeight: 500, marginBottom: 8 }}>{successMsg}</span>}
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 12 }}>
           <button
-            type="button"
-            onClick={handleCancel}
+            type="submit"
             style={{
-              marginLeft: 8,
-              background: '#e11d48',
+              background: editing ? '#f59e42' : '#22c55e',
               color: '#fff',
               border: 'none',
               borderRadius: 6,
-              padding: '8px 18px',
+              padding: '10px 24px',
               fontWeight: 600,
               cursor: 'pointer',
               transition: 'background 0.2s',
               boxShadow: '0 1px 4px #0001',
+              fontSize: 16,
             }}
           >
-            Hủy
+            {editing ? 'Cập nhật' : 'Thêm mới'}
           </button>
-        )}
+          {editing && (
+            <button
+              type="button"
+              onClick={handleCancel}
+              style={{
+                background: '#e11d48',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 6,
+                padding: '10px 24px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+                boxShadow: '0 1px 4px #0001',
+                fontSize: 16,
+              }}
+            >
+              Hủy
+            </button>
+          )}
+        </div>
       </form>
       {loading ? (
         <div style={{ color: '#64748b', fontWeight: 500, fontSize: 18 }}>Đang tải...</div>
