@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import "../assets/CSS/Profile.css";
 import { useAuth } from '../contexts/AuthContext';
@@ -18,6 +17,7 @@ const Profile = () => {
   const modalRef = useRef();
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [badges, setBadges] = useState();
+  const [successMsg, setSuccessMsg] = useState('');
 
   const parseDateString = (dateStr) => {
     if (!dateStr) return null;
@@ -65,12 +65,71 @@ const Profile = () => {
       .catch(() => setBadges([]));
   }, [authUser, user]);
 
+  const validateFullName = (name) => {
+    if (!name) return 'Họ và tên không được bỏ trống.';
+    if (name.length < 5 || name.length > 50) return 'Họ và tên phải từ 5 đến 50 ký tự.';
+    if (/[^A-Za-zÀ-ỹ\s]/.test(name)) return 'Họ và tên không được chứa số hoặc ký tự đặc biệt.';
+    if (/[0-9]/.test(name)) return 'Họ và tên không được chứa số.';
+    // Kiểm tra viết hoa chữ cái đầu mỗi từ
+    if (!name.split(' ').every(w => w && w[0] === w[0].toUpperCase())) return 'Mỗi chữ cái đầu của từ phải viết hoa.';
+    return '';
+  };
+  const validatePhone = (phone) => {
+    if (!phone) return 'Số điện thoại không được bỏ trống.';
+    if (!phone.startsWith('0')) return 'Số điện thoại phải bắt đầu bằng số 0.';
+    if (phone.length < 10 || phone.length > 11) return 'Số điện thoại phải có từ 10-11 số.';
+    return '';
+  };
+  const validateAddress = (address) => {
+    if (!address) return 'Địa chỉ không được bỏ trống.';
+    if (address.length < 7) return 'Địa chỉ phải ít nhất 7 ký tự.';
+    if (!address.includes('/')) return 'Địa chỉ phải chứa dấu /.';
+    if (/[^A-Za-zÀ-ỹ0-9\s/]/.test(address)) return 'Địa chỉ không được chứa ký tự đặc biệt ngoài dấu /.';
+    return '';
+  };
+  const validateBirthDate = (birthDate) => {
+    if (!birthDate) return 'Ngày sinh không được bỏ trống.';
+    // Chuyển đổi về đối tượng Date nếu là chuỗi
+    let dateObj = birthDate;
+    if (typeof birthDate === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(birthDate)) {
+      const [day, month, year] = birthDate.split('/');
+      dateObj = new Date(`${year}-${month}-${day}T00:00:00`);
+    } else if (typeof birthDate === 'string') {
+      dateObj = new Date(birthDate);
+    }
+    if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) return 'Ngày sinh không hợp lệ.';
+    if (dateObj > new Date()) return 'Ngày sinh không được lớn hơn hôm nay.';
+    // Có thể thêm kiểm tra tuổi tối thiểu/tối đa nếu cần
+    return '';
+  };
+
+  const [editErrors, setEditErrors] = useState({});
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm({ ...editForm, [name]: value });
+    let error = '';
+    if (name === 'fullName') error = validateFullName(value);
+    if (name === 'phoneNumber') error = validatePhone(value);
+    if (name === 'address') error = validateAddress(value);
+    if (name === 'birthDate') error = validateBirthDate(value);
+    setEditErrors({ ...editErrors, [name]: error });
+  };
+
   const handleEditSave = async (e) => {
     e.preventDefault();
-    if (!editForm.fullName || editForm.fullName.length > 40) {
-      alert('Họ và tên phải từ 1 đến 40 ký tự!');
+    const errors = {
+      fullName: validateFullName(editForm.fullName),
+      phoneNumber: validatePhone(editForm.phoneNumber),
+      birthDate: validateBirthDate(editForm.birthDate),
+      address: validateAddress(editForm.address),
+    };
+    // Chỉ chặn lưu nếu có lỗi thực sự
+    if (Object.values(errors).filter(Boolean).length > 0) {
+      setEditErrors(errors);
       return;
     }
+    setEditErrors({}); // Xóa lỗi sau khi lưu thành công
     const token = authUser?.token || authUser?.accessToken;
     if (!token) return;
     setLoadingProfile(true);
@@ -102,6 +161,8 @@ const Profile = () => {
       setUser(res.data || {});
       setEditForm(res.data || {});
       setShowEdit(false);
+      setEditErrors({}); // Xóa lỗi sau khi lưu thành công
+      setSuccessMsg('Cập nhật thông tin cá nhân thành công!');
     } catch (err) {
       alert('Cập nhật thông tin thất bại!');
     } finally {
@@ -123,11 +184,11 @@ const Profile = () => {
     setShowEdit(true);
   };
 
-  const handleEditChange = (e) => {
-    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  const handleEditCancel = () => {
+    setShowEdit(false);
+    setEditErrors({}); // Xóa lỗi khi hủy
+    setSuccessMsg(''); // Ẩn thông báo khi đóng modal
   };
-
-  const handleEditCancel = () => setShowEdit(false);
 
   return (
     <div className="profile-bg">
@@ -150,7 +211,8 @@ const Profile = () => {
                 </div>
                 <div className="form-row-2col">
                   <label><AiOutlineUser /> Họ và tên</label>
-                  <input name="fullName" value={editForm.fullName} onChange={handleEditChange} required />
+                  <input name="fullName" value={editForm.fullName} onChange={handleEditChange}  />
+                  {editErrors.fullName && <div style={{ color: '#e11d48', fontSize: 13 }}>{editErrors.fullName}</div>}
                 </div>
                 <div className="form-row-2col">
                   <label><AiOutlineMail /> Email</label>
@@ -158,7 +220,21 @@ const Profile = () => {
                 </div>
                 <div className="form-row-2col">
                   <label><AiOutlinePhone /> Số điện thoại</label>
-                  <input name="phoneNumber" value={editForm.phoneNumber} onChange={handleEditChange} required />
+                  <input 
+                    name="phoneNumber" 
+                    type="tel"
+                    pattern="[0-9]*"
+                    value={editForm.phoneNumber} 
+                    onChange={handleEditChange}
+                    onKeyDown={(e) => {
+                      // Chỉ cho phép số, Backspace, Delete, Tab, Enter, và các phím di chuyển
+                      if (!/[0-9]/.test(e.key) && 
+                          !['Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                  {editErrors.phoneNumber && <div style={{ color: '#e11d48', fontSize: 13 }}>{editErrors.phoneNumber}</div>}
                 </div>
                 <div className="form-row-2col">
                   <label><AiOutlineCalendar /> Ngày sinh</label>
@@ -185,6 +261,7 @@ const Profile = () => {
                     locale={vi}
                     onKeyDown={(e) => e.preventDefault()}
                   />
+                  {editErrors.birthDate && <div style={{ color: '#e11d48', fontSize: 13 }}>{editErrors.birthDate}</div>}
                 </div>
                 <div className="form-row-2col">
                   <label>Giới tính</label>
@@ -198,6 +275,7 @@ const Profile = () => {
                 <div className="form-row-2col">
                   <label><AiOutlineHome /> Địa chỉ</label>
                   <input name="address" value={editForm.address} onChange={handleEditChange} />
+                  {editErrors.address && <div style={{ color: '#e11d48', fontSize: 13 }}>{editErrors.address}</div>}
                 </div>
               </div>
               <div className="modal-actions-2col">
@@ -208,6 +286,107 @@ const Profile = () => {
           </div>
         </div>
       )}
+
+      {/* Success Message Box Modal */}
+      {successMsg && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,0,0,0.4)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backdropFilter: 'blur(4px)',
+        }}>
+          <div style={{
+            background: 'linear-gradient(145deg, #ffffff, #f8fffe)',
+            borderRadius: 20,
+            boxShadow: '0 20px 60px rgba(34,197,94,0.2), 0 8px 32px rgba(0,0,0,0.1)',
+            padding: '40px 50px',
+            minWidth: 380,
+            maxWidth: 500,
+            textAlign: 'center',
+            border: '1px solid rgba(34,197,94,0.2)',
+            position: 'relative',
+            transform: 'scale(1)',
+            animation: 'successBoxIn 0.3s ease-out',
+          }}>
+            {/* Close Button */}
+            <button
+              onClick={() => setSuccessMsg('')}
+              style={{
+                position: 'absolute',
+                top: 15,
+                right: 20,
+                background: 'rgba(136,136,136,0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: 32,
+                height: 32,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 18,
+                color: '#666',
+                cursor: 'pointer',
+                fontWeight: 600,
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(136,136,136,0.2)';
+                e.target.style.color = '#333';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(136,136,136,0.1)';
+                e.target.style.color = '#666';
+              }}
+              aria-label="Đóng thông báo"
+            >×</button>
+            
+            {/* Success Icon */}
+            <div style={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(145deg, #22c55e, #16a34a)',
+              margin: '0 auto 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 24px rgba(34,197,94,0.3)',
+            }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                <path d="M9 12l2 2 4-4" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="12" r="9" stroke="#ffffff" strokeWidth="2"/>
+              </svg>
+            </div>
+            
+            {/* Success Message */}
+            <div style={{
+              color: '#1f2937',
+              fontSize: 20,
+              fontWeight: 600,
+              marginBottom: 8,
+              lineHeight: 1.3,
+            }}>
+              
+            </div>
+            <div style={{
+              color: '#6b7280',
+              fontSize: 16,
+              fontWeight: 500,
+              lineHeight: 1.4,
+            }}>
+              {successMsg}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="profile-main-card">
         <div className="profile-header-row">
           <div><h1>{displayName}</h1></div>
