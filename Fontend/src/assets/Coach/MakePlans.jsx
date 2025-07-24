@@ -527,6 +527,15 @@ function MakePlans() {
                                     disabled={stageUpdateLoading || editingStage.viewOnly}
                                     onClick={async () => {
                                       if (editingStage.viewOnly) return;
+                                      // Validate required fields
+                                      if (!stageForm.targetCigaretteCount || String(stageForm.targetCigaretteCount).trim() === '') {
+                                        setStageUpdateError('Vui lòng nhập số điếu thuốc mục tiêu.');
+                                        return;
+                                      }
+                                      if (!stageForm.advice || stageForm.advice.trim() === '') {
+                                        setStageUpdateError('Vui lòng nhập lời khuyên.');
+                                        return;
+                                      }
                                       setStageUpdateLoading(true);
                                       setStageUpdateError('');
                                       try {
