@@ -32,6 +32,7 @@ export default function CoachBlog() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteBlogId, setDeleteBlogId] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Hàm xóa blog
   const handleDeleteBlog = async () => {
@@ -120,9 +121,11 @@ export default function CoachBlog() {
       label: blog.label || '',
       tags: (blog.tags || []).join(", "),
       content: blog.content || "",
+      coverImage: blog.coverImage || '',
       categoryId: blog.categoryId || '',
       status: blog.status || 'draft',
     });
+    setEditCoverImageError('');
     setShowEditModal(true);
   };
 
@@ -207,7 +210,9 @@ export default function CoachBlog() {
       setShowEditModal(false);
       setEditBlog(null);
       setEditCoverImageError('');
+      setSuccessMessage('Cập nhật bài viết thành công!');
       fetchBlogs();
+      setTimeout(() => setSuccessMessage(''), 2500);
     } catch (error) {
       console.error('Lỗi khi cập nhật blog:', error);
     }
@@ -215,6 +220,11 @@ export default function CoachBlog() {
 
   return (
     <div className="coach-blog-container">
+      {successMessage && (
+        <div style={{position:'fixed',top:24,right:24,zIndex:3000,background:'#4CAF50',color:'#fff',padding:'14px 32px',borderRadius:8,fontWeight:600,boxShadow:'0 2px 12px #4CAF5040',fontSize:17}}>
+          {successMessage}
+        </div>
+      )}
       <div className="coach-blog-header">Quản lý Blog</div>
       <div className="coach-blog-desc">Viết và quản lý các bài blog của bạn</div>
       <div className="coach-blog-actions">
@@ -408,14 +418,13 @@ export default function CoachBlog() {
                 <div style={{display:'flex',gap:16}}>
                   <div style={{flex:1}}>
                     <div style={{fontWeight:500,marginBottom:6}}>Danh mục</div>
-                    <select name="label" value={editForm.label||''} onChange={handleFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} required>
+                    <select name="categoryId" value={editForm.categoryId||''} onChange={handleFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} required>
                       <option value="">-- Chọn danh mục --</option>
                       {categories.map(c => (
                         <option key={c.id} value={c.id}>{c.name}</option>
                       ))}
                     </select>
                   </div>
-                  
                 </div>
                 <div>
                   <div style={{fontWeight:500,marginBottom:6}}>Nội dung bài viết</div>
