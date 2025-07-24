@@ -19,19 +19,32 @@ export default function CoachBlog() {
   const [editForm, setEditForm] = useState({});
   const [showAddModal, setShowAddModal] = useState(false);
   const [addForm, setAddForm] = useState({
-  
     title: '',
     content: '',
     coverImage: '',
     categoryId: '',
     status: 'PENDING',
   });
+  const [addCoverImageError, setAddCoverImageError] = useState('');
+  const [editCoverImageError, setEditCoverImageError] = useState('');
   const [blogs, setBlogs] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   // Pagination state
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 8;
+  // Hàm kiểm tra link ảnh hợp lệ (http/https và đuôi ảnh)
+  const isValidImageUrl = (url) => {
+    if (!url) return false;
+    try {
+      const parsed = new URL(url);
+      const validProtocol = parsed.protocol === 'http:' || parsed.protocol === 'https:';
+      const validImageExt = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(parsed.pathname);
+      return validProtocol && validImageExt;
+    } catch (_) {
+      return false;
+    }
+  };
   const fetchBlogs = () => {
     if (!token) return;
     setLoading(true);
@@ -107,12 +120,23 @@ export default function CoachBlog() {
   const handleAddFormChange = (e) => {
     const { name, value } = e.target;
     setAddForm(prev => ({ ...prev, [name]: value }));
+    if (name === 'coverImage') {
+      if (!isValidImageUrl(value)) {
+        setAddCoverImageError('Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).');
+      } else {
+        setAddCoverImageError('');
+      }
+    }
   };
 
  
   const handleAddBlog = async (e) => {
     e.preventDefault();
     if (!addForm.title || !addForm.content || !addForm.categoryId) return;
+    if (!isValidImageUrl(addForm.coverImage)) {
+      setAddCoverImageError('Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).');
+      return;
+    }
     try {
       await axios.post('/api/blog/create', { ...addForm, status: 'PENDING' }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -125,6 +149,7 @@ export default function CoachBlog() {
         categoryId: '',
         status: 'PENDING',
       });
+      setAddCoverImageError('');
       fetchBlogs();
     } catch (error) {
       console.error('Lỗi khi thêm blog:', error);
@@ -135,19 +160,24 @@ export default function CoachBlog() {
   const handleEditSave = async (e) => {
     e.preventDefault();
     if (!editBlog) return;
+    if (!isValidImageUrl(editForm.coverImage)) {
+      setEditCoverImageError('Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).');
+      return;
+    }
     try {
       await axios.put(`/api/blog/update/${editBlog.id}`, {
         title: editForm.title,
         content: editForm.content,
         label: editForm.label,
         tags: editForm.tags,
+        coverImage: editForm.coverImage,
         status: editForm.status,
-        
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setShowEditModal(false);
       setEditBlog(null);
+      setEditCoverImageError('');
       fetchBlogs();
     } catch (error) {
       console.error('Lỗi khi cập nhật blog:', error);
@@ -261,7 +291,10 @@ export default function CoachBlog() {
                 </div>
                 <div>
                   <div style={{fontWeight:500,marginBottom:6}}>Link ảnh bìa</div>
-                  <input name="coverImage" value={addForm.coverImage} onChange={handleAddFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} />
+                  <input name="coverImage" value={addForm.coverImage} onChange={handleAddFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} required />
+                  {addCoverImageError && (
+                    <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{addCoverImageError}</div>
+                  )}
                 </div>
                 <div>
                   <div style={{fontWeight:500,marginBottom:6}}>Nội dung blog</div>
@@ -300,7 +333,10 @@ export default function CoachBlog() {
                 </div>
                 <div>
                   <div style={{fontWeight:500,marginBottom:6}}>Link ảnh bìa</div>
-                  <input name="coverImage" value={addForm.coverImage} onChange={handleAddFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} />
+                  <input name="coverImage" value={editForm.coverImage || ''} onChange={handleFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} required />
+                  {editCoverImageError && (
+                    <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{editCoverImageError}</div>
+                  )}
                 </div>
                 <div style={{display:'flex',gap:16}}>
                   <div style={{flex:1}}>
