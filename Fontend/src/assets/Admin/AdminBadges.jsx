@@ -11,6 +11,7 @@ const AdminBadges = () => {
   const [errors, setErrors] = useState({});
   const [editing, setEditing] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [deleteSuccessMsg, setDeleteSuccessMsg] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [deleteError, setDeleteError] = useState('');
@@ -202,6 +203,7 @@ const AdminBadges = () => {
       setShowDeleteModal(false);
       setDeleteId(null);
       setDeleteError('');
+      setTimeout(() => setDeleteSuccessMsg('Xóa huy hiệu thành công!'), 100); // ensure modal closes before showing success
       fetchBadges();
     } catch (err) {
       // Check for 500 and specific message
@@ -220,6 +222,7 @@ const AdminBadges = () => {
       setDeleteError(msg);
     }
   };
+
 
   const cancelDelete = () => {
     setShowDeleteModal(false);
@@ -608,6 +611,102 @@ const AdminBadges = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+      {/* Delete Success Message Box Modal */}
+      {deleteSuccessMsg && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,0,0,0.4)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backdropFilter: 'blur(4px)',
+        }}>
+          <div style={{
+            background: 'linear-gradient(145deg, #ffffff, #f8fffe)',
+            borderRadius: 20,
+            boxShadow: '0 20px 60px rgba(34,197,94,0.2), 0 8px 32px rgba(0,0,0,0.1)',
+            padding: '40px 50px',
+            minWidth: 380,
+            maxWidth: 500,
+            textAlign: 'center',
+            border: '1px solid rgba(34,197,94,0.2)',
+            position: 'relative',
+            transform: 'scale(1)',
+            animation: 'successBoxIn 0.3s ease-out',
+          }}>
+            {/* Close Button */}
+            <button
+              onClick={() => setDeleteSuccessMsg('')}
+              style={{
+                position: 'absolute',
+                top: 15,
+                right: 20,
+                background: 'rgba(136,136,136,0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: 32,
+                height: 32,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 18,
+                color: '#666',
+                cursor: 'pointer',
+                fontWeight: 600,
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(136,136,136,0.2)';
+                e.target.style.color = '#333';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(136,136,136,0.1)';
+                e.target.style.color = '#666';
+              }}
+              aria-label="Đóng thông báo"
+            >×</button>
+            {/* Success Icon */}
+            <div style={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(145deg, #22c55e, #16a34a)',
+              margin: '0 auto 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 24px rgba(34,197,94,0.3)',
+            }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                <path d="M9 12l2 2 4-4" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="12" r="9" stroke="#ffffff" strokeWidth="2"/>
+              </svg>
+            </div>
+            {/* Success Message */}
+            <div style={{
+              color: '#1f2937',
+              fontSize: 20,
+              fontWeight: 600,
+              marginBottom: 8,
+              lineHeight: 1.3,
+            }}>
+            </div>
+            <div style={{
+              color: '#6b7280',
+              fontSize: 16,
+              fontWeight: 500,
+              lineHeight: 1.4,
+            }}>
+              {deleteSuccessMsg}
+            </div>
+          </div>
         </div>
       )}
     </div>
