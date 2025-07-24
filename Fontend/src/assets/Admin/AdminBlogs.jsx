@@ -17,6 +17,7 @@ function AdminBlogs() {
     status: 'PENDING',
   });
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   // Pagination state
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 8;
@@ -42,8 +43,32 @@ function AdminBlogs() {
     if (token) fetchBlogs();
   }, [token]);
 
+
+
+  // Hàm kiểm tra URL ảnh hợp lệ (http/https và đuôi ảnh)
+  const isValidImageUrl = (url) => {
+    if (!url) return true; // Cho phép bỏ trống
+    try {
+      const u = new URL(url);
+      return /^https?:/.test(u.protocol) &&
+        /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(u.pathname);
+    } catch {
+      return false;
+    }
+  };
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    // Kiểm tra lỗi cho coverImage
+    if (name === 'coverImage') {
+      setErrors((prev) => ({
+        ...prev,
+        coverImage: isValidImageUrl(value)
+          ? ''
+          : 'Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).',
+      }));
+    }
   };
 
   const resetForm = () => {
@@ -57,8 +82,14 @@ function AdminBlogs() {
     setEditingId(null);
   };
 
+
   const handleAdd = async (e) => {
     e.preventDefault();
+    // Kiểm tra lỗi URL ảnh
+    if (!isValidImageUrl(form.coverImage)) {
+      setErrors((prev) => ({ ...prev, coverImage: 'Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).' }));
+      return;
+    }
     if (!form.title || !form.content || !form.categoryId) return;
     try {
       await axios.post('/api/blog/create', form, {
@@ -82,8 +113,14 @@ function AdminBlogs() {
     });
   };
 
+
   const handleUpdate = async (e) => {
     e.preventDefault();
+    // Kiểm tra lỗi URL ảnh
+    if (!isValidImageUrl(form.coverImage)) {
+      setErrors((prev) => ({ ...prev, coverImage: 'Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).' }));
+      return;
+    }
     try {
       await axios.put(`/api/blog/update/${editingId}`, form, {
         headers: { Authorization: `Bearer ${token}` }
@@ -163,6 +200,9 @@ function AdminBlogs() {
               placeholder="Link ảnh bìa"
               className="admin-blogs-input"
             />
+            {errors.coverImage && (
+              <div style={{ color: 'red', fontSize: 13, marginTop: 2 }}>{errors.coverImage}</div>
+            )}
           </div>
           <div>
             <label htmlFor="admin-blogs-content">Nội dung blog</label>
