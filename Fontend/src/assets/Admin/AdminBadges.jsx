@@ -11,6 +11,8 @@ const AdminBadges = () => {
   const [errors, setErrors] = useState({});
   const [editing, setEditing] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
  
   const iconOptions = {
     leaf: '🍃', 
@@ -91,14 +93,21 @@ const AdminBadges = () => {
       reader.readAsDataURL(files[0]);
       return;
     }
-    // Validate field
+    
+    // Update form first
+    setForm({ ...form, [name]: newValue });
+    
+    // Then validate field with updated value
     let errorMsg = validateField(name, newValue, name === 'condition' ? form.type : form.type);
     setErrors(prev => ({ ...prev, [name]: errorMsg }));
-    setForm({ ...form, [name]: newValue });
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
+    
+    // Clear previous errors first
+    setErrors({});
+    
     // Validate all fields
     const newErrors = {};
     newErrors.name = validateField('name', form.name);
@@ -106,9 +115,19 @@ const AdminBadges = () => {
     newErrors.description = validateField('description', form.description);
     newErrors.condition = validateField('condition', form.condition, form.type);
     newErrors.score = validateField('score', form.score);
+    
+    // Remove empty error messages
+    Object.keys(newErrors).forEach(key => {
+      if (!newErrors[key]) delete newErrors[key];
+    });
+    
     setErrors(newErrors);
-    // Nếu có lỗi, không submit
-    if (Object.values(newErrors).some(msg => msg)) return;
+    
+    // If there are errors, don't submit
+    if (Object.keys(newErrors).length > 0) {
+      console.log('Validation errors:', newErrors);
+      return;
+    }
 
     // iconUrl: nếu không có ảnh, gửi chuỗi rỗng
     const iconUrlToSend = form.iconUrl ? form.iconUrl : '';
@@ -116,14 +135,19 @@ const AdminBadges = () => {
     try {
       const token = user?.token || user?.accessToken || localStorage.getItem('token');
       const badgeData = {
-        name: form.name,
-        description: form.description,
+        name: form.name.trim(),
+        description: form.description.trim(),
         condition: Number(form.condition),
         type: form.type,
         iconUrl: iconUrlToSend,
         score: Number(form.score)
       };
-      if (editing) {
+      
+      console.log('Submitting badge data:', badgeData);
+      console.log('Editing mode:', editing);
+      console.log('Form ID:', form.id);
+      
+      if (editing && form.id) {
         await axios.put(`/api/badges/UpdateById/${form.id}`, badgeData, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -134,46 +158,62 @@ const AdminBadges = () => {
         });
         setSuccessMsg('Thêm mới huy hiệu thành công!');
       }
+      
+      // Reset form and states
       setForm({ name: '', description: '', condition: '', type: '', score: '', icon: 'leaf', iconUrl: '', id: null });
       setEditing(false);
       setErrors({});
       fetchBadges();
-      setTimeout(() => setSuccessMsg(''), 10000);
     } catch (err) {
+      console.error('Submit error:', err);
       setErrors(prev => ({ ...prev, submit: 'Có lỗi xảy ra!' }));
     }
   };
 
   const handleEdit = badge => {
+    console.log('Editing badge:', badge);
     setForm({
       name: badge.name || '',
       description: badge.description || '',
-      condition: badge.condition || '',
+      condition: String(badge.condition) || '',
       type: badge.type || '',
-      score: badge.score || '',
-      icon: badge.icon || '',
+      score: String(badge.score) || '',
+      icon: badge.icon || 'leaf',
       iconUrl: badge.iconUrl || '',
       id: badge.id
     });
     setEditing(true);
+    setErrors({}); // Clear any existing errors
   };
 
   const handleDelete = async id => {
-    if (!window.confirm('Bạn chắc chắn muốn xóa huy hiệu này?')) return;
+    setDeleteId(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
     try {
       const token = user?.token || user?.accessToken || localStorage.getItem('token');
-      await axios.delete(`/api/badges/DeleteById/${id}`, {
+      await axios.delete(`/api/badges/DeleteById/${deleteId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchBadges();
     } catch {
       alert('Xóa thất bại!');
     }
+    setShowDeleteModal(false);
+    setDeleteId(null);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setDeleteId(null);
   };
 
   const handleCancel = () => {
     setForm({ name: '', description: '', condition: '', type: '', score: '', icon: 'leaf', iconUrl: '', id: null });
     setEditing(false);
+    setErrors({}); // Clear errors when canceling
   };
 
   return (
@@ -225,7 +265,6 @@ const AdminBadges = () => {
           )}
         </div>
         <span style={{ minHeight: 18, display: 'block', width: '100%' }}>{errors.submit && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.submit}</span>}</span>
-        {successMsg && <span style={{ color: '#22c55e', fontSize: 15, fontWeight: 500, marginBottom: 8 }}>{successMsg}</span>}
         <div style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 12 }}>
           <button
             type="submit"
@@ -266,6 +305,245 @@ const AdminBadges = () => {
           )}
         </div>
       </form>
+
+      {/* Success Message Box Modal */}
+      {successMsg && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,0,0,0.4)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backdropFilter: 'blur(4px)',
+        }}>
+          <div style={{
+            background: 'linear-gradient(145deg, #ffffff, #f8fffe)',
+            borderRadius: 20,
+            boxShadow: '0 20px 60px rgba(34,197,94,0.2), 0 8px 32px rgba(0,0,0,0.1)',
+            padding: '40px 50px',
+            minWidth: 380,
+            maxWidth: 500,
+            textAlign: 'center',
+            border: '1px solid rgba(34,197,94,0.2)',
+            position: 'relative',
+            transform: 'scale(1)',
+            animation: 'successBoxIn 0.3s ease-out',
+          }}>
+            {/* Close Button */}
+            <button
+              onClick={() => setSuccessMsg('')}
+              style={{
+                position: 'absolute',
+                top: 15,
+                right: 20,
+                background: 'rgba(136,136,136,0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: 32,
+                height: 32,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 18,
+                color: '#666',
+                cursor: 'pointer',
+                fontWeight: 600,
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(136,136,136,0.2)';
+                e.target.style.color = '#333';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(136,136,136,0.1)';
+                e.target.style.color = '#666';
+              }}
+              aria-label="Đóng thông báo"
+            >×</button>
+            
+            {/* Success Icon */}
+            <div style={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(145deg, #22c55e, #16a34a)',
+              margin: '0 auto 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 24px rgba(34,197,94,0.3)',
+            }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                <path d="M9 12l2 2 4-4" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="12" r="9" stroke="#ffffff" strokeWidth="2"/>
+              </svg>
+            </div>
+            
+            {/* Success Message */}
+            <div style={{
+              color: '#1f2937',
+              fontSize: 20,
+              fontWeight: 600,
+              marginBottom: 8,
+              lineHeight: 1.3,
+            }}>
+            </div>
+            <div style={{
+              color: '#6b7280',
+              fontSize: 16,
+              fontWeight: 500,
+              lineHeight: 1.4,
+            }}>
+              {successMsg}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,0,0,0.4)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backdropFilter: 'blur(4px)',
+        }}>
+          <div style={{
+            background: 'linear-gradient(145deg, #ffffff, #fef7f7)',
+            borderRadius: 20,
+            boxShadow: '0 20px 60px rgba(239,68,68,0.2), 0 8px 32px rgba(0,0,0,0.1)',
+            padding: '40px 50px',
+            minWidth: 380,
+            maxWidth: 500,
+            textAlign: 'center',
+            border: '1px solid rgba(239,68,68,0.2)',
+            position: 'relative',
+            transform: 'scale(1)',
+            animation: 'successBoxIn 0.3s ease-out',
+          }}>
+            {/* Warning Icon */}
+            <div style={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(145deg, #ef4444, #dc2626)',
+              margin: '0 auto 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 24px rgba(239,68,68,0.3)',
+            }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            
+            {/* Warning Message */}
+            <div style={{
+              color: '#1f2937',
+              fontSize: 20,
+              fontWeight: 600,
+              marginBottom: 8,
+              lineHeight: 1.3,
+            }}>
+              
+            </div>
+            <div style={{
+              color: '#6b7280',
+              fontSize: 16,
+              fontWeight: 500,
+              lineHeight: 1.4,
+              marginBottom: 32,
+            }}>
+              Bạn chắc chắn muốn xóa huy hiệu này? Hành động này không thể hoàn tác.
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 16,
+            }}>
+              <button
+                onClick={cancelDelete}
+                style={{
+                  background: '#6b7280',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '12px 24px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontSize: 16,
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(107,114,128,0.2)',
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#4b5563';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = '#6b7280';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                onClick={confirmDelete}
+                style={{
+                  background: 'linear-gradient(145deg, #ef4444, #dc2626)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '12px 24px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontSize: 16,
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-1px)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(239,68,68,0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(239,68,68,0.3)';
+                }}
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <style jsx>{`
+        @keyframes successBoxIn {
+          from {
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+      `}</style>
+
       {loading ? (
         <div style={{ color: '#64748b', fontWeight: 500, fontSize: 18 }}>Đang tải...</div>
       ) : (

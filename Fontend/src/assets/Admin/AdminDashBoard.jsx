@@ -55,7 +55,7 @@ function AdminDashboard() {
           </li>
           <li>
             <NavLink to="/admin/dashboard/badges" className={({ isActive }) => isActive ? 'menu-link active' : 'menu-link'}>
-              <MdEmojiEvents size={20} /> Quản lý Huy Hiệu
+              <MdEmojiEvents size={20} /> Quản lý Huy hiệu
             </NavLink>
           </li>
           <li className="logout" onClick={handleLogout}>
