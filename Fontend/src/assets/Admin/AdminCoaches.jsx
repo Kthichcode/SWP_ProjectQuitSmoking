@@ -9,6 +9,7 @@ function AdminCoaches() {
   const [coaches, setCoaches] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name: '', username: '', email: '', phone: '', exp: '', rating: '' });
+  const [formErrors, setFormErrors] = useState({ name: '', email: '' });
   const [selected, setSelected] = useState(null);
   const [openMenu, setOpenMenu] = useState(null); // coach id for dropdown
   const [showReviews, setShowReviews] = useState(false);
@@ -101,9 +102,30 @@ function AdminCoaches() {
     }
   };
 
+  const validateName = (name) => {
+    if (!name.trim()) return 'Họ tên không được để trống';
+    if (/[^a-zA-ZÀ-ỹ\s]/.test(name)) return 'Họ tên không được chứa số hoặc ký tự đặc biệt';
+    return '';
+  };
+
+  const validateEmail = (email) => {
+    if (!email.trim()) return 'Email không được để trống';
+    // Simple email regex
+    if (!/^\S+@\S+\.\S+$/.test(email)) return 'Email không đúng định dạng';
+    return '';
+  };
+
   const handleAdd = async e => {
     e.preventDefault();
-    
+    // Validate
+    const nameError = validateName(form.name);
+    const emailError = validateEmail(form.email);
+    setFormErrors({ name: nameError, email: emailError });
+    if (nameError || emailError) {
+      setErrorMessage('Vui lòng kiểm tra lại thông tin.');
+      setSuccessMessage('');
+      return;
+    }
     const payload = {
       username: form.username,
       email: form.email,
@@ -136,6 +158,7 @@ function AdminCoaches() {
       ]);
       setForm({ name: '', username: '', email: '', phone: '', exp: '', rating: '' });
       setShowAdd(false);
+      setFormErrors({ name: '', email: '' });
     } catch (err) {
       setErrorMessage('Có lỗi khi tạo coach!');
       setSuccessMessage('');
@@ -161,7 +184,21 @@ function AdminCoaches() {
       </div>
       {showAdd && (
         <div className="admin-modal">
-          <form className="admin-modal-content" onSubmit={handleAdd}>
+          <form 
+            className="admin-modal-content" 
+            onSubmit={handleAdd}
+            style={{
+              width: 400,
+              minHeight: 420,
+              boxSizing: 'border-box',
+              transition: 'none',
+              overflow: 'visible',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'stretch',
+              justifyContent: 'flex-start',
+            }}
+          >
             {successMessage && (
               <div style={{background:'#e0fbe0',color:'#15803d',padding:'10px 18px',borderRadius:'8px',fontWeight:600,marginBottom:12,boxShadow:'0 2px 8px #0001',textAlign:'center'}}>{successMessage}</div>
             )}
@@ -170,9 +207,32 @@ function AdminCoaches() {
             )}
             <button className="admin-modal-close" style={{top: 8, right: 12, fontSize: 28}} onClick={() => setShowAdd(false)} type="button">×</button>
             <h3>Thêm Coach mới</h3>
-            <input required placeholder="Họ tên" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+            <input 
+              required 
+              placeholder="Họ tên" 
+              value={form.name} 
+              onChange={e => {
+                setForm(f => ({ ...f, name: e.target.value }));
+                setFormErrors(errors => ({ ...errors, name: validateName(e.target.value) }));
+              }} 
+            />
+            <div style={{minHeight: 18}}>
+              {formErrors.name && <div style={{color:'#dc2626',fontSize:13,marginBottom:4}}>{formErrors.name}</div>}
+            </div>
             <input required placeholder="Username" value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} />
-            <input required placeholder="Email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+            <input 
+              required 
+              placeholder="Email" 
+              type="email" 
+              value={form.email} 
+              onChange={e => {
+                setForm(f => ({ ...f, email: e.target.value }));
+                setFormErrors(errors => ({ ...errors, email: validateEmail(e.target.value) }));
+              }} 
+            />
+            <div style={{minHeight: 18}}>
+              {formErrors.email && <div style={{color:'#dc2626',fontSize:13,marginBottom:4}}>{formErrors.email}</div>}
+            </div>
            <button className="admin-btn" type="submit">Thêm</button>
           </form>
         </div>
