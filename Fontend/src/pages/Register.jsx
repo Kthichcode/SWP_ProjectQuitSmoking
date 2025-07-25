@@ -26,6 +26,7 @@ function Register() {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [passwordLengthError, setPasswordLengthError] = useState('');
+  const [validationErrors, setValidationErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -33,6 +34,39 @@ function Register() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+
+    // Validate on change
+    if (name === 'name') {
+      let error = '';
+      // Chỉ kiểm tra không được bỏ trống khi nhập
+      setValidationErrors(prev => ({ ...prev, name: error }));
+    }
+
+    if (name === 'username') {
+      let error = '';
+      if (value.length < 5) error = 'Tên đăng nhập phải có ít nhất 5 ký tự.';
+      else if (/\s/.test(value)) error = 'Tên đăng nhập không được chứa dấu cách.';
+      else if (!/^[a-zA-Z0-9]+$/.test(value)) error = 'Tên đăng nhập không được chứa ký tự đặc biệt.';
+      setValidationErrors(prev => ({ ...prev, username: error }));
+    }
+
+    if (name === 'email') {
+      let error = '';
+      if (value && !value.includes('@')) error = 'Email phải có dấu @.';
+      setValidationErrors(prev => ({ ...prev, email: error }));
+    }
+
+    if (name === 'password') {
+      let error = '';
+      if (value.length < 6) error = 'Mật khẩu phải có ít nhất 6 ký tự.';
+      setValidationErrors(prev => ({ ...prev, password: error }));
+    }
+
+    if (name === 'confirmPassword') {
+      let error = '';
+      if (value !== formData.password) error = 'Mật khẩu không khớp.';
+      setValidationErrors(prev => ({ ...prev, confirmPassword: error }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -41,18 +75,55 @@ function Register() {
     setErrorMessage('');
     setPasswordLengthError('');
 
-    // Kiểm tra mật khẩu và xác nhận mật khẩu phải có ít nhất 6 ký tự
-    if (formData.password.length < 6 || formData.confirmPassword.length < 6) {
-      setPasswordLengthError("Mật khẩu và xác nhận mật khẩu phải có ít nhất 6 ký tự.");
-      return;
+    // Validate all fields
+    const errors = {};
+    
+    // Validate name
+    if (!formData.name) {
+      errors.name = 'Họ và tên không được bỏ trống.';
+    }
+    
+    // Validate username
+    if (!formData.username) {
+      errors.username = 'Tên đăng nhập không được bỏ trống.';
+    } else if (formData.username.length < 5) {
+      errors.username = 'Tên đăng nhập phải có ít nhất 5 ký tự.';
+    } else if (/\s/.test(formData.username)) {
+      errors.username = 'Tên đăng nhập không được chứa dấu cách.';
+    } else if (!/^[a-zA-Z0-9]+$/.test(formData.username)) {
+      errors.username = 'Tên đăng nhập không được chứa ký tự đặc biệt.';
     }
 
-    if (!formData.agree) {
-      setErrorMessage("Bạn cần đồng ý với điều khoản.");
-      return;
+    // Validate email
+    if (!formData.email) {
+      errors.email = 'Email không được bỏ trống.';
+    } else if (!formData.email.includes('@')) {
+      errors.email = 'Email phải có dấu @.';
     }
-    if (formData.password !== formData.confirmPassword) {
-      setErrorMessage("Mật khẩu không khớp.");
+
+    // Validate password
+    if (!formData.password) {
+      errors.password = 'Mật khẩu không được bỏ trống.';
+    } else if (formData.password.length < 6) {
+      errors.password = 'Mật khẩu phải có ít nhất 6 ký tự.';
+    }
+
+    // Validate confirm password
+    if (!formData.confirmPassword) {
+      errors.confirmPassword = 'Xác nhận mật khẩu không được bỏ trống.';
+    } else if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = 'Mật khẩu không khớp.';
+    }
+
+    // Check agreement
+    if (!formData.agree) {
+      errors.agree = 'Bạn chưa đồng ý với điều khoản.';
+    }
+
+    setValidationErrors(errors);
+
+    // If there are errors, don't submit
+    if (Object.keys(errors).length > 0) {
       return;
     }
 
@@ -102,26 +173,36 @@ function Register() {
             <form className="register-form" onSubmit={handleSubmit}>
               {successMessage && <div style={{color:'green',marginBottom:8,fontWeight:600}}>{successMessage}</div>}
               {errorMessage && <div style={{color:'red',marginBottom:8,fontWeight:600}}>{errorMessage}</div>}
+
               <div className="form-group">
                 <label htmlFor="name">Họ và tên</label>
                 <input type="text" name="name" id="name" placeholder="Nhập họ và tên"
-                  value={formData.name} onChange={handleChange} required />
+                  value={formData.name} onChange={handleChange}  />
+                <div style={{ minHeight: '20px', marginTop: '4px' }}>
+                  {validationErrors.name && <span style={{ color: 'red', fontSize: '14px' }}>{validationErrors.name}</span>}
+                </div>
               </div>
 
               <div className="form-group">
                 <label htmlFor="username">Tên Đăng Nhập</label>
                 <input type="text" name="username" id="username" placeholder="Nhập Tên Đăng Nhập"
-                  value={formData.username} onChange={handleChange} required />
+                  value={formData.username} onChange={handleChange}  />
+                <div style={{ minHeight: '20px', marginTop: '4px' }}>
+                  {validationErrors.username && <span style={{ color: 'red', fontSize: '14px' }}>{validationErrors.username}</span>}
+                </div>
               </div>
 
               <div className="form-group">
                 <label htmlFor="email">Gmail</label>
                 <input type="email" name="email" id="email" placeholder="example@gmail.com"
-                  value={formData.email} onChange={handleChange} required />
+                  value={formData.email} onChange={handleChange}  />
+                <div style={{ minHeight: '20px', marginTop: '4px', marginBottom: '20px', display: 'block', width: '100%' }}>
+                  {validationErrors.email && <span style={{ color: 'red', fontSize: '14px' }}>{validationErrors.email}</span>}
+                </div>
               </div>
 
-              <div className="register-input-group">
-                <div className="form-group half-width" style={{ position: 'relative' }}>
+              <div className="register-input-group" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                <div className="form-group half-width" style={{ position: 'relative', marginBottom: '30px', minWidth: '180px', flex: 1 }}>
                   <label htmlFor="password">Mật khẩu</label>
                   <input
                     type={showPassword ? "text" : "password"}
@@ -129,7 +210,6 @@ function Register() {
                     id="password"
                     value={formData.password}
                     onChange={handleChange}
-                    required
                     style={{ paddingRight: '36px' }}
                   />
                   <span
@@ -140,9 +220,12 @@ function Register() {
                   >
                     {showPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
                   </span>
+                  <div style={{ minHeight: '20px', marginTop: '4px', marginBottom: '0', display: 'block', width: '100%' }}>
+                    {validationErrors.password && <span style={{ color: 'red', fontSize: '14px' }}>{validationErrors.password}</span>}
+                  </div>
                 </div>
 
-                <div className="form-group half-width" style={{ position: 'relative' }}>
+                <div className="form-group half-width" style={{ position: 'relative', marginBottom: '30px', minWidth: '180px', flex: 1 }}>
                   <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
                   <input
                     type={showConfirmPassword ? "text" : "password"}
@@ -150,7 +233,6 @@ function Register() {
                     id="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    required
                     style={{ paddingRight: '36px' }}
                   />
                   <span
@@ -161,18 +243,21 @@ function Register() {
                   >
                     {showConfirmPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
                   </span>
+                  <div style={{ minHeight: '20px', marginTop: '4px', marginBottom: '0', display: 'block', width: '100%' }}>
+                    {validationErrors.confirmPassword && <span style={{ color: 'red', fontSize: '14px' }}>{validationErrors.confirmPassword}</span>}
+                  </div>
                 </div>
               </div>
-              {passwordLengthError && (
-                <div style={{ color: 'red', marginTop: 4, marginBottom: 8, fontWeight: 500, textAlign: 'left' }}>{passwordLengthError}</div>
-              )}
 
-              <div className="register-checkbox">
+              <div className="register-checkbox" style={{ marginTop: '10px' }}>
                 <label htmlFor="agree">
                   <input type="checkbox" name="agree" checked={formData.agree} onChange={handleChange} />
                   <span className="custom-box"></span>
                   Tôi đồng ý với <a href="#" onClick={e => { e.preventDefault(); setShowTermsModal(true); }}>Điều khoản sử dụng</a> và <a href="#" onClick={e => { e.preventDefault(); setShowPrivacyModal(true); }}>Chính sách bảo mật</a>
                 </label>
+                {validationErrors.agree && (
+                  <div style={{ color: 'red', marginTop: 4, fontSize: '14px' }}>{validationErrors.agree}</div>
+                )}
               </div>
 
               <button type="submit" className="register-button">Đăng ký</button>
