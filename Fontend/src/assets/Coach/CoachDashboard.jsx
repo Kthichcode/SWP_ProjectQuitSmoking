@@ -567,7 +567,7 @@ function CoachDashboard() {
   return (
     <div className="dashboard-container">
       <div className="sidebar">
-        <h3>Coach Dashboard</h3>
+        <h3>Huấn luyện viên</h3>
         <ul>
           <li>
             <NavLink to="/coach" end className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
@@ -669,7 +669,7 @@ function CoachDashboard() {
               <>
                 <div className="welcome-section">
                   <div className="welcome-title-group">
-                    <h2>Chào mừng bạn trở lại bảng điều khiển huấn luyện viên, {user?.fullName || 'Coach'}!</h2>
+                    <h2>Chào mừng bạn trở lại bảng điều khiển huấn luyện viên!</h2>
                     <div className="rating">
                       <FaStar />
                       <span>{dashboardData.averageRating}</span>

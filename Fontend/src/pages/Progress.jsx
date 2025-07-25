@@ -738,16 +738,7 @@ const getStageDotColor = (status) => {
             </div>
           </div>
 
-          <div className="progress-stats">
-            {/* Debug card - xóa sau khi test xong */}
-            <div className="stat-card debug-card" style={{ border: '2px dashed #f39c12', backgroundColor: '#fff9e6' }}>
-              <h3>{getCompletedPhases().length}</h3>
-              <p>Giai đoạn hoàn thành</p>
-              <small style={{ fontSize: '0.8rem', color: '#666' }}>
-                Rating: {canShowRating() ? 'Có thể' : 'Chưa thể'}
-              </small>
-            </div>
-          </div>
+          
 
           <div className="progress-tabs">
             <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => handleTabChange('overview')}>

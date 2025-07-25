@@ -38,7 +38,8 @@ function Register() {
     // Validate on change
     if (name === 'name') {
       let error = '';
-      // Chỉ kiểm tra không được bỏ trống khi nhập
+      if (value && /[0-9]/.test(value)) error = 'Họ và tên không được chứa số.';
+      else if (value && /[^a-zA-ZÀ-ỹ\s]/.test(value)) error = 'Họ và tên không được chứa ký tự đặc biệt.';
       setValidationErrors(prev => ({ ...prev, name: error }));
     }
 
@@ -81,6 +82,10 @@ function Register() {
     // Validate name
     if (!formData.name) {
       errors.name = 'Họ và tên không được bỏ trống.';
+    } else if (/[0-9]/.test(formData.name)) {
+      errors.name = 'Họ và tên không được chứa số.';
+    } else if (/[^a-zA-ZÀ-ỹ\s]/.test(formData.name)) {
+      errors.name = 'Họ và tên không được chứa ký tự đặc biệt.';
     }
     
     // Validate username
