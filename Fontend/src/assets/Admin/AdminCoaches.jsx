@@ -9,7 +9,12 @@ function AdminCoaches() {
   const [coaches, setCoaches] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name: '', username: '', email: '', phone: '', exp: '', rating: '' });
-  const [formErrors, setFormErrors] = useState({ name: '', email: '' });
+  const [formErrors, setFormErrors] = useState({ name: '', username: '', email: '' });
+  const validateUsername = (username) => {
+    if (!username.trim()) return 'Username không được để trống';
+    if (/[^a-zA-Z0-9_.]/.test(username)) return 'Username chỉ được chứa chữ, số, dấu _ hoặc .';
+    return '';
+  };
   const [selected, setSelected] = useState(null);
   const [openMenu, setOpenMenu] = useState(null); // coach id for dropdown
   const [showReviews, setShowReviews] = useState(false);
@@ -119,9 +124,10 @@ function AdminCoaches() {
     e.preventDefault();
     // Validate
     const nameError = validateName(form.name);
+    const usernameError = validateUsername(form.username);
     const emailError = validateEmail(form.email);
-    setFormErrors({ name: nameError, email: emailError });
-    if (nameError || emailError) {
+    setFormErrors({ name: nameError, username: usernameError, email: emailError });
+    if (nameError || usernameError || emailError) {
       setErrorMessage('Vui lòng kiểm tra lại thông tin.');
       setSuccessMessage('');
       return;
@@ -150,6 +156,7 @@ function AdminCoaches() {
         setSuccessMessage('');
         return;
       }
+      setShowAdd(false);
       setSuccessMessage('Tạo coach thành công, mật khẩu đã gửi về email!');
       setErrorMessage('');
       setCoaches([
@@ -157,8 +164,7 @@ function AdminCoaches() {
         { ...form, id: Date.now(), status: 'active', plans: 0 }
       ]);
       setForm({ name: '', username: '', email: '', phone: '', exp: '', rating: '' });
-      setShowAdd(false);
-      setFormErrors({ name: '', email: '' });
+      setFormErrors({ name: '', username: '', email: '' });
     } catch (err) {
       setErrorMessage('Có lỗi khi tạo coach!');
       setSuccessMessage('');
@@ -199,16 +205,17 @@ function AdminCoaches() {
               justifyContent: 'flex-start',
             }}
           >
-            {successMessage && (
-              <div style={{background:'#e0fbe0',color:'#15803d',padding:'10px 18px',borderRadius:'8px',fontWeight:600,marginBottom:12,boxShadow:'0 2px 8px #0001',textAlign:'center'}}>{successMessage}</div>
-            )}
-            {errorMessage && (
-              <div style={{background:'#fee2e2',color:'#b91c1c',padding:'10px 18px',borderRadius:'8px',fontWeight:600,marginBottom:12,boxShadow:'0 2px 8px #0001',textAlign:'center'}}>{errorMessage}</div>
-            )}
+      {/* Hiển thị thông báo thành công hoặc lỗi ở trên cùng trang quản lý coach */}
+      {successMessage && (
+        <div style={{background:'#e0fbe0',color:'#15803d',padding:'10px 18px',borderRadius:'8px',fontWeight:600,marginBottom:16,boxShadow:'0 2px 8px #0001',textAlign:'center', maxWidth: 500, margin: '0 auto'}}>{successMessage}</div>
+      )}
+      {errorMessage && (
+        <div style={{background:'#fee2e2',color:'#b91c1c',padding:'10px 18px',borderRadius:'8px',fontWeight:600,marginBottom:16,boxShadow:'0 2px 8px #0001',textAlign:'center', maxWidth: 500, margin: '0 auto'}}>{errorMessage}</div>
+      )}
             <button className="admin-modal-close" style={{top: 8, right: 12, fontSize: 28}} onClick={() => setShowAdd(false)} type="button">×</button>
             <h3>Thêm Coach mới</h3>
             <input 
-              required 
+              
               placeholder="Họ tên" 
               value={form.name} 
               onChange={e => {
@@ -217,11 +224,20 @@ function AdminCoaches() {
               }} 
             />
             <div style={{minHeight: 18}}>
-              {formErrors.name && <div style={{color:'#dc2626',fontSize:13,marginBottom:4}}>{formErrors.name}</div>}
+              {formErrors.name && <div style={{color:'#dc2626',fontSize:13,marginBottom:4,textAlign:'left'}}>{formErrors.name}</div>}
             </div>
-            <input required placeholder="Username" value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} />
             <input 
-              required 
+              placeholder="Username" 
+              value={form.username} 
+              onChange={e => {
+                setForm(f => ({ ...f, username: e.target.value }));
+                setFormErrors(errors => ({ ...errors, username: validateUsername(e.target.value) }));
+              }} 
+            />
+            <div style={{minHeight: 18}}>
+              {formErrors.username && <div style={{color:'#dc2626',fontSize:13,marginBottom:4,textAlign:'left'}}>{formErrors.username}</div>}
+            </div>
+            <input 
               placeholder="Email" 
               type="email" 
               value={form.email} 
@@ -231,7 +247,7 @@ function AdminCoaches() {
               }} 
             />
             <div style={{minHeight: 18}}>
-              {formErrors.email && <div style={{color:'#dc2626',fontSize:13,marginBottom:4}}>{formErrors.email}</div>}
+              {formErrors.email && <div style={{color:'#dc2626',fontSize:13,marginBottom:4,textAlign:'left'}}>{formErrors.email}</div>}
             </div>
            <button className="admin-btn" type="submit">Thêm</button>
           </form>

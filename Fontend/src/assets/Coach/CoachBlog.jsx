@@ -27,6 +27,8 @@ export default function CoachBlog() {
   });
   const [addCoverImageError, setAddCoverImageError] = useState('');
   const [editCoverImageError, setEditCoverImageError] = useState('');
+  const [addFormError, setAddFormError] = useState({});
+  const [editFormError, setEditFormError] = useState({});
   const [blogs, setBlogs] = useState([]);
   const [categories, setCategories] = useState([]);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -164,11 +166,22 @@ export default function CoachBlog() {
  
   const handleAddBlog = async (e) => {
     e.preventDefault();
-    if (!addForm.title || !addForm.content || !addForm.categoryId) return;
-    if (!isValidImageUrl(addForm.coverImage)) {
-      setAddCoverImageError('Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).');
-      return;
+    // Validate fields
+    const errors = {};
+    if (!addForm.title.trim()) errors.title = 'Vui lòng nhập tiêu đề blog.';
+    if (!addForm.coverImage.trim()) {
+      errors.coverImage = 'Vui lòng nhập link ảnh bìa.';
+      setAddCoverImageError('');
+    } else if (!isValidImageUrl(addForm.coverImage)) {
+      errors.coverImage = 'Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).';
+      setAddCoverImageError('');
+    } else {
+      setAddCoverImageError('');
     }
+    if (!addForm.content.trim()) errors.content = 'Vui lòng nhập nội dung blog.';
+    if (!addForm.categoryId) errors.categoryId = 'Vui lòng chọn danh mục.';
+    setAddFormError(errors);
+    if (Object.keys(errors).length > 0) return;
     try {
       await axios.post('/api/blog/create', { ...addForm, status: 'PENDING' }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -182,6 +195,7 @@ export default function CoachBlog() {
         status: 'PENDING',
       });
       setAddCoverImageError('');
+      setAddFormError({});
       fetchBlogs();
     } catch (error) {
       console.error('Lỗi khi thêm blog:', error);
@@ -192,10 +206,20 @@ export default function CoachBlog() {
   const handleEditSave = async (e) => {
     e.preventDefault();
     if (!editBlog) return;
+    // Validate fields
+    const errors = {};
+    if (!editForm.title || !editForm.title.trim()) errors.title = 'Vui lòng nhập tiêu đề bài viết.';
+    if (!editForm.coverImage || !editForm.coverImage.trim()) errors.coverImage = 'Vui lòng nhập link ảnh bìa.';
+    if (!editForm.content || !editForm.content.trim()) errors.content = 'Vui lòng nhập nội dung bài viết.';
+    if (!editForm.categoryId) errors.categoryId = 'Vui lòng chọn danh mục.';
     if (!isValidImageUrl(editForm.coverImage)) {
       setEditCoverImageError('Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).');
-      return;
+      errors.coverImage = 'Link ảnh bìa không hợp lệ.';
+    } else {
+      setEditCoverImageError('');
     }
+    setEditFormError(errors);
+    if (Object.keys(errors).length > 0) return;
     try {
       await axios.put(`/api/blog/update/${editBlog.id}`, {
         title: editForm.title,
@@ -210,6 +234,7 @@ export default function CoachBlog() {
       setShowEditModal(false);
       setEditBlog(null);
       setEditCoverImageError('');
+      setEditFormError({});
       setSuccessMessage('Cập nhật bài viết thành công!');
       fetchBlogs();
       setTimeout(() => setSuccessMessage(''), 2500);
@@ -364,27 +389,28 @@ export default function CoachBlog() {
               <div style={{display:'flex',flexDirection:'column',gap:18}}>
                 <div>
                   <div style={{fontWeight:500,marginBottom:6}}>Tiêu đề blog</div>
-                  <input name="title" value={addForm.title} onChange={handleAddFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} required />
+                  <input name="title" value={addForm.title} onChange={handleAddFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} />
+                  {addFormError.title && <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{addFormError.title}</div>}
                 </div>
                 <div>
                   <div style={{fontWeight:500,marginBottom:6}}>Link ảnh bìa</div>
-                  <input name="coverImage" value={addForm.coverImage} onChange={handleAddFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} required />
-                  {addCoverImageError && (
-                    <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{addCoverImageError}</div>
-                  )}
+                  <input name="coverImage" value={addForm.coverImage} onChange={handleAddFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} />
+                  {addFormError.coverImage && <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{addFormError.coverImage}</div>}
                 </div>
                 <div>
                   <div style={{fontWeight:500,marginBottom:6}}>Nội dung blog</div>
-                  <textarea name="content" value={addForm.content} onChange={handleAddFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,minHeight:80,background:'#fff',color:'#222'}} required />
+                  <textarea name="content" value={addForm.content} onChange={handleAddFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,minHeight:80,background:'#fff',color:'#222'}} />
+                  {addFormError.content && <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{addFormError.content}</div>}
                 </div>
                 <div>
                   <div style={{fontWeight:500,marginBottom:6}}>Danh mục</div>
-                  <select name="categoryId" value={addForm.categoryId} onChange={handleAddFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} required>
+                  <select name="categoryId" value={addForm.categoryId} onChange={handleAddFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}}>
                     <option value="">-- Chọn danh mục --</option>
                     {categories.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
+                  {addFormError.categoryId && <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{addFormError.categoryId}</div>}
                 </div>
                 <div>
                   <button type="submit" style={{padding:'10px 24px',background:'#4CAF50',color:'#fff',border:'none',borderRadius:6,fontWeight:600,fontSize:16}}>Thêm mới</button>
@@ -406,29 +432,33 @@ export default function CoachBlog() {
               <div style={{display:'flex',flexDirection:'column',gap:18}}>
                 <div>
                   <div style={{fontWeight:500,marginBottom:6}}>Tiêu đề bài viết</div>
-                  <input name="title" value={editForm.title||''} onChange={handleFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} required />
+                  <input name="title" value={editForm.title||''} onChange={handleFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} />
+                  {editFormError.title && <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{editFormError.title}</div>}
                 </div>
                 <div>
                   <div style={{fontWeight:500,marginBottom:6}}>Link ảnh bìa</div>
-                  <input name="coverImage" value={editForm.coverImage || ''} onChange={handleFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} required />
+                  <input name="coverImage" value={editForm.coverImage || ''} onChange={handleFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} />
                   {editCoverImageError && (
                     <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{editCoverImageError}</div>
                   )}
+                  {editFormError.coverImage && <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{editFormError.coverImage}</div>}
                 </div>
                 <div style={{display:'flex',gap:16}}>
                   <div style={{flex:1}}>
                     <div style={{fontWeight:500,marginBottom:6}}>Danh mục</div>
-                    <select name="categoryId" value={editForm.categoryId||''} onChange={handleFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}} required>
+                    <select name="categoryId" value={editForm.categoryId||''} onChange={handleFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,background:'#fff',color:'#222'}}>
                       <option value="">-- Chọn danh mục --</option>
                       {categories.map(c => (
                         <option key={c.id} value={c.id}>{c.name}</option>
                       ))}
+                    {editFormError.categoryId && <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{editFormError.categoryId}</div>}
                     </select>
                   </div>
                 </div>
                 <div>
                   <div style={{fontWeight:500,marginBottom:6}}>Nội dung bài viết</div>
-                  <textarea name="content" value={editForm.content||''} onChange={handleFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,minHeight:120,background:'#fff',color:'#222'}} required />
+                  <textarea name="content" value={editForm.content||''} onChange={handleFormChange} style={{width:'100%',padding:10,borderRadius:6,border:'1px solid #e5e7eb',fontSize:16,minHeight:120,background:'#fff',color:'#222'}} />
+                  {editFormError.content && <div style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{editFormError.content}</div>}
                 </div>
                 <div>
                   <button type="submit" style={{padding:'10px 24px',background:'#2196F3',color:'#fff',border:'none',borderRadius:6,fontWeight:600,fontSize:16}}>Lưu</button>

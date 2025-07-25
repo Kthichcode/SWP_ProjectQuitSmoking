@@ -20,6 +20,7 @@ function Login() {
   const [emailFromGoogle, setEmailFromGoogle] = useState('');
   const [nameFromGoogle, setNameFromGoogle] = useState('');
   const [newUsername, setNewUsername] = useState('');
+  const [loginFormError, setLoginFormError] = useState({});
 
   const navigate = useNavigate();
 
@@ -137,6 +138,12 @@ function Login() {
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
+    // Validate fields
+    const errors = {};
+    if (!username.trim()) errors.username = 'Vui lòng nhập tên đăng nhập.';
+    if (!password.trim()) errors.password = 'Vui lòng nhập mật khẩu.';
+    setLoginFormError(errors);
+    if (Object.keys(errors).length > 0) return;
     try {
       const response = await axios.post("http://localhost:5175/api/auth/login", {
         username,
@@ -216,8 +223,8 @@ function Login() {
                   placeholder="Tên đăng nhập"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  required
               />
+              {loginFormError.username && <div style={{ color: 'red', fontSize: 13, marginTop: 4, textAlign: 'left' }}>{loginFormError.username}</div>}
             </div>
 
             <label htmlFor="password">Mật khẩu</label>
@@ -228,7 +235,6 @@ function Login() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
               />
               <span
                   className="input-password-eye"
@@ -242,6 +248,7 @@ function Login() {
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.81 21.81 0 0 1 5.06-6.06M1 1l22 22"/></svg>
               )}
             </span>
+              {loginFormError.password && <div style={{ color: 'red', fontSize: 13, marginTop: 4, textAlign: 'left' }}>{loginFormError.password}</div>}
             </div>
 
             {errorMessage && <p className="error-message">{errorMessage}</p>}
