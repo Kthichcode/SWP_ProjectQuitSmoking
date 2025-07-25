@@ -193,7 +193,7 @@ function Register() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="email">Gmail</label>
+                <label htmlFor="email">Email</label>
                 <input type="email" name="email" id="email" placeholder="example@gmail.com"
                   value={formData.email} onChange={handleChange}  />
                 <div style={{ minHeight: '20px', marginTop: '4px', marginBottom: '20px', display: 'block', width: '100%' }}>
