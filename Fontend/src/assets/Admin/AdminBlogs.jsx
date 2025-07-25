@@ -17,7 +17,11 @@ function AdminBlogs() {
     status: 'PENDING',
   });
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({ title: '', content: '', coverImage: '', categoryId: '' });
+  // Validation helpers
+  const validateTitle = (title) => !title.trim() ? 'Tiêu đề không được để trống' : '';
+  const validateContent = (content) => !content.trim() ? 'Nội dung không được để trống' : '';
+  const validateCategoryId = (categoryId) => !categoryId ? 'Vui lòng chọn danh mục' : '';
   // Pagination state
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 8;
@@ -46,30 +50,31 @@ function AdminBlogs() {
 
 
 
-  // Hàm kiểm tra URL ảnh hợp lệ (http/https và đuôi ảnh)
+  // Hàm kiểm tra URL ảnh hợp lệ (không cho phép bỏ trống)
   const isValidImageUrl = (url) => {
-    if (!url) return true; // Cho phép bỏ trống
+    if (!url || !url.trim()) return 'Link ảnh bìa không được để trống';
     try {
       const u = new URL(url);
-      return /^https?:/.test(u.protocol) &&
-        /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(u.pathname);
+      if (!/^https?:/.test(u.protocol) || !/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(u.pathname)) {
+        return 'Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).';
+      }
+      return '';
     } catch {
-      return false;
+      return 'Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).';
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
-    // Kiểm tra lỗi cho coverImage
-    if (name === 'coverImage') {
-      setErrors((prev) => ({
-        ...prev,
-        coverImage: isValidImageUrl(value)
-          ? ''
-          : 'Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).',
-      }));
-    }
+    setErrors((prev) => {
+      let err = '';
+      if (name === 'title') err = validateTitle(value);
+      if (name === 'content') err = validateContent(value);
+      if (name === 'categoryId') err = validateCategoryId(value);
+      if (name === 'coverImage') err = isValidImageUrl(value);
+      return { ...prev, [name]: err };
+    });
   };
 
   const resetForm = () => {
@@ -86,12 +91,13 @@ function AdminBlogs() {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    // Kiểm tra lỗi URL ảnh
-    if (!isValidImageUrl(form.coverImage)) {
-      setErrors((prev) => ({ ...prev, coverImage: 'Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).' }));
-      return;
-    }
-    if (!form.title || !form.content || !form.categoryId) return;
+    // Validate all fields
+    const titleError = validateTitle(form.title);
+    const contentError = validateContent(form.content);
+    const categoryIdError = validateCategoryId(form.categoryId);
+    const coverImageError = isValidImageUrl(form.coverImage);
+    setErrors({ title: titleError, content: contentError, coverImage: coverImageError, categoryId: categoryIdError });
+    if (titleError || contentError || categoryIdError || coverImageError) return;
     try {
       await axios.post('/api/blog/create', form, {
         headers: { Authorization: `Bearer ${token}` }
@@ -119,11 +125,13 @@ function AdminBlogs() {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    // Kiểm tra lỗi URL ảnh
-    if (!isValidImageUrl(form.coverImage)) {
-      setErrors((prev) => ({ ...prev, coverImage: 'Link ảnh bìa không hợp lệ. Vui lòng nhập một URL ảnh hợp lệ (http/https và đuôi .jpg, .jpeg, .png, .gif, .webp, .svg).' }));
-      return;
-    }
+    // Validate all fields
+    const titleError = validateTitle(form.title);
+    const contentError = validateContent(form.content);
+    const categoryIdError = validateCategoryId(form.categoryId);
+    const coverImageError = isValidImageUrl(form.coverImage);
+    setErrors({ title: titleError, content: contentError, coverImage: coverImageError, categoryId: categoryIdError });
+    if (titleError || contentError || categoryIdError || coverImageError) return;
     try {
       await axios.put(`/api/blog/update/${editingId}`, form, {
         headers: { Authorization: `Bearer ${token}` }
@@ -201,8 +209,8 @@ function AdminBlogs() {
               onChange={handleChange}
               placeholder="Tiêu đề blog"
               className="admin-blogs-input"
-              required
             />
+            {errors.title && <div style={{ color: 'red', fontSize: 13, marginTop: 2, textAlign: 'left' }}>{errors.title}</div>}
           </div>
           <div>
             <label htmlFor="admin-blogs-coverImage">Link ảnh bìa</label>
@@ -215,7 +223,7 @@ function AdminBlogs() {
               className="admin-blogs-input"
             />
             {errors.coverImage && (
-              <div style={{ color: 'red', fontSize: 13, marginTop: 2 }}>{errors.coverImage}</div>
+              <div style={{ color: 'red', fontSize: 13, marginTop: 2, textAlign: 'left' }}>{errors.coverImage}</div>
             )}
           </div>
           <div>
@@ -228,8 +236,8 @@ function AdminBlogs() {
               placeholder="Nội dung blog"
               rows={4}
               className="admin-blogs-textarea"
-              required
             />
+            {errors.content && <div style={{ color: 'red', fontSize: 13, marginTop: 2, textAlign: 'left' }}>{errors.content}</div>}
           </div>
           <div>
             <label htmlFor="admin-blogs-category">Danh mục</label>
@@ -239,8 +247,8 @@ function AdminBlogs() {
               value={form.categoryId}
               onChange={handleChange}
               className="admin-blogs-select"
-              required
             >
+            {errors.categoryId && <div style={{ color: 'red', fontSize: 13, marginTop: 2, textAlign: 'left' }}>{errors.categoryId}</div>}
               <option value="">-- Chọn danh mục --</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>

@@ -12,6 +12,12 @@ function AdminNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ title: '', content: '', time: '', target: 'Tất cả', userId: '', coachId: '' });
+  const [formErrors, setFormErrors] = useState({ title: '', content: '', userId: '', coachId: '' });
+  // Validation helpers
+  const validateTitle = (title) => !title.trim() ? 'Tiêu đề không được để trống' : '';
+  const validateContent = (content) => !content.trim() ? 'Nội dung không được để trống' : '';
+  const validateUserId = (userId) => targetType === 'user' && !userId ? 'Vui lòng chọn user' : '';
+  const validateCoachId = (coachId) => targetType === 'coach' && !coachId ? 'Vui lòng chọn coach' : '';
   const [targetType, setTargetType] = useState('all'); // 'all', 'user', 'coach'
   const [users, setUsers] = useState([]);
   const [coaches, setCoaches] = useState([]);
@@ -71,6 +77,13 @@ function AdminNotifications() {
   // Gửi thông báo mới lên API
   const handleAdd = async e => {
     e.preventDefault();
+    // Validate
+    const titleError = validateTitle(form.title);
+    const contentError = validateContent(form.content);
+    const userIdError = validateUserId(form.userId);
+    const coachIdError = validateCoachId(form.coachId);
+    setFormErrors({ title: titleError, content: contentError, userId: userIdError, coachId: coachIdError });
+    if (titleError || contentError || userIdError || coachIdError) return;
     try {
       let notificationId = null;
       if (targetType === 'all') {
@@ -111,6 +124,7 @@ function AdminNotifications() {
       // Sau khi tạo thành công, reload lại danh sách
       setForm({ title: '', content: '', time: '', target: 'Tất cả', userId: '', coachId: '' });
       setShowAdd(false);
+      setFormErrors({ title: '', content: '', userId: '', coachId: '' });
       // Gọi lại API để lấy danh sách mới
       const res2 = await axiosInstance.get('/api/notifications');
       if (Array.isArray(res2.data)) {
@@ -191,28 +205,38 @@ function AdminNotifications() {
               <label className="admin-notification-label" style={{fontWeight:600,marginBottom:4,display:'block'}}>Tiêu đề</label>
               <input
                 className="admin-notification-input"
-                required
                 placeholder="Tiêu đề thông báo"
                 value={form.title}
-                onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                onChange={e => {
+                  setForm(f => ({ ...f, title: e.target.value }));
+                  setFormErrors(errors => ({ ...errors, title: validateTitle(e.target.value) }));
+                }}
                 style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #d1d5db',fontSize:15}}
               />
+              {formErrors.title && <div style={{color:'#dc2626',fontSize:13,marginTop:4,textAlign:'left'}}>{formErrors.title}</div>}
             </div>
             <div style={{marginBottom:14}}>
               <label className="admin-notification-label" style={{fontWeight:600,marginBottom:4,display:'block'}}>Nội dung thông báo</label>
               <textarea 
                 className="admin-notification-textarea"
-                required 
                 placeholder="Nội dung thông báo" 
                 value={form.content} 
-                onChange={e => setForm(f => ({ ...f, content: e.target.value }))} 
+                onChange={e => {
+                  setForm(f => ({ ...f, content: e.target.value }));
+                  setFormErrors(errors => ({ ...errors, content: validateContent(e.target.value) }));
+                }} 
                 style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #d1d5db',fontSize:15,minHeight:70,resize:'vertical'}}
               />
+              {formErrors.content && <div style={{color:'#dc2626',fontSize:13,marginTop:4,textAlign:'left'}}>{formErrors.content}</div>}
             </div>
             {targetType === 'user' && (
               <div className="admin-notification-col" style={{marginBottom:14}}>
                 <label className="admin-notification-label" style={{fontWeight:600,marginBottom:4,display:'block'}}>Chọn User</label>
-                <select className="admin-notification-input" value={form.userId || ''} onChange={e => setForm(f => ({ ...f, userId: e.target.value }))} required style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #d1d5db',fontSize:15}}>
+                <select className="admin-notification-input" value={form.userId || ''} onChange={e => {
+                  setForm(f => ({ ...f, userId: e.target.value }));
+                  setFormErrors(errors => ({ ...errors, userId: validateUserId(e.target.value) }));
+                }} style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #d1d5db',fontSize:15}}>
+                {formErrors.userId && <div style={{color:'#dc2626',fontSize:13,marginTop:4,textAlign:'left'}}>{formErrors.userId}</div>}
                   <option value="">-- Chọn user --</option>
                   {users.map(u => (
                     <option key={u.id} value={u.id}>
@@ -236,7 +260,11 @@ function AdminNotifications() {
             {targetType === 'coach' && (
               <div className="admin-notification-col" style={{marginBottom:14}}>
                 <label className="admin-notification-label" style={{fontWeight:600,marginBottom:4,display:'block'}}>Chọn Coach</label>
-                <select className="admin-notification-input" value={form.coachId || ''} onChange={e => setForm(f => ({ ...f, coachId: e.target.value }))} required style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #d1d5db',fontSize:15}}>
+                <select className="admin-notification-input" value={form.coachId || ''} onChange={e => {
+                  setForm(f => ({ ...f, coachId: e.target.value }));
+                  setFormErrors(errors => ({ ...errors, coachId: validateCoachId(e.target.value) }));
+                }} style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #d1d5db',fontSize:15}}>
+                {formErrors.coachId && <div style={{color:'#dc2626',fontSize:13,marginTop:4,textAlign:'left'}}>{formErrors.coachId}</div>}
                   <option value="">-- Chọn coach --</option>
                   {coaches.map(u => (
                     <option key={u.id} value={u.id}>

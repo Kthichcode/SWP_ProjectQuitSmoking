@@ -217,7 +217,6 @@ const AdminBlogCategories = () => {
                     value={currentCategory.name}
                     onChange={(e) => setCurrentCategory({...currentCategory, name: e.target.value})}
                     placeholder="Nhập tên thể loại"
-                    required
                   />
                 </div>
               </div>
