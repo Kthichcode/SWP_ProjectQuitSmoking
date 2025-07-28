@@ -40,6 +40,10 @@ function QuitPlanSummary() {
       </div>
       <div className="quitplan-summary-content">
         <div className="quitplan-summary-row">
+          <div className="quitplan-summary-label">Trạng thái</div>
+          <div className="quitplan-summary-value">{plan.status === 'active' ? 'Đang thực hiện' : plan.status === 'cancelled' ? 'Đã Hủy' : plan.status === 'completed' ? 'Đã hoàn thành' : plan.status || 'Không xác định'}</div>
+        </div>
+        <div className="quitplan-summary-row">
           <div className="quitplan-summary-label">Lý do cai thuốc</div>
           <div className="quitplan-summary-value">{plan.reasonToQuit}</div>
         </div>
@@ -47,7 +51,6 @@ function QuitPlanSummary() {
           <div className="quitplan-summary-label">Tổng số giai đoạn</div>
           <div className="quitplan-summary-value">{plan.totalStages} giai đoạn</div>
         </div>
-        
         <div className="quitplan-summary-row">
           <div className="quitplan-summary-label">Ngày tạo</div>
           <div className="quitplan-summary-value">{plan.createdAt && (new Date(plan.createdAt).toLocaleDateString('vi-VN'))}</div>
