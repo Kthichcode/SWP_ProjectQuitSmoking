@@ -11,7 +11,7 @@ function AdminPackages() {
   const [packages, setPackages] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('add');
-  const [currentPackage, setCurrentPackage] = useState({ name: '', price: '', description: '', releaseDate: '', endDate: '' });
+  const [currentPackage, setCurrentPackage] = useState({ name: '', price: '', description: '', releaseDate: '', endDate: '', duration: '6' });
   const [editId, setEditId] = useState(null);
   const [errors, setErrors] = useState({});
   const [successMsg, setSuccessMsg] = useState('');
@@ -59,7 +59,6 @@ function AdminPackages() {
 
     if (type === 'edit' && pkg) {
       console.log('Editing package:', pkg); // Debug log
-      
       const parseDate = (val) => {
         try {
           if (!val) return '';
@@ -89,6 +88,7 @@ function AdminPackages() {
           description: pkg.description || '',
           releaseDate: parseDate(pkg.releaseDate) || todayStr,
           endDate: parseDate(pkg.endDate) || '',
+          duration: pkg.duration ? String(pkg.duration) : '6',
         });
         setEditId(pkg.id);
       } catch (error) {
@@ -102,7 +102,8 @@ function AdminPackages() {
         price: '', 
         description: '', 
         releaseDate: todayStr, 
-        endDate: '' 
+        endDate: '',
+        duration: '6',
       });
       setEditId(null);
     }
@@ -123,7 +124,6 @@ function AdminPackages() {
         if (value.length > 25) return 'Tên gói tối đa 25 ký tự.';
         if (/^\d/.test(value)) return 'Tên gói không được bắt đầu bằng số.';
         if (/[^a-zA-Z0-9\sÀ-ỹ]/.test(value)) return 'Tên gói không được chứa ký tự đặc biệt.';
-        
         return '';
       }
       case 'price': {
@@ -139,11 +139,29 @@ function AdminPackages() {
       case 'releaseDate': {
         if (!value || value.trim() === '') return 'Ngày bắt đầu không được bỏ trống.';
         if (!/^\d{2}\/\d{2}\/\d{4}$/.test(value)) return 'Ngày bắt đầu không hợp lệ.';
+        // Không cho chọn ngày trong quá khứ
+        const today = new Date();
+        const [d, m, y] = value.split('/');
+        const selected = new Date(+y, +m - 1, +d, 0, 0, 0, 0);
+        today.setHours(0,0,0,0);
+        if (selected < today) return 'Không được chọn ngày trong quá khứ.';
         return '';
       }
       case 'endDate': {
         if (!value || value.trim() === '') return 'Ngày kết thúc không được bỏ trống.';
         if (!/^\d{2}\/\d{2}\/\d{4}$/.test(value)) return 'Ngày kết thúc không hợp lệ.';
+        // Ngày kết thúc phải sau ngày bắt đầu
+        if (currentPackage.releaseDate && /^\d{2}\/\d{2}\/\d{4}$/.test(currentPackage.releaseDate)) {
+          const [d1, m1, y1] = currentPackage.releaseDate.split('/');
+          const [d2, m2, y2] = value.split('/');
+          const start = new Date(+y1, +m1 - 1, +d1, 0, 0, 0, 0);
+          const end = new Date(+y2, +m2 - 1, +d2, 0, 0, 0, 0);
+          if (end <= start) return 'Ngày kết thúc phải sau ngày bắt đầu.';
+        }
+        return '';
+      }
+      case 'duration': {
+        if (!value || !['6','12','18'].includes(value)) return 'Vui lòng chọn thời hạn.';
         return '';
       }
       default:
@@ -208,6 +226,7 @@ function AdminPackages() {
       description: currentPackage.description.trim(),
       releaseDate: releaseDateStr,
       endDate: endDateStr,
+      duration: Number(currentPackage.duration),
     };
 
     console.log('Submitting package data:', payload);
@@ -576,94 +595,117 @@ function AdminPackages() {
       `}</style>
 
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal admin-package-modal">
-            <h3 className="admin-package-modal-title">{modalType === 'add' ? 'Thêm gói mới' : 'Sửa gói'}</h3>
-            <form className="admin-package-form" onSubmit={handleSubmit}>
-              <div className="admin-package-form-group">
-                <label className="admin-package-label">Tên gói</label>
-                <input 
-                  className="admin-package-input" 
-                  name="name" 
-                  value={currentPackage.name || ''} 
-                  onChange={handleChange} 
-                />
-                <span style={{ minHeight: 18, display: 'block' }}>{errors.name && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.name.split('\n').map((line, i) => <div key={i}>{line}</div>)}</span>}</span>
-              </div>
-              <div className="admin-package-form-group">
-                <label className="admin-package-label">Giá</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <input
-                    className="admin-package-input"
-                    name="price"
-                    value={currentPackage.price || ''}
-                    onChange={handlePriceInput}
-                    placeholder="0"
-                    inputMode="numeric"
-                    style={{ flex: 1 }}
+        <div className="modal-overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }}>
+          <div className="modal admin-package-modal" style={{ maxWidth: 480, width: '100%', borderRadius: 18, padding: '32px 32px 20px 32px', boxSizing: 'border-box', margin: '0 auto' }}>
+            <h3 className="admin-package-modal-title" style={{ textAlign: 'center', fontWeight: 700, fontSize: 22, marginBottom: 18 }}>{modalType === 'add' ? 'Thêm gói mới' : 'Sửa gói'}</h3>
+            <form className="admin-package-form" onSubmit={handleSubmit} autoComplete="off">
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div className="admin-package-form-group">
+                  <label className="admin-package-label" htmlFor="name">Tên gói</label>
+                  <input 
+                    className="admin-package-input" 
+                    name="name" 
+                    id="name"
+                    value={currentPackage.name || ''} 
+                    onChange={handleChange} 
+                    placeholder="Nhập tên gói dịch vụ"
+                    autoFocus
                   />
-                  <span style={{ color: '#555', fontWeight: 500 }}>VNĐ</span>
+                  <span style={{ minHeight: 18, display: 'block' }}>{errors.name && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.name.split('\n').map((line, i) => <div key={i}>{line}</div>)}</span>}</span>
                 </div>
-                <span style={{ minHeight: 18, display: 'block' }}>{errors.price && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.price}</span>}</span>
-              </div>
-              <div className="admin-package-form-group">
-                <label className="admin-package-label">Mô tả (mỗi dòng 1 chức năng)</label>
-                <textarea
-                  className="admin-package-input"
-                  name="description"
-                  value={currentPackage.description || ''}
-                  onChange={handleChange}
-                  rows={3}
-                  placeholder="Nhập từng chức năng, mỗi dòng 1 chức năng"
-                />
-                <span style={{ minHeight: 18, display: 'block' }}>{errors.description && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.description}</span>}</span>
-              </div>
-              <div className="admin-package-form-group">
-                <label className="admin-package-label">Ngày bắt đầu</label>
-                <DatePicker
-                  selected={currentPackage.releaseDate ? parseDateString(currentPackage.releaseDate) : null}
-                  onChange={(date) => {
-                    if (date) {
-                      setCurrentPackage(prev => ({ ...prev, releaseDate: formatDateString(date) }));
-                      let errorMsg = validateField('releaseDate', formatDateString(date));
-                      setErrors(prev => ({ ...prev, releaseDate: errorMsg }));
-                    }
-                  }}
-                  dateFormat="dd/MM/yyyy"
-                  className="admin-package-input"
-                  disabled={modalType === 'add'}
-                  locale={vi}
-                  minDate={modalType === 'edit' ? null : new Date()}
-                />
-                <span style={{ minHeight: 18, display: 'block' }}>{errors.releaseDate && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.releaseDate}</span>}</span>
-              </div>
-              <div className="admin-package-form-group">
-                <label className="admin-package-label">Ngày kết thúc</label>
-                <div style={{ display: 'flex', alignItems: 'stretch', gap: 12 }}>
-                  <DatePicker
-                    selected={currentPackage.endDate ? parseDateString(currentPackage.endDate) : null}
-                    onChange={(date) => {
-                      if (date) {
-                        setCurrentPackage(prev => ({ ...prev, endDate: formatDateString(date) }));
-                        let errorMsg = validateField('endDate', formatDateString(date));
-                        setErrors(prev => ({ ...prev, endDate: errorMsg }));
-                      }
-                    }}
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="dd/MM/yyyy"
-                    minDate={new Date()}
+                <div className="admin-package-form-group">
+                  <label className="admin-package-label" htmlFor="duration">Thời hạn</label>
+                  <select
                     className="admin-package-input"
-                    locale={vi}
-                    style={{ flex: 1 }}
-                  />
+                    name="duration"
+                    id="duration"
+                    value={currentPackage.duration}
+                    onChange={handleChange}
+                  >
+                    <option value="6">6 tháng</option>
+                    <option value="12">12 tháng</option>
+                    <option value="18">18 tháng</option>
+                  </select>
+                  <span style={{ minHeight: 18, display: 'block' }}>{errors.duration && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.duration}</span>}</span>
                 </div>
-                <span style={{ minHeight: 18, display: 'block' }}>{errors.endDate && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.endDate}</span>}</span>
-              </div>
-              <span style={{ minHeight: 18, display: 'block', width: '100%' }}>{errors.submit && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.submit}</span>}</span>
-              {/* Remove inline success message here, now shown as modal */}
-              <div className="admin-package-form-actions">
-                <button className="admin-btn admin-package-btn" type="submit">Lưu</button>
-                <button className="admin-btn admin-package-btn-cancel" type="button" onClick={handleCloseModal}>Hủy</button>
+                <div className="admin-package-form-group">
+                  <label className="admin-package-label" htmlFor="price">Giá</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input
+                      className="admin-package-input"
+                      name="price"
+                      id="price"
+                      value={currentPackage.price || ''}
+                      onChange={handlePriceInput}
+                      placeholder="Nhập giá (VD: 1.000.000)"
+                      inputMode="numeric"
+                      style={{ flex: 1 }}
+                    />
+                    <span style={{ color: '#555', fontWeight: 500 }}>VNĐ</span>
+                  </div>
+                  <span style={{ minHeight: 18, display: 'block' }}>{errors.price && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.price}</span>}</span>
+                </div>
+                <div className="admin-package-form-group">
+                  <label className="admin-package-label" htmlFor="description">Mô tả (mỗi dòng 1 chức năng)</label>
+                  <textarea
+                    className="admin-package-input"
+                    name="description"
+                    id="description"
+                    value={currentPackage.description || ''}
+                    onChange={handleChange}
+                    rows={3}
+                    placeholder="Nhập từng chức năng, mỗi dòng 1 chức năng"
+                    style={{ resize: 'vertical', minHeight: 60, maxHeight: 180 }}
+                  />
+                  <span style={{ minHeight: 18, display: 'block' }}>{errors.description && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.description}</span>}</span>
+                </div>
+                <div className="admin-package-form-group" style={{ display: 'flex', gap: 16 }}>
+                  <div style={{ flex: 1 }}>
+                    <label className="admin-package-label" htmlFor="releaseDate">Ngày bắt đầu</label>
+                    <DatePicker
+                      selected={currentPackage.releaseDate ? parseDateString(currentPackage.releaseDate) : null}
+                      onChange={(date) => {
+                        if (date) {
+                          setCurrentPackage(prev => ({ ...prev, releaseDate: formatDateString(date) }));
+                          let errorMsg = validateField('releaseDate', formatDateString(date));
+                          setErrors(prev => ({ ...prev, releaseDate: errorMsg }));
+                        }
+                      }}
+                      dateFormat="dd/MM/yyyy"
+                      className="admin-package-input"
+                      locale={vi}
+                      minDate={new Date()}
+                      id="releaseDate"
+                      placeholderText="dd/MM/yyyy"
+                    />
+                    <span style={{ minHeight: 18, display: 'block' }}>{errors.releaseDate && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.releaseDate}</span>}</span>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label className="admin-package-label" htmlFor="endDate">Ngày kết thúc</label>
+                    <DatePicker
+                      selected={currentPackage.endDate ? parseDateString(currentPackage.endDate) : null}
+                      onChange={(date) => {
+                        if (date) {
+                          setCurrentPackage(prev => ({ ...prev, endDate: formatDateString(date) }));
+                          let errorMsg = validateField('endDate', formatDateString(date));
+                          setErrors(prev => ({ ...prev, endDate: errorMsg }));
+                        }
+                      }}
+                      dateFormat="dd/MM/yyyy"
+                      placeholderText="dd/MM/yyyy"
+                      minDate={currentPackage.releaseDate && /^\d{2}\/\d{2}\/\d{4}$/.test(currentPackage.releaseDate) ? parseDateString(currentPackage.releaseDate) : new Date()}
+                      className="admin-package-input"
+                      locale={vi}
+                      id="endDate"
+                    />
+                    <span style={{ minHeight: 18, display: 'block' }}>{errors.endDate && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.endDate}</span>}</span>
+                  </div>
+                </div>
+                <span style={{ minHeight: 18, display: 'block', width: '100%' }}>{errors.submit && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.submit}</span>}</span>
+                <div className="admin-package-form-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 10 }}>
+                  <button className="admin-btn admin-package-btn" type="submit">Lưu</button>
+                  <button className="admin-btn admin-package-btn-cancel" type="button" onClick={handleCloseModal}>Hủy</button>
+                </div>
               </div>
             </form>
           </div>

@@ -292,18 +292,13 @@ function Payment() {
                              currentMembership.membershipPackage.id === pkg.id && 
                              currentMembership.status === 'ACTIVE';
 
+    const duration = pkg.duration ? Number(pkg.duration) : 1;
+    const durationLabel = duration > 1 ? `${duration} tháng` : 'tháng';
     return {
       id: pkg.id,
       name: pkg.name,
       price: Number(pkg.price),
-      priceLabel:
-        idx === 0
-          ? `${Number(pkg.price).toLocaleString('vi-VN')}đ/6tháng`
-          : idx === 1
-            ? `${Number(pkg.price).toLocaleString('vi-VN')}đ/12 tháng`
-            : idx === 2
-              ? `${Number(pkg.price).toLocaleString('vi-VN')}đ/18 tháng`
-              : `${Number(pkg.price).toLocaleString('vi-VN')}đ/tháng`,
+      priceLabel: `${Number(pkg.price).toLocaleString('vi-VN')}đ/${durationLabel}`,
       icon: idx === 0 ? <AiFillHeart size={60} color="#2e7d32" style={{background:'#fff',borderRadius:'50%',padding:6}} />
         : idx === 1 ? <AiFillStar size={60} color="#1976d2" style={{background:'#fff',borderRadius:'50%',padding:6}} />
         : <AiFillCrown size={60} color="#8e24aa" style={{background:'#fff',borderRadius:'50%',padding:6}} />,
