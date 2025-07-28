@@ -15,16 +15,18 @@ function Login() {
   const [errorMessage, setErrorMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
-
   const [needUsername, setNeedUsername] = useState(false);
   const [emailFromGoogle, setEmailFromGoogle] = useState('');
   const [nameFromGoogle, setNameFromGoogle] = useState('');
   const [newUsername, setNewUsername] = useState('');
   const [loginFormError, setLoginFormError] = useState({});
-
   const navigate = useNavigate();
-
-  // Hàm kiểm tra thông tin khai báo ban đầu
+  // Modal UI cho errorMessage
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  useEffect(() => {
+    if (errorMessage) setShowErrorModal(true);
+  }, [errorMessage]);
+  // ...existing code...
   const checkInitialInfoAndNavigate = async (token) => {
     try {
       const res = await axios.get('http://localhost:5175/api/member-initial-info/has-submitted', {
@@ -135,10 +137,8 @@ function Login() {
       setErrorMessage(err?.response?.data?.message || 'Đã có lỗi xảy ra.');
     }
   };
-
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    // Validate fields
     const errors = {};
     if (!username.trim()) errors.username = 'Vui lòng nhập tên đăng nhập.';
     if (!password.trim()) errors.password = 'Vui lòng nhập mật khẩu.';
@@ -166,19 +166,21 @@ function Login() {
       } else {
         navigate('/home', { replace: true });
       }
-
-      setErrorMessage('');
+      // Không setErrorMessage('') ở đây để không ghi đè message lỗi
     } catch (error) {
       console.error("Login failed", error);
       if (error.response && (error.response.status === 401 || error.response.status === 400)) {
-        setErrorMessage("Sai tài khoản hoặc mật khẩu");
+        const msg = error.response.data?.message;
+        if (msg) {
+          setErrorMessage(msg);
+        } else {
+          setErrorMessage("Sai tài khoản hoặc mật khẩu");
+        }
       } else {
         setErrorMessage("Đã có lỗi xảy ra. Vui lòng thử lại.");
       }
     }
   };
-
-  // ✅ Nếu đang ở màn hình nhập username Google
   if (needUsername) {
     return (
         <section className="login-section">
@@ -204,6 +206,15 @@ function Login() {
 
   return (
       <section className="login-section">
+        {/* Modal hiển thị lỗi */}
+        {showErrorModal && errorMessage && (
+          <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'#0008',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <div style={{background:'#fff',padding:32,borderRadius:12,minWidth:300,boxShadow:'0 2px 16px #0003',textAlign:'center'}}>
+              <div style={{marginBottom:20,color:'#ef4444',fontWeight:600,fontSize:18}}>{errorMessage}</div>
+              <button onClick={()=>setShowErrorModal(false)} style={{padding:'8px 24px',borderRadius:6,background:'#2563eb',color:'#fff',border:'none',fontWeight:500,fontSize:16,cursor:'pointer'}}>OK</button>
+            </div>
+          </div>
+        )}
         <div className="login-container">
           <img src="/src/assets/img1/android-chrome-192x192.png" alt="Logo" className="logo" />
           <h2>NoSmoke</h2>

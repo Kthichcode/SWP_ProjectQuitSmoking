@@ -1,3 +1,14 @@
+  // Thêm style cho trạng thái nếu chưa có trong CSS
+  const statusColorStyle = `
+    .admin-table .inactive {
+      color: #d97706; /* vàng */
+      font-weight: 600;
+    }
+    .admin-table .banned {
+      color: #ef4444; /* đỏ */
+      font-weight: 600;
+    }
+  `;
 import './AdminPage.css';
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
@@ -7,6 +18,10 @@ function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
+  const [editStatusUser, setEditStatusUser] = useState(null); // user object
+  const [statusModal, setStatusModal] = useState(false);
+  const [statusValue, setStatusValue] = useState('ACTIVE');
+  const [statusMsg, setStatusMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [openMenu, setOpenMenu] = useState(null); 
@@ -45,8 +60,38 @@ function AdminUsers() {
     (u.email || '').toLowerCase().includes(search.toLowerCase())
   );
 
+  // Hàm gọi API cập nhật status
+  const handleUpdateStatus = async () => {
+    if (!editStatusUser || !statusValue) return;
+    setStatusMsg('');
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
+      await axios.put(`http://localhost:5175/api/users/admin/users/${editStatusUser.id}/status?status=${statusValue}`, {}, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      setStatusMsg('Cập nhật trạng thái thành công!');
+      setStatusModal(false);
+      setEditStatusUser(null);
+      // reload user list
+      setLoading(true);
+      axios.get('/api/users/getAll', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
+        .then(res => {
+          const members = res.data.filter(u => !(u.roles && u.roles.includes('COACH')));
+          setUsers(members);
+        })
+        .catch(() => setUsers([]))
+        .finally(() => setLoading(false));
+    } catch (err) {
+      setStatusMsg('Cập nhật trạng thái thất bại!');
+    }
+  };
+
   return (
-    <div className="admin-page">
+    <>
+      <style>{statusColorStyle}</style>
+      <div className="admin-page">
       <h2>Quản lý Người Dùng</h2>
       <div className="admin-stats-row">
         <div className="admin-stat-block"><div className="admin-stat-value">{users.length}</div><div className="admin-stat-label">Tổng người dùng</div></div>
@@ -73,7 +118,19 @@ function AdminUsers() {
               <td>{u.email}</td>
               <td>{u.role || (u.roles ? Array.isArray(u.roles) ? u.roles.join(', ') : u.roles : '')}</td>
               <td>{u.created_at ? new Date(u.created_at).toLocaleDateString('vi-VN') : (u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : (u.registered ? new Date(u.registered).toLocaleDateString('vi-VN') : ''))}</td>
-              <td><span className={u.status === 'active' || u.status === 'ACTIVE' ? 'active' : u.status === 'pending' ? 'pending' : 'inactive'}>{u.status === 'active' || u.status === 'ACTIVE' ? 'Hoạt động' : u.status === 'pending' ? 'Chờ xác nhận' : 'Khóa'}</span></td>
+              <td>
+                <span className={
+                  u.status === 'ACTIVE' || u.status === 'active' ? 'active'
+                  : u.status === 'INACTIVE' || u.status === 'inactive' ? 'inactive'
+                  : u.status === 'BANNED' || u.status === 'banned' ? 'banned'
+                  : ''
+                }>
+                  {u.status === 'ACTIVE' || u.status === 'active' ? 'Hoạt động'
+                  : u.status === 'INACTIVE' || u.status === 'inactive' ? 'Dừng hoạt động'
+                  : u.status === 'BANNED' || u.status === 'banned' ? 'Khóa'
+                  : u.status}
+                </span>
+              </td>
               <td style={{position:'relative'}}>
                 <button
                   className="admin-btn admin-btn-more"
@@ -114,20 +171,16 @@ function AdminUsers() {
                         display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
                         color:'#222',fontSize:'1rem',textAlign:'left',fontWeight:500
                       }}
-                      onClick={() => {  setOpenMenu(null); }}
-                    >
-                      <FaEdit /> <span style={{color:'#222'}}>Chỉnh sửa</span>
-                    </button>
-                    <button
-                      className="admin-btn admin-btn-menu"
-                      style={{
-                        display:'flex',alignItems:'center',gap:8,width:'100%',background:'none',border:'none',padding:'8px 16px',cursor:'pointer',
-                        color:'#ef4444',fontSize:'1rem',textAlign:'left',fontWeight:500
+                      onClick={() => {
+                        setEditStatusUser(u);
+                        setStatusValue(u.status === 'ACTIVE' || u.status === 'active' ? 'ACTIVE' : (u.status === 'pending' ? 'PENDING' : 'INACTIVE'));
+                        setStatusModal(true);
+                        setOpenMenu(null);
                       }}
-                      onClick={() => {  setOpenMenu(null); }}
                     >
-                      <FaPause /> <span style={{color:'#ef4444'}}>Tạm dừng</span>
+                      <FaEdit /> <span style={{color:'#222'}}>Chỉnh sửa trạng thái</span>
                     </button>
+
                   </div>
                 )}
               </td>
@@ -135,6 +188,31 @@ function AdminUsers() {
           ))}
         </tbody>
       </table>
+      {/* Modal chỉnh sửa trạng thái */}
+      {statusModal && editStatusUser && (
+        <div className="admin-modal">
+          <div className="admin-modal-content">
+            <button className="admin-modal-close" style={{top: 8, right: 12, fontSize: 28}} onClick={() => setStatusModal(false)} type="button">×</button>
+            <h3>Chỉnh sửa trạng thái người dùng</h3>
+            <div><b>Họ tên:</b> {editStatusUser.fullName || editStatusUser.name}</div>
+            <div><b>Email:</b> {editStatusUser.email}</div>
+            <div style={{margin:'16px 0'}}>
+              <label>Trạng thái mới:&nbsp;</label>
+              <select value={statusValue} onChange={e => setStatusValue(e.target.value)} style={{padding:6,borderRadius:6}}>
+                <option value="ACTIVE">Hoạt động</option>
+                <option value="INACTIVE">Dừng hoạt động</option>
+                <option value="BANNED">Khóa</option>
+              </select>
+            </div>
+            <div style={{display:'flex',gap:12,marginTop:12}}>
+              <button className="admin-btn" style={{background:'#2563eb',color:'#fff'}} onClick={handleUpdateStatus} type="button">Lưu</button>
+              <button className="admin-btn admin-btn-cancel" onClick={()=>setStatusModal(false)} type="button">Hủy</button>
+            </div>
+            {statusMsg && <div style={{color: statusMsg.includes('thành công') ? 'green' : 'red',marginTop:10}}>{statusMsg}</div>}
+          </div>
+        </div>
+      )}
+
       {selected && (
         <div className="admin-modal">
           <div className="admin-modal-content">
@@ -149,7 +227,8 @@ function AdminUsers() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 export default AdminUsers;

@@ -83,8 +83,7 @@ const Profile = () => {
   const validateAddress = (address) => {
     if (!address) return 'Địa chỉ không được bỏ trống.';
     if (address.length < 7) return 'Địa chỉ phải ít nhất 7 ký tự.';
-    if (!address.includes('/')) return 'Địa chỉ phải chứa dấu /.';
-    if (/[^A-Za-zÀ-ỹ0-9\s/]/.test(address)) return 'Địa chỉ không được chứa ký tự đặc biệt ngoài dấu /.';
+    // Đã bỏ kiểm tra ký tự đặc biệt, cho phép mọi ký tự
     return '';
   };
   const validateBirthDate = (birthDate) => {
