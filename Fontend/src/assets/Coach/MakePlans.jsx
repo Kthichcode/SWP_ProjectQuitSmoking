@@ -407,8 +407,14 @@ function MakePlans() {
                           <div style={{marginTop:8}}>
                             <ul style={{marginLeft:16,marginBottom:8}}>
                               {plan.stages.map(stage => (
-                                <li key={stage.stageId} style={{marginBottom:6}}>
+                                <li key={stage.stageId} style={{marginBottom:6, display:'flex', alignItems:'center', gap:8}}>
                                   <span style={{fontWeight:500}}>Giai đoạn {stage.stageNumber}</span>
+                                  {/* Hiển thị phần trăm tiến độ nếu có */}
+                                  {typeof stage.progressPercentage === 'number' && (
+                                    <span style={{marginLeft:8, color:'#1976d2', fontWeight:600, fontSize:'0.98rem', background:'#e3eefd', borderRadius:6, padding:'2px 10px'}}>
+                                      {stage.progressPercentage}%
+                                    </span>
+                                  )}
                                   {/* Chỉ hiện nút 'Cập nhật' khi đang ở chế độ xem (viewOnly: true) */}
                                   {editingStage && editingStage.viewOnly && editingStage.stageId === stage.stageId && false && (
                                     <button
@@ -423,7 +429,8 @@ function MakePlans() {
                                     try {
                                       const res = await axiosInstance.get(`http://localhost:5175/api/quitplan/stage/${stage.stageId}`);
                                       const data = res.data && res.data.data ? res.data.data : {};
-                                      setEditingStage({ ...stage, ...data, viewOnly: true });
+                                      // Lấy progressPercentage nếu có
+                                      setEditingStage({ ...stage, ...data, viewOnly: true, progressPercentage: data.progressPercentage });
                                       setStageForm({
                                         startDate: data.startDate || '',
                                         endDate: data.endDate || '',
@@ -471,6 +478,16 @@ function MakePlans() {
                             {editingStage && (
                               <div style={{border:'1px solid #2d6cdf',borderRadius:10,padding:18,background:'#fff',marginBottom:16,boxShadow:'0 2px 8px rgba(33,150,243,0.08)'}}>
                                 <h5 style={{fontSize:'1.08rem',marginBottom:12}}>{editingStage.viewOnly ? 'Chi tiết giai đoạn' : (editingStage.stageId ? `Cập nhật giai đoạn ${editingStage.stageNumber}` : `Thêm giai đoạn mới số ${editingStage.stageNumber}`)}</h5>
+                                {/* Hiển thị progressPercentage nếu có và đang ở chế độ xem */}
+                                {editingStage.viewOnly && typeof editingStage.progressPercentage === 'number' && (
+                                  <div style={{marginBottom:16}}>
+                                    <label style={{fontWeight:600}}>Tiến độ kế hoạch:</label><br/>
+                                    <div style={{width:'100%',maxWidth:320,background:'#e3eefd',borderRadius:8,overflow:'hidden',height:22,marginTop:4,marginBottom:4}}>
+                                      <div style={{width:`${editingStage.progressPercentage}%`,background:'#1976d2',height:'100%',borderRadius:8,transition:'width 0.3s'}}></div>
+                                    </div>
+                                    <span style={{fontWeight:600,color:'#1976d2'}}>{editingStage.progressPercentage}%</span>
+                                  </div>
+                                )}
                                 <div style={{display:'flex',gap:18,flexWrap:'wrap'}}>
                                   <div>
                                     <label>Ngày bắt đầu</label><br/>
