@@ -7,6 +7,7 @@ import MembersBarChart from '../../components/MembersBarChart';
 import MembersMonthChart from '../../components/MembersMonthChart';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Area } from 'recharts';
 import './CoachDashboard.css';
+import './CoachModals.css';
 
 // Modal gửi thông báo cho member
 // Modal gửi thông báo cho member (tạo notification mới trước khi gửi)
@@ -274,43 +275,53 @@ function MembersModal({ open, onClose, members }) {
 function NotificationModal({ open, onClose, notifications, onMarkRead }) {
   if (!open) return null;
   return (
-    <div className="admin-modal" style={{zIndex: 2000, background: 'rgba(0,0,0,0.18)', position: 'fixed', top:0, left: 0, right: 0, bottom: 0, display:'flex', alignItems:'center', justifyContent:'center'}}>
-      <div className="admin-modal-content" style={{maxWidth: 420, minWidth: 320, padding: 28, position: 'relative', borderRadius: 16, background:'#fff', boxShadow:'0 8px 32px rgba(44,108,223,0.10)'}}>
+    <div className="coach-notification-modal">
+      <div className="coach-notification-content">
         <button
-          className="admin-modal-close"
-          style={{position: 'absolute', top: 12, right: 18, fontSize: 28, background: 'none', border: 'none', cursor: 'pointer', color:'#2d6cdf'}} 
+          className="coach-notification-close"
           onClick={onClose}
           type="button"
         >×</button>
-        <h3 style={{marginBottom: 18, fontWeight: 700, fontSize: 22, color:'#2d6cdf', textAlign:'center'}}>Thông báo</h3>
+        <div className="coach-notification-header">
+          <h3 className="coach-notification-title">
+            <FaBell />
+            Thông báo
+          </h3>
+        </div>
         {notifications.length === 0 ? (
-          <div style={{color: '#888', textAlign:'center', padding:'32px 0'}}>Không có thông báo nào.</div>
+          <div className="coach-notification-empty">
+            <div className="coach-notification-empty-icon">🔔</div>
+            <p>Không có thông báo nào.</p>
+          </div>
         ) : (
-          <ul style={{listStyle: 'none', padding: 0, margin: 0}}>
+          <ul className="coach-notification-list">
             {notifications.map(n => {
               // Determine sender: if createdBy/sender is 'admin' (case-insensitive) or empty, show 'Admin'
               let sender = n.createdBy || n.sender || '';
-              if (!sender || /admin/i.test(sender)) sender = 'Admin';
-              // fallback: if still empty, show '-';
-              if (!sender) sender = '-';
+              if (!sender || /admin/i.test(sender) || sender === 'system') {
+                sender = 'Admin';
+              }
+              // fallback: if still empty, show 'Hệ thống';
+              if (!sender || sender.trim() === '') sender = 'Hệ thống';
+              
               return (
                 <li
                   key={n.userNotificationId}
-                  style={{marginBottom: 20, borderBottom: '1px solid #e5e7eb', paddingBottom: 12, background: n.isRead ? '#f6f8fa' : '#fffbe7', cursor: n.isRead ? 'default' : 'pointer', borderRadius:10, boxShadow: n.isRead ? 'none' : '0 2px 8px #f59e4222'}}
+                  className={`coach-notification-item ${n.isRead ? 'read' : 'unread'}`}
                   onClick={async () => {
                     if (!n.isRead && onMarkRead) {
                       await onMarkRead(n);
                     }
                   }}
                 >
-                  <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:6}}>
-                    <div style={{fontWeight: 700, fontSize: 16, color:'#2d6cdf'}}>{n.title}</div>
-                    {!n.isRead && <span style={{color:'#f59e42', fontSize:12, fontWeight:600, marginLeft:8}}>Chưa đọc</span>}
+                  <div className="coach-notification-item-header">
+                    <h4 className="coach-notification-item-title">{n.title}</h4>
+                    {!n.isRead && <span className="coach-notification-unread-badge">Mới</span>}
                   </div>
-                  <div style={{color: '#444', fontSize: 15, marginBottom: 6, whiteSpace:'pre-line'}}>{n.content}</div>
-                  <div style={{display:'flex', alignItems:'center', gap:12, fontSize:13, color:'#666', marginBottom:2}}>
-                    <span><b>Từ:</b> {sender}</span>
-                    <span style={{fontSize:12, color:'#888'}}>
+                  <div className="coach-notification-item-content">{n.content}</div>
+                  <div className="coach-notification-item-meta">
+                    <span className="coach-notification-sender">Từ: {sender}</span>
+                    <span className="coach-notification-time">
                       {n.createdAt ? new Date(n.createdAt).toLocaleString('vi-VN', {hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric'}) : ''}
                     </span>
                   </div>
@@ -339,27 +350,29 @@ function CoachDashboard() {
   // Notification state
   const [showNotification, setShowNotification] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [hasUnread, setHasUnread] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  // Fetch unread notifications for dot (on mount and when user changes)
+  // Fetch unread notifications count (on mount and when user changes)
   useEffect(() => {
-    const fetchUnread = async () => {
+    const fetchUnreadCount = async () => {
       if (user && user.token) {
         try {
           const res = await axiosInstance.get('/api/notifications/me');
           if (Array.isArray(res.data)) {
-            setHasUnread(res.data.some(n => !(n.hasBeenRead || n.isRead || n.read)));
+            const unreadNotifications = res.data.filter(n => !(n.hasBeenRead || n.isRead || n.read));
+            setUnreadCount(unreadNotifications.length);
           } else {
-            setHasUnread(false);
+            setUnreadCount(0);
           }
         } catch (e) {
-          setHasUnread(false);
+          setUnreadCount(0);
         }
       } else {
-        setHasUnread(false);
+        setUnreadCount(0);
       }
     };
-    fetchUnread();
+    
+    fetchUnreadCount();
   }, [user]);
 
   // Fetch notifications from API when modal opens
@@ -369,21 +382,25 @@ function CoachDashboard() {
         try {
           const res = await axiosInstance.get('/api/notifications/me');
           if (Array.isArray(res.data)) {
-            setNotifications(res.data.map(n => ({
+            const mappedNotifications = res.data.map(n => ({
               userNotificationId: n.userNotificationId,
               title: n.notificationTitle || n.title,
               content: n.content,
               isRead: n.hasBeenRead || n.isRead || n.read,
-              createdAt: n.sentAt || n.createdAt
-            })));
-            setHasUnread(res.data.some(n => !(n.hasBeenRead || n.isRead || n.read)));
+              createdAt: n.sentAt || n.createdAt,
+              createdBy: n.createdBy || n.sender
+            }));
+            setNotifications(mappedNotifications);
+            // Cập nhật unreadCount sau khi load thông báo
+            setUnreadCount(mappedNotifications.filter(n => !n.isRead).length);
           } else {
             setNotifications([]);
-            setHasUnread(false);
+            setUnreadCount(0);
           }
         } catch (e) {
+          console.error('Lỗi tải thông báo:', e);
           setNotifications([]);
-          setHasUnread(false);
+          setUnreadCount(0);
         }
       }
     };
@@ -613,19 +630,25 @@ function CoachDashboard() {
             >
               <FaBell style={{marginRight:12, fontSize:'1.2em'}} />
               Thông báo
-              {hasUnread && (
+              {unreadCount > 0 && (
                 <span style={{
                   position: 'absolute',
-                  top: 8,
-                  right: 8,
-                  width: 10,
-                  height: 10,
+                  top: 6,
+                  right: 6,
+                  minWidth: 18,
+                  height: 18,
                   background: '#ff5252',
-                  borderRadius: '50%',
-                  display: 'inline-block',
+                  borderRadius: '9px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
                   border: '2px solid #fff',
-                  boxShadow: '0 0 2px #0003'
-                }}></span>
+                  boxShadow: '0 0 4px rgba(0,0,0,0.3)',
+                  padding: '0 4px'
+                }}>{unreadCount > 99 ? '99+' : unreadCount}</span>
               )}
             </button>
           </li>
@@ -655,8 +678,17 @@ function CoachDashboard() {
           onMarkRead={async (n) => {
             try {
               await axiosInstance.put(`api/notifications/mark-as-read/${n.userNotificationId}`);
+              // Cập nhật notifications state
               setNotifications(prev => prev.map(item => item.userNotificationId === n.userNotificationId ? { ...item, isRead: true } : item));
-            } catch (e) {}
+              // Cập nhật unreadCount state - giảm đi 1 khi đánh dấu đã đọc
+              setNotifications(prev => {
+                const updatedNotifications = prev.map(item => item.userNotificationId === n.userNotificationId ? { ...item, isRead: true } : item);
+                setUnreadCount(updatedNotifications.filter(item => !item.isRead).length);
+                return updatedNotifications;
+              });
+            } catch (e) {
+              console.error('Lỗi đánh dấu thông báo đã đọc:', e);
+            }
           }}
         />
         {isOverview ? (

@@ -1,0 +1,185 @@
+/* Coach Notification Modal - Smoke Quit Theme */
+
+.coach-notification-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.coach-notification-content {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+  position: relative;
+  max-width: 420px;
+  min-width: 320px;
+  padding: 28px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.coach-notification-header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.coach-notification-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #16a085;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.coach-notification-close {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  width: 32px;
+  height: 32px;
+  background: rgba(22, 160, 133, 0.1);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #16a085;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-weight: bold;
+}
+
+.coach-notification-close:hover {
+  background: rgba(22, 160, 133, 0.2);
+  transform: scale(1.05);
+}
+
+.coach-notification-empty {
+  text-align: center;
+  padding: 32px 0;
+  color: #6b7280;
+}
+
+.coach-notification-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+
+.coach-notification-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.coach-notification-item {
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.coach-notification-item.unread {
+  background: linear-gradient(135deg, #f0fff4 0%, #e6fffa 100%);
+  border-color: #c6f6d5;
+  box-shadow: 0 2px 8px rgba(22, 160, 133, 0.1);
+}
+
+.coach-notification-item.read {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.coach-notification-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.coach-notification-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.coach-notification-item-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #16a085;
+  margin: 0;
+}
+
+.coach-notification-unread-badge {
+  background: linear-gradient(135deg, #16a085 0%, #27ae60 100%);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.coach-notification-item-content {
+  color: #2d3748;
+  font-size: 15px;
+  margin-bottom: 8px;
+  white-space: pre-line;
+  line-height: 1.5;
+}
+
+.coach-notification-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.coach-notification-sender {
+  font-weight: 500;
+  color: #16a085;
+}
+
+.coach-notification-time {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .coach-notification-modal {
+    padding: 16px;
+  }
+  
+  .coach-notification-content {
+    min-width: auto;
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+  }
+  
+  .coach-notification-title {
+    font-size: 18px;
+  }
+}

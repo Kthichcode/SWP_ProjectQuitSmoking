@@ -12,12 +12,6 @@ function AdminNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ title: '', content: '', time: '', target: 'Tất cả', userId: '', coachId: '' });
-  const [formErrors, setFormErrors] = useState({ title: '', content: '', userId: '', coachId: '' });
-  // Validation helpers
-  const validateTitle = (title) => !title.trim() ? 'Tiêu đề không được để trống' : '';
-  const validateContent = (content) => !content.trim() ? 'Nội dung không được để trống' : '';
-  const validateUserId = (userId) => targetType === 'user' && !userId ? 'Vui lòng chọn user' : '';
-  const validateCoachId = (coachId) => targetType === 'coach' && !coachId ? 'Vui lòng chọn coach' : '';
   const [targetType, setTargetType] = useState('all'); // 'all', 'user', 'coach'
   const [users, setUsers] = useState([]);
   const [coaches, setCoaches] = useState([]);
@@ -77,18 +71,11 @@ function AdminNotifications() {
   // Gửi thông báo mới lên API
   const handleAdd = async e => {
     e.preventDefault();
-    // Validate
-    const titleError = validateTitle(form.title);
-    const contentError = validateContent(form.content);
-    const userIdError = validateUserId(form.userId);
-    const coachIdError = validateCoachId(form.coachId);
-    setFormErrors({ title: titleError, content: contentError, userId: userIdError, coachId: coachIdError });
-    if (titleError || contentError || userIdError || coachIdError) return;
     try {
       let notificationId = null;
       if (targetType === 'all') {
         // Tạo notification chung
-        const res = await axiosInstance.post('http://localhost:5175/api/notifications', {
+        const res = await axiosInstance.post('/api/notifications', {
           title: form.title,
           content: form.content,
           isActive: true
@@ -96,15 +83,10 @@ function AdminNotifications() {
         // Lấy notificationId vừa tạo để dùng cho gửi cá nhân hóa nếu cần
         if (res && res.data && res.data.notificationId) {
           notificationId = res.data.notificationId;
-          // Gửi cho tất cả user và coach
-          await axiosInstance.post('http://localhost:5175/api/notifications/send-to-members-and-coaches', {
-            notificationId: notificationId,
-            personalizedReason: ''
-          });
         }
       } else {
         // Luôn tạo notification trước, lấy id
-        const res = await axiosInstance.post('http://localhost:5175/api/notifications', {
+        const res = await axiosInstance.post('/api/notifications', {
           title: form.title,
           content: form.content,
           isActive: true
@@ -124,7 +106,6 @@ function AdminNotifications() {
       // Sau khi tạo thành công, reload lại danh sách
       setForm({ title: '', content: '', time: '', target: 'Tất cả', userId: '', coachId: '' });
       setShowAdd(false);
-      setFormErrors({ title: '', content: '', userId: '', coachId: '' });
       // Gọi lại API để lấy danh sách mới
       const res2 = await axiosInstance.get('/api/notifications');
       if (Array.isArray(res2.data)) {
@@ -165,128 +146,196 @@ function AdminNotifications() {
 
   return (
     <div className="admin-page">
-      <h2>Quản lý Thông Báo</h2>
-      <button className="admin-btn" onClick={() => setShowAdd(true)}>+ Tạo Thông Báo</button>
+      <div className="admin-notification-page-header">
+        <h2 className="admin-notification-page-title">
+          Quản lý Thông Báo
+        </h2>
+        <button 
+          className="admin-notification-create-btn" 
+          onClick={() => setShowAdd(true)}
+        >
+          <span className="admin-notification-create-icon">+</span>
+          Tạo Thông Báo Mới
+        </button>
+      </div>
       {showAdd && (
-        <div className="admin-modal" style={{zIndex:2001, background:'rgba(0,0,0,0.18)'}}>
-          <form className="admin-modal-content admin-notification-form" onSubmit={handleAdd} style={{width:420, minWidth:320, maxWidth:420, padding:28, borderRadius:16, background:'#fff', boxShadow:'0 8px 32px rgba(44,108,223,0.10)', position:'relative', boxSizing:'border-box'}}>
-            <button className="admin-modal-close admin-notification-close" onClick={() => setShowAdd(false)} type="button" style={{position:'absolute',top:12,right:18,fontSize:28,background:'none',border:'none',cursor:'pointer',color:'#2d6cdf'}}>×</button>
-            <h3 className="admin-notification-title" style={{marginBottom:18, fontWeight:700, fontSize:22, color:'#2d6cdf', textAlign:'center'}}>Tạo Thông Báo mới</h3>
-            <div style={{display:'flex', gap:10, marginBottom:18, justifyContent:'center'}}>
-              {[{label:'Tất cả', value:'all'},{label:'User', value:'user'},{label:'Coach', value:'coach'}].map(opt => (
-                <button
-                  key={opt.value}
+        <div className="admin-notification-modal">
+          <form 
+            className="admin-notification-form" 
+            onSubmit={handleAdd}
+          >
+            {/* Header */}
+            <div className="admin-notification-header">
+              <button 
+                className="admin-notification-close" 
+                onClick={() => setShowAdd(false)} 
+                type="button"
+              >
+                ×
+              </button>
+              <h3 className="admin-notification-title">
+                Tạo Thông Báo Mới
+              </h3>
+              <p className="admin-notification-subtitle">
+                Gửi thông báo hỗ trợ cai nghiện đến người dùng hoặc huấn luyện viên
+              </p>
+            </div>
+
+            {/* Content */}
+            <div className="admin-notification-content">
+              {/* Target Type Selection */}
+              <div className="admin-notification-target-section">
+                <label className="admin-notification-label">
+                  Đối tượng nhận thông báo
+                </label>
+                <div className="admin-notification-target-grid">
+                  {[
+                    {label:'Tất cả', value:'all', icon: '🎉'},
+                    {label:'Người dùng', value:'user', icon: '👤'},
+                    {label:'Huấn luyện viên', value:'coach', icon: '🎯'}
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setTargetType(opt.value)}
+                      className={`admin-notification-target-btn ${targetType === opt.value ? 'active' : ''}`}
+                    >
+                      <span className="admin-notification-target-icon">{opt.icon}</span>
+                      <span>{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Title Field */}
+              <div className="admin-notification-field">
+                <label className="admin-notification-label">
+                  Tiêu đề thông báo
+                </label>
+                <input
+                  className="admin-notification-input"
+                  required
+                  placeholder="Nhập tiêu đề thông báo hỗ trợ cai nghiện..."
+                  value={form.title}
+                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                />
+              </div>
+
+              {/* Content Field */}
+              <div className="admin-notification-field">
+                <label className="admin-notification-label">
+                  Nội dung thông báo
+                </label>
+                <textarea 
+                  className="admin-notification-textarea"
+                  required 
+                  placeholder="Nhập nội dung thông báo động viên, hỗ trợ quá trình cai nghiện..."
+                  value={form.content} 
+                  onChange={e => setForm(f => ({ ...f, content: e.target.value }))} 
+                />
+              </div>
+              {/* User Selection */}
+              {targetType === 'user' && (
+                <div className="admin-notification-field">
+                  <label className="admin-notification-label">
+                    Chọn người dùng
+                  </label>
+                  <select 
+                    className="admin-notification-select"
+                    value={form.userId || ''} 
+                    onChange={e => setForm(f => ({ ...f, userId: e.target.value }))} 
+                    required
+                  >
+                    <option value="">-- Chọn người dùng --</option>
+                    {users.map(u => (
+                      <option key={u.id} value={u.id}>
+                        {u.fullName || u.name || u.email || u.username} {u.email ? `(${u.email})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {form.userId && (() => {
+                    const user = users.find(u => String(u.id) === String(form.userId));
+                    if (!user) return null;
+                    return (
+                      <div className="admin-notification-info-card">
+                        <div className="admin-notification-info-header">
+                          Thông tin người dùng được chọn
+                        </div>
+                        <div className="admin-notification-info-grid">
+                          <div className="admin-notification-info-item">
+                            <span className="admin-notification-info-label">Họ tên:</span> {user.fullName || user.name}
+                          </div>
+                          <div className="admin-notification-info-item">
+                            <span className="admin-notification-info-label">Email:</span> {user.email}
+                          </div>
+                          <div className="admin-notification-info-item">
+                            <span className="admin-notification-info-label">Username:</span> {user.username}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+              {/* Coach Selection */}
+              {targetType === 'coach' && (
+                <div className="admin-notification-field">
+                  <label className="admin-notification-label">
+                    Chọn huấn luyện viên
+                  </label>
+                  <select 
+                    className="admin-notification-select"
+                    value={form.coachId || ''} 
+                    onChange={e => setForm(f => ({ ...f, coachId: e.target.value }))} 
+                    required
+                  >
+                    <option value="">-- Chọn huấn luyện viên --</option>
+                    {coaches.map(u => (
+                      <option key={u.id} value={u.id}>
+                        {u.name || u.fullName || u.email || u.username} {u.email ? `(${u.email})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {form.coachId && (() => {
+                    const coach = coaches.find(u => String(u.id) === String(form.coachId));
+                    if (!coach) return null;
+                    return (
+                      <div className="admin-notification-info-card">
+                        <div className="admin-notification-info-header">
+                          Thông tin huấn luyện viên được chọn
+                        </div>
+                        <div className="admin-notification-info-grid">
+                          <div className="admin-notification-info-item">
+                            <span className="admin-notification-info-label">Họ tên:</span> {coach.fullName || coach.name}
+                          </div>
+                          <div className="admin-notification-info-item">
+                            <span className="admin-notification-info-label">Email:</span> {coach.email}
+                          </div>
+                          <div className="admin-notification-info-item">
+                            <span className="admin-notification-info-label">Username:</span> {coach.username}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <div className="admin-notification-actions">
+                <button 
                   type="button"
-                  className={targetType===opt.value?"admin-btn admin-btn-menu":"admin-btn"}
-                  onClick={()=>setTargetType(opt.value)}
-                  style={{
-                    minWidth:90,
-                    height:40,
-                    fontWeight:600,
-                    fontSize:16,
-                    borderRadius:8,
-                    border:'1px solid #d1d5db',
-                    background: targetType===opt.value ? '#e3eefd' : '#f8fafc',
-                    color: targetType===opt.value ? '#2d6cdf' : '#222',
-                    boxShadow: targetType===opt.value ? '0 2px 8px #2d6cdf22' : 'none',
-                    transition:'all 0.15s',
-                    outline:'none',
-                    cursor:'pointer',
-                    margin:0,
-                    padding:'0 18px',
-                    display:'flex',alignItems:'center',justifyContent:'center'
-                  }}
+                  className="admin-notification-btn-cancel"
+                  onClick={() => setShowAdd(false)}
                 >
-                  {opt.label}
+                  Hủy bỏ
                 </button>
-              ))}
-            </div>
-            <div style={{marginBottom:14}}>
-              <label className="admin-notification-label" style={{fontWeight:600,marginBottom:4,display:'block'}}>Tiêu đề</label>
-              <input
-                className="admin-notification-input"
-                placeholder="Tiêu đề thông báo"
-                value={form.title}
-                onChange={e => {
-                  setForm(f => ({ ...f, title: e.target.value }));
-                  setFormErrors(errors => ({ ...errors, title: validateTitle(e.target.value) }));
-                }}
-                style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #d1d5db',fontSize:15}}
-              />
-              {formErrors.title && <div style={{color:'#dc2626',fontSize:13,marginTop:4,textAlign:'left'}}>{formErrors.title}</div>}
-            </div>
-            <div style={{marginBottom:14}}>
-              <label className="admin-notification-label" style={{fontWeight:600,marginBottom:4,display:'block'}}>Nội dung thông báo</label>
-              <textarea 
-                className="admin-notification-textarea"
-                placeholder="Nội dung thông báo" 
-                value={form.content} 
-                onChange={e => {
-                  setForm(f => ({ ...f, content: e.target.value }));
-                  setFormErrors(errors => ({ ...errors, content: validateContent(e.target.value) }));
-                }} 
-                style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #d1d5db',fontSize:15,minHeight:70,resize:'vertical'}}
-              />
-              {formErrors.content && <div style={{color:'#dc2626',fontSize:13,marginTop:4,textAlign:'left'}}>{formErrors.content}</div>}
-            </div>
-            {targetType === 'user' && (
-              <div className="admin-notification-col" style={{marginBottom:14}}>
-                <label className="admin-notification-label" style={{fontWeight:600,marginBottom:4,display:'block'}}>Chọn User</label>
-                <select className="admin-notification-input" value={form.userId || ''} onChange={e => {
-                  setForm(f => ({ ...f, userId: e.target.value }));
-                  setFormErrors(errors => ({ ...errors, userId: validateUserId(e.target.value) }));
-                }} style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #d1d5db',fontSize:15}}>
-                {formErrors.userId && <div style={{color:'#dc2626',fontSize:13,marginTop:4,textAlign:'left'}}>{formErrors.userId}</div>}
-                  <option value="">-- Chọn user --</option>
-                  {users.map(u => (
-                    <option key={u.id} value={u.id}>
-                      {u.fullName || u.name || u.email || u.username} {u.email ? `(${u.email})` : ''}
-                    </option>
-                  ))}
-                </select>
-                {form.userId && (() => {
-                  const user = users.find(u => String(u.id) === String(form.userId));
-                  if (!user) return null;
-                  return (
-                    <div style={{marginTop:8, fontSize:'0.97rem', color:'#444', background:'#f3f4f6', padding:'8px', borderRadius:'6px', lineHeight:1.6}}>
-                      <div><b>Họ tên:</b> {user.fullName || user.name}</div>
-                      <div><b>Email:</b> {user.email}</div>
-                      <div><b>Username:</b> {user.username}</div>
-                    </div>
-                  );
-                })()}
+                <button 
+                  type="submit" 
+                  className="admin-notification-btn-submit"
+                >
+                  Tạo thông báo
+                </button>
               </div>
-            )}
-            {targetType === 'coach' && (
-              <div className="admin-notification-col" style={{marginBottom:14}}>
-                <label className="admin-notification-label" style={{fontWeight:600,marginBottom:4,display:'block'}}>Chọn Coach</label>
-                <select className="admin-notification-input" value={form.coachId || ''} onChange={e => {
-                  setForm(f => ({ ...f, coachId: e.target.value }));
-                  setFormErrors(errors => ({ ...errors, coachId: validateCoachId(e.target.value) }));
-                }} style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #d1d5db',fontSize:15}}>
-                {formErrors.coachId && <div style={{color:'#dc2626',fontSize:13,marginTop:4,textAlign:'left'}}>{formErrors.coachId}</div>}
-                  <option value="">-- Chọn coach --</option>
-                  {coaches.map(u => (
-                    <option key={u.id} value={u.id}>
-                      {u.name || u.fullName || u.email || u.username} {u.email ? `(${u.email})` : ''}
-                    </option>
-                  ))}
-                </select>
-                {form.coachId && (() => {
-                  const coach = coaches.find(u => String(u.id) === String(form.coachId));
-                  if (!coach) return null;
-                  return (
-                    <div style={{marginTop:8, fontSize:'0.97rem', color:'#444', background:'#f3f4f6', padding:'8px', borderRadius:'6px', lineHeight:1.6}}>
-                      <div><b>Họ tên:</b> {coach.fullName || coach.name}</div>
-                      <div><b>Email:</b> {coach.email}</div>
-                      <div><b>Username:</b> {coach.username}</div>
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
-            <div style={{display:'flex',justifyContent:'center',marginTop:18}}>
-              <button className="admin-btn admin-notification-submit" type="submit" style={{background:'#2d6cdf',color:'#fff',padding:'10px 32px',border:'none',borderRadius:8,fontWeight:700,fontSize:16,boxShadow:'0 2px 8px #2d6cdf22',letterSpacing:0.2}}>Tạo</button>
             </div>
           </form>
         </div>

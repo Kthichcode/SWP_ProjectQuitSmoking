@@ -251,6 +251,18 @@ const getStageDotColor = (status) => {
     setActiveTab(tab);
     if (tab !== 'chat') {
       setChatHistoryLoaded(false);
+    } else if (tab === 'chat' && selectionId) {
+      // Mark messages as read when switching to chat tab
+      markConversationAsRead(selectionId);
+    }
+  };
+
+  const markConversationAsRead = async (selectionId) => {
+    try {
+      await axiosInstance.put(`/api/chat/mark-read/${selectionId}`);
+      console.log(`Marked messages as read for selection ${selectionId}`);
+    } catch (e) {
+      console.error('Error marking messages as read:', e);
     }
   };
 
@@ -333,27 +345,20 @@ const getStageDotColor = (status) => {
       let hasNew = false;
 
       const formatted = messagesData.map(msg => {
-        let sender =
-          msg.senderType === 'MEMBER'
-            ? 'user'
-            : msg.senderType === 'COACH'
-              ? 'coach'
-              : (msg.senderType || msg.sender || 'user').toLowerCase();
+        let senderType = msg.senderType || 'MEMBER';
         let senderName;
-        if (sender === 'user') {
+        if (senderType === 'MEMBER') {
           senderName = user.fullName || 'Bạn';
-        } else if (sender === 'coach') {
+        } else if (senderType === 'COACH') {
           senderName = selectedCoach?.fullName || 'Coach';
         } else {
-          senderName = sender;
+          senderName = senderType;
         }
         return {
           id: msg.messageId || msg.id || Date.now(),
-          text: msg.content || msg.message || '',
-          sender,
-          timestamp: msg.sentAt
-            ? new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
-            : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+          content: msg.content || msg.message || '',
+          senderType,
+          timestamp: msg.sentAt || new Date().toISOString(),
           senderName
         };
       });
@@ -402,15 +407,16 @@ const getStageDotColor = (status) => {
           try {
             const receivedMessage = JSON.parse(message.body);
 
+            // User side chỉ nhận tin nhắn từ COACH
             if (receivedMessage.senderType !== 'COACH') {
               return;
             }
 
             const formattedMessage = {
               id: receivedMessage.messageId || Date.now(),
-              text: receivedMessage.content,
-              sender: 'coach',
-              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+              content: receivedMessage.content,
+              senderType: receivedMessage.senderType,
+              timestamp: receivedMessage.sentAt || new Date().toISOString(),
               senderName: selectedCoach?.fullName || 'Coach'
             };
 
@@ -418,10 +424,9 @@ const getStageDotColor = (status) => {
               const exists = prev.some(msg =>
                 msg.id === formattedMessage.id ||
                 (
-                  msg.text === formattedMessage.text &&
-                  msg.sender === formattedMessage.sender &&
-                  Math.abs(new Date(`1970/01/01 ${msg.timestamp}`).getTime() -
-                    new Date(`1970/01/01 ${formattedMessage.timestamp}`).getTime()) < 3000
+                  msg.content === formattedMessage.content &&
+                  msg.senderType === formattedMessage.senderType &&
+                  Math.abs(new Date(msg.timestamp).getTime() - new Date(formattedMessage.timestamp).getTime()) < 3000
                 )
               );
               if (exists) {
@@ -456,7 +461,7 @@ const getStageDotColor = (status) => {
 
   // Đồng bộ logic unreadCount với Messages.jsx: chỉ tăng nếu không ở tab chat, nếu đang ở tab chat thì reset về 0
   const handleWebSocketMessage = (message) => {
-    if (message.sender === 'coach') {
+    if (message.senderType === 'COACH') {
       if (activeTab === 'chat') {
         setUnreadCount(0); // reset badge ngay khi nhận tin nhắn nếu đang ở tab chat
       } else {
@@ -584,9 +589,9 @@ const getStageDotColor = (status) => {
 
     const optimisticMessage = {
       id: Date.now(),
-      text: newMessage.trim(),
-      sender: 'user',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+      content: newMessage.trim(),
+      senderType: 'MEMBER',
+      timestamp: new Date().toISOString(),
       senderName: user.fullName || 'Bạn'
     };
 
@@ -880,13 +885,15 @@ const getStageDotColor = (status) => {
                 <div className="chat-container">
                   <div className="messages-list">
                     {messages.map(message => (
-                      <div key={message.id} className={`message ${message.sender}`}>
-                        <div className={`message-content ${message.sender === 'user' ? 'message-user' : 'message-coach'}`}>
+                      <div key={message.id} className={`message ${message.senderType === 'MEMBER' ? 'user' : 'coach'}`}>
+                        <div className={`message-content ${message.senderType === 'MEMBER' ? 'message-user' : 'message-coach'}`}>
                           <div className="message-header">
                             <strong>{message.senderName}</strong>
-                            <span className="timestamp">{message.timestamp}</span>
+                            <span className="timestamp">
+                              {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                            </span>
                           </div>
-                          <p>{message.text}</p>
+                          <p>{message.content}</p>
                         </div>
                       </div>
                     ))}
