@@ -175,7 +175,7 @@
   min-height: 100px;
   box-sizing: border-box;
   font-family: inherit;
-  rows: 4;
+  
 }
 
 .admin-notification-textarea::placeholder {
