@@ -49,7 +49,7 @@ function Progress() {
     case undefined:
       return 'Chưa bắt đầu';
     case 'cancelled':
-      return 'Đã huỷ';
+      return 'Thất bại';
     default:
       return 'Chưa bắt đầu';
   }
