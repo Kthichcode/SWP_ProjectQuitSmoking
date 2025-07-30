@@ -157,7 +157,7 @@ function MakePlans() {
             >
               <option value="">-- Chọn thành viên --</option>
               {clients.map(client => (
-                <option key={client.id} value={client.memberId || client.id}>{client.username || client.fullName || client.name || client.email}</option>
+                <option key={client.id} value={client.memberId || client.id}>{client.fullName || client.name || client.username || client.email}</option>
               ))}
             </select>
           </div>

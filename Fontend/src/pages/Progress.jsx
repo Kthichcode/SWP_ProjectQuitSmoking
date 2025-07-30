@@ -36,6 +36,7 @@ function Progress() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [stages, setStages] = useState([]);
   const [expandedStage, setExpandedStage] = useState(null);
+  const [loadingCoach, setLoadingCoach] = useState(true);
   const getStageStatusLabel = (status) => {
   switch (status) {
     case 'completed':
@@ -165,6 +166,7 @@ const getStageDotColor = (status) => {
 
   const fetchCoachBySelectionId = async (selectionId) => {
     try {
+      setLoadingCoach(true);
       const res = await axiosInstance.get(`/api/coach/getCoachBySelectionId/${selectionId}`);
       if (res.data?.status === 'success' && res.data.data) {
         setSelectedCoach(res.data.data);
@@ -175,6 +177,8 @@ const getStageDotColor = (status) => {
     } catch (error) {
       console.error('Lỗi khi gọi API getCoachBySelectionId:', error);
       setSelectedCoach(null);
+    } finally {
+      setLoadingCoach(false);
     }
   };
 
@@ -678,6 +682,22 @@ const getStageDotColor = (status) => {
     );
   }
 
+  if (loadingCoach) {
+    return (
+      <>
+        <Header />
+        <div className="progress-bg">
+          <div className="progress-container">
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p style={{ color: '#666', fontSize: '16px', marginTop: '16px' }}>Đang tải thông tin coach...</p>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   if (!selectedCoach) {
     return (
       <>
@@ -772,7 +792,7 @@ const getStageDotColor = (status) => {
           <div className="tab-content">
             {activeTab === 'overview' && (
               <div className="overview-content">
-                <h3>🎯 Mục tiêu của bạn</h3>               
+                              
                 <div style={{ marginTop: 0 }}>
                   <h3 style={{ marginBottom: 24 }}>Các giai đoạn thực hiện</h3>
                   {stages.length === 0 && (
@@ -864,10 +884,30 @@ const getStageDotColor = (status) => {
                 </div>
 
                 
-                <DailyDeclarationForm />
+                {/* Chỉ hiển thị form khai báo khi đã có kế hoạch từ coach */}
+                {stages.length > 0 ? (
+                  <DailyDeclarationForm />
+                ) : (
+                  <div style={{
+                    background: '#fff3cd',
+                    border: '1px solid #ffeaa7',
+                    borderRadius: '12px',
+                    padding: '20px',
+                    margin: '24px 0',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '12px' }}>⏳</div>
+                    <h4 style={{ color: '#856404', margin: '0 0 8px 0' }}>Chờ coach tạo kế hoạch</h4>
+                    <p style={{ color: '#856404', margin: 0 }}>
+                      Coach đang chuẩn bị kế hoạch cai thuốc phù hợp cho bạn. 
+                      Bạn sẽ có thể khai báo hằng ngày khi kế hoạch đã sẵn sàng.
+                    </p>
+                  </div>
+                )}
 
                 
-                <DailyLogsHistory />
+                {/* Chỉ hiển thị lịch sử khai báo khi đã có kế hoạch */}
+                {stages.length > 0 && <DailyLogsHistory />}
               </div>
             )}
 
