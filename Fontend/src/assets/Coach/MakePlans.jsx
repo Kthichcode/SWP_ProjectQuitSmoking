@@ -37,6 +37,16 @@ function MakePlans() {
   const [dailyLogsError, setDailyLogsError] = useState('');
   const [activeTab, setActiveTab] = useState('plan'); // 'plan' or 'logs'
 
+  // Auto-set startDate if empty when editingStage changes
+  useEffect(() => {
+    if (editingStage && !editingStage.viewOnly && (!stageForm.startDate || stageForm.startDate.trim() === '')) {
+      setStageForm(prev => ({
+        ...prev,
+        startDate: toLocalDateString(new Date())
+      }));
+    }
+  }, [editingStage]);
+
   // Fetch members and plans from API
   useEffect(() => {
     setLoading(true);
@@ -470,7 +480,7 @@ function MakePlans() {
                                 stageId: null
                               });
                               setStageForm({
-                                startDate: prevEndDate || new Date().toISOString().split('T')[0],
+                                startDate: prevEndDate || toLocalDateString(new Date()),
                                 endDate: '',
                                 targetCigaretteCount: '',
                                 advice: ''
@@ -619,7 +629,10 @@ function MakePlans() {
                                     <div style={{display:'flex',alignItems:'center',gap:8}}>
                                       <DatePicker
                                         selected={stageForm.startDate ? new Date(stageForm.startDate) : new Date()}
-                                        onChange={date => setStageForm(f => ({...f,startDate: date ? toLocalDateString(date) : ''}))}
+                                        onChange={date => {
+                                          const dateStr = date ? toLocalDateString(date) : toLocalDateString(new Date());
+                                          setStageForm(f => ({...f, startDate: dateStr}));
+                                        }}
                                         minDate={new Date()}
                                         dateFormat="yyyy-MM-dd"
                                         disabled={editingStage.viewOnly}
@@ -681,9 +694,12 @@ function MakePlans() {
                                       setStageUpdateLoading(true);
                                       setStageUpdateError('');
                                       try {
+                                        // Ensure startDate has a value - use displayed date if empty
+                                        const effectiveStartDate = stageForm.startDate || toLocalDateString(new Date());
+                                        
                                         if (editingStage.stageId) {
                                           await axiosInstance.put(`http://localhost:5175/api/quitplan/stage/${editingStage.stageId}`, {
-                                            startDate: stageForm.startDate,
+                                            startDate: effectiveStartDate,
                                             endDate: stageForm.endDate,
                                             targetCigaretteCount: Number(stageForm.targetCigaretteCount),
                                             advice: stageForm.advice
@@ -692,7 +708,7 @@ function MakePlans() {
                                         } else {
                                           const res = await axiosInstance.post(`http://localhost:5175/api/quitplan/${editingStage.quitPlanId}/stage`, {
                                             stageNumber: editingStage.stageNumber,
-                                            startDate: stageForm.startDate,
+                                            startDate: effectiveStartDate,
                                             endDate: stageForm.endDate,
                                             targetCigaretteCount: Number(stageForm.targetCigaretteCount),
                                             advice: stageForm.advice
