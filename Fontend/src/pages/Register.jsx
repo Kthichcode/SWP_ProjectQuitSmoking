@@ -209,22 +209,47 @@ function Register() {
               <div className="register-input-group" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                 <div className="form-group half-width" style={{ position: 'relative', marginBottom: '30px', minWidth: '180px', flex: 1 }}>
                   <label htmlFor="password">Mật khẩu</label>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    id="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    style={{ paddingRight: '36px' }}
-                  />
-                  <span
-                    onClick={() => setShowPassword(prev => !prev)}
-                    className="password-toggle-icon"
-                    tabIndex={0}
-                    aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                  >
-                    {showPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
-                  </span>
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      id="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      style={{ 
+                        paddingRight: '40px',
+                        width: '100%',
+                        height: '42px',
+                        padding: '10px 40px 10px 12px',
+                        border: '1px solid #b5b5b5',
+                        borderRadius: '7px',
+                        fontSize: '15px',
+                        background: '#f8fafc',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                    <span
+                      onClick={() => setShowPassword(prev => !prev)}
+                      style={{
+                        position: 'absolute',
+                        right: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        cursor: 'pointer',
+                        color: '#888',
+                        zIndex: 10,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '20px',
+                        height: '20px'
+                      }}
+                      tabIndex={0}
+                      aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    >
+                      {showPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
+                    </span>
+                  </div>
                   <div style={{ minHeight: '20px', marginTop: '4px', marginBottom: '0', display: 'block', width: '100%' }}>
                     {validationErrors.password && <span style={{ color: 'red', fontSize: '14px' }}>{validationErrors.password}</span>}
                   </div>
@@ -232,22 +257,47 @@ function Register() {
 
                 <div className="form-group half-width" style={{ position: 'relative', marginBottom: '30px', minWidth: '180px', flex: 1 }}>
                   <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    name="confirmPassword"
-                    id="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    style={{ paddingRight: '36px' }}
-                  />
-                  <span
-                    onClick={() => setShowConfirmPassword(prev => !prev)}
-                    className="password-toggle-icon"
-                    tabIndex={0}
-                    aria-label={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                  >
-                    {showConfirmPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
-                  </span>
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      id="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      style={{ 
+                        paddingRight: '40px',
+                        width: '100%',
+                        height: '42px',
+                        padding: '10px 40px 10px 12px',
+                        border: '1px solid #b5b5b5',
+                        borderRadius: '7px',
+                        fontSize: '15px',
+                        background: '#f8fafc',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                    <span
+                      onClick={() => setShowConfirmPassword(prev => !prev)}
+                      style={{
+                        position: 'absolute',
+                        right: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        cursor: 'pointer',
+                        color: '#888',
+                        zIndex: 10,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '20px',
+                        height: '20px'
+                      }}
+                      tabIndex={0}
+                      aria-label={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    >
+                      {showConfirmPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
+                    </span>
+                  </div>
                   <div style={{ minHeight: '20px', marginTop: '4px', marginBottom: '0', display: 'block', width: '100%' }}>
                     {validationErrors.confirmPassword && <span style={{ color: 'red', fontSize: '14px' }}>{validationErrors.confirmPassword}</span>}
                   </div>

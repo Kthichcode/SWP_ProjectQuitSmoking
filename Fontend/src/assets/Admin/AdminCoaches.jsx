@@ -10,6 +10,7 @@ function AdminCoaches() {
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name: '', username: '', email: '', phone: '', exp: '', rating: '' });
   const [formErrors, setFormErrors] = useState({ name: '', username: '', email: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const validateUsername = (username) => {
     if (!username.trim()) return 'Username không được để trống';
     if (/[^a-zA-Z0-9_.]/.test(username)) return 'Username chỉ được chứa chữ, số, dấu _ hoặc .';
@@ -122,21 +123,32 @@ function AdminCoaches() {
 
   const handleAdd = async e => {
     e.preventDefault();
+    
+    // Prevent multiple submissions
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+    
     // Validate
     const nameError = validateName(form.name);
     const usernameError = validateUsername(form.username);
     const emailError = validateEmail(form.email);
     setFormErrors({ name: nameError, username: usernameError, email: emailError });
+    
     if (nameError || usernameError || emailError) {
       setErrorMessage('Vui lòng kiểm tra lại thông tin.');
-      setSuccessMessage('');
+      setIsSubmitting(false);
       return;
     }
+    
     const payload = {
       username: form.username,
       email: form.email,
       fullName: form.name
     };
+    
     try {
       const res = await fetch('/api/coach/create', {
         method: 'POST',
@@ -146,19 +158,21 @@ function AdminCoaches() {
         },
         body: JSON.stringify(payload)
       });
+      
       if (res.status === 409) {
         setErrorMessage('Email hoặc username đã tồn tại!');
-        setSuccessMessage('');
+        setIsSubmitting(false);
         return;
       }
+      
       if (!res.ok) {
         setErrorMessage('Có lỗi khi tạo coach!');
-        setSuccessMessage('');
+        setIsSubmitting(false);
         return;
       }
+      
       setShowAdd(false);
       setSuccessMessage('Tạo coach thành công, mật khẩu đã gửi về email!');
-      setErrorMessage('');
       setCoaches([
         ...coaches,
         { ...form, id: Date.now(), status: 'active', plans: 0 }
@@ -167,7 +181,8 @@ function AdminCoaches() {
       setFormErrors({ name: '', username: '', email: '' });
     } catch (err) {
       setErrorMessage('Có lỗi khi tạo coach!');
-      setSuccessMessage('');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -249,10 +264,43 @@ function AdminCoaches() {
             <div style={{minHeight: 18}}>
               {formErrors.email && <div style={{color:'#dc2626',fontSize:13,marginBottom:4,textAlign:'left'}}>{formErrors.email}</div>}
             </div>
-           <button className="admin-btn" type="submit">Thêm</button>
+           <button 
+             className="admin-btn" 
+             type="submit"
+             disabled={isSubmitting}
+             style={{
+               background: isSubmitting ? '#d1d5db' : '#10b981',
+               cursor: isSubmitting ? 'not-allowed' : 'pointer',
+               opacity: isSubmitting ? 0.7 : 1,
+               display: 'flex',
+               alignItems: 'center',
+               justifyContent: 'center',
+               gap: '8px',
+               transition: 'all 0.2s ease'
+             }}
+           >
+             {isSubmitting && (
+               <div style={{
+                 width: '16px',
+                 height: '16px',
+                 border: '2px solid #ffffff',
+                 borderTop: '2px solid transparent',
+                 borderRadius: '50%',
+                 animation: 'spin 1s linear infinite'
+               }}></div>
+             )}
+             {isSubmitting ? 'Đang tạo...' : 'Thêm'}
+           </button>
           </form>
         </div>
       )}
+      
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
       <table className="admin-table">
         <thead>
           <tr>

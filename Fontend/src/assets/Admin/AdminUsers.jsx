@@ -191,17 +191,27 @@ function AdminUsers() {
       {/* Modal chỉnh sửa trạng thái */}
       {statusModal && editStatusUser && (
         <div className="admin-modal">
-          <div className="admin-modal-content">
-            <button className="admin-modal-close" style={{top: 8, right: 12, fontSize: 28}} onClick={() => setStatusModal(false)} type="button">×</button>
-            <h3>Chỉnh sửa trạng thái người dùng</h3>
-            <div><b>Họ tên:</b> {editStatusUser.fullName || editStatusUser.name}</div>
-            <div><b>Email:</b> {editStatusUser.email}</div>
-            <div style={{margin:'16px 0'}}>
-              <label>Trạng thái mới:&nbsp;</label>
-              <select value={statusValue} onChange={e => setStatusValue(e.target.value)} style={{padding:6,borderRadius:6}}>
-                <option value="ACTIVE">Hoạt động</option>
-                <option value="INACTIVE">Dừng hoạt động</option>
-                <option value="BANNED">Khóa</option>
+          <div className="admin-modal-content" style={{background: '#ffffff', color: '#000000'}}>
+            <button className="admin-modal-close" style={{top: 8, right: 12, fontSize: 28, color: '#000000'}} onClick={() => setStatusModal(false)} type="button">×</button>
+            <h3 style={{color: '#000000'}}>Chỉnh sửa trạng thái người dùng</h3>
+            <div style={{color: '#000000'}}><b>Họ tên:</b> {editStatusUser.fullName || editStatusUser.name}</div>
+            <div style={{color: '#000000'}}><b>Email:</b> {editStatusUser.email}</div>
+            <div style={{margin:'16px 0', color: '#000000'}}>
+              <label style={{color: '#000000'}}>Trạng thái mới:&nbsp;</label>
+              <select 
+                value={statusValue} 
+                onChange={e => setStatusValue(e.target.value)} 
+                style={{
+                  padding: 6, 
+                  borderRadius: 6, 
+                  background: '#ffffff', 
+                  color: '#000000',
+                  border: '1px solid #e5e7eb'
+                }}
+              >
+                <option value="ACTIVE" style={{background: '#ffffff', color: '#000000'}}>Hoạt động</option>
+                <option value="INACTIVE" style={{background: '#ffffff', color: '#000000'}}>Dừng hoạt động</option>
+                <option value="BANNED" style={{background: '#ffffff', color: '#000000'}}>Khóa</option>
               </select>
             </div>
             <div style={{display:'flex',gap:12,marginTop:12}}>
