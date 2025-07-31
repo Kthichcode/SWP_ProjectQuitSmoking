@@ -260,9 +260,6 @@ function CoachPayment() {
           </div>
           <div className="coach-payment-stats">
             <div><div>{stats.totalCoaches}</div><span>Chuyên gia</span></div>
-            <div><div>{stats.avgRating}</div><span>Đánh giá TB</span></div>
-            
-            <div><div>{stats.totalClients}</div><span>Khách hàng</span></div>
           </div>
         </div>
 

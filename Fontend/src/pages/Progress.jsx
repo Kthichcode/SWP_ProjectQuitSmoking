@@ -39,6 +39,11 @@ function Progress() {
   const [loadingCoach, setLoadingCoach] = useState(true);
   const [retryingStage, setRetryingStage] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [showCongratulations, setShowCongratulations] = useState(false);
+  const areAllStagesCompleted = () => {
+    if (stages.length < 3) return false;
+    return stages.every(stage => (stage.progressPercentage ?? 0) === 100 || stage.status === 'completed');
+  };
   const getStageStatusLabel = (status) => {
   switch (status) {
     case 'completed':
@@ -691,6 +696,17 @@ const getStageDotColor = (status) => {
     }
   }, [activeTab]);
 
+  // Kiểm tra và hiển thị thông báo chúc mừng khi hoàn thành cả 3 giai đoạn
+  useEffect(() => {
+    if (stages.length >= 3 && areAllStagesCompleted()) {
+      const hasShownCongrats = localStorage.getItem(`congratulations_shown_${user?.userId || user?.id}`);
+      if (!hasShownCongrats) {
+        setShowCongratulations(true);
+        localStorage.setItem(`congratulations_shown_${user?.userId || user?.id}`, 'true');
+      }
+    }
+  }, [stages, user]);
+
   
 
   if (checkingMembership) {
@@ -1125,6 +1141,56 @@ const getStageDotColor = (status) => {
         </div>
       )}
 
+      {/* Modal chúc mừng khi hoàn thành cả 3 giai đoạn */}
+      {showCongratulations && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10001
+        }}>
+          <div style={{
+            background: 'white',
+            color: '#333',
+            padding: '40px',
+            borderRadius: '20px',
+            textAlign: 'center',
+            maxWidth: '400px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            animation: 'congratsAppear 0.5s ease-out'
+          }}>
+            <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🎉</div>
+            <h2 style={{ margin: '0 0 16px 0', fontSize: '28px' }}>Chúc mừng!</h2>
+            <p style={{ margin: '0 0 24px 0', fontSize: '16px', lineHeight: 1.5 }}>
+              Bạn đã hoàn thành cả 3 giai đoạn cai thuốc!<br/>
+              Đây là một thành tựu tuyệt vời! 🏆
+            </p>
+            <button
+              onClick={() => setShowCongratulations(false)}
+              style={{
+                background: '#fff',
+                color: 'blue',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '25px',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+            >
+              Cảm ơn!
+            </button>
+          </div>
+        </div>
+      )}
+
       <style jsx>{`
         @keyframes slideInRight {
           from {
@@ -1133,6 +1199,17 @@ const getStageDotColor = (status) => {
           }
           to {
             transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        
+        @keyframes congratsAppear {
+          from {
+            transform: scale(0.5);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
             opacity: 1;
           }
         }
