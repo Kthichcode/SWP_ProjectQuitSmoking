@@ -637,6 +637,75 @@ html, body, #root {
   color: #c0392b;
 }
 
+/* CSS animations cho ranking cards */
+@keyframes pulse-glow-1 {
+  0%, 100% { 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 0 0 0 rgba(255, 193, 7, 0.4);
+  }
+  50% { 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 0 0 8px rgba(255, 193, 7, 0.1);
+  }
+}
+
+@keyframes pulse-glow-2 {
+  0%, 100% { 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 0 0 0 rgba(33, 150, 243, 0.4);
+  }
+  50% { 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 0 0 6px rgba(33, 150, 243, 0.1);
+  }
+}
+
+@keyframes pulse-glow-3 {
+  0%, 100% { 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 0 0 0 rgba(255, 152, 0, 0.4);
+  }
+  50% { 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 0 0 4px rgba(255, 152, 0, 0.1);
+  }
+}
+
+/* Responsive design cho ranking cards - chỉ cho Home page */
+.home-ranking-list {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  gap: 40px !important;
+  flex-wrap: nowrap !important;
+}
+
+.home-userCard {
+  flex: 0 0 220px !important;
+  width: 220px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .home-ranking-list {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 20px !important;
+  }
+  
+  .home-userCard {
+    width: 280px !important;
+    max-width: 90vw !important;
+    flex: 0 0 auto !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .home-ranking-list {
+    gap: 30px !important;
+  }
+  
+  .home-userCard {
+    width: 200px !important;
+    flex: 0 0 200px !important;
+  }
+}
+
 .custom-dropdown2 {
   min-width: 180px;
   border-radius: 12px;

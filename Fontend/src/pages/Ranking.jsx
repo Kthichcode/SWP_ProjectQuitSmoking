@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import '../assets/CSS/Ranking.css';
 
 const Ranking = () => {
+  const { user } = useAuth();
   const [ranking, setRanking] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
@@ -77,24 +79,34 @@ const Ranking = () => {
       ) : (
         <>
           <div className="top3">
-            {ranking.slice(0, 3).map((user, idx) => {
+            {ranking.slice(0, 3).map((rankUser, idx) => {
               // Xử lý tên hiển thị
-              let displayName = user.fullName;
-              if (!displayName && user.email) {
-                displayName = user.email.replace(/@gmail\.com$/, '');
+              let displayName = rankUser.fullName;
+              if (!displayName && rankUser.email) {
+                displayName = rankUser.email.replace(/@gmail\.com$/, '');
               }
+              
+              // Kiểm tra xem có phải user hiện tại không
+              const currentUserId = user?.userId || user?.id;
+              const isCurrentUser = currentUserId && currentUserId.toString() === rankUser.memberId?.toString();
+              
               return (
-                <div key={user.memberId} className={`userCard top${idx + 1}`}>
+                <div key={rankUser.memberId} className={`userCard top${idx + 1}`}>
                   <div className="emoji">{idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}</div>
-                  {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt="avatar" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', marginBottom: 8 }} />
+                  {rankUser.avatarUrl ? (
+                    <img src={rankUser.avatarUrl} alt="avatar" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', marginBottom: 8 }} />
                   ) : (
                     <div className="avatar-placeholder" style={{ width: 48, height: 48, borderRadius: '50%', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, marginBottom: 8 }}>
                       {(displayName || 'U')[0].toUpperCase()}
                     </div>
                   )}
                   <h3>{displayName}</h3>
-                  <p>Điểm: {user.totalScore}</p>
+                  {isCurrentUser && (
+                    <div style={{ fontSize: '0.9rem', color: '#2e7dff', fontWeight: 'bold', marginTop: '-4px', marginBottom: '4px' }}>
+                      (Bạn)
+                    </div>
+                  )}
+                  <p>Điểm: {rankUser.totalScore}</p>
                 </div>
               );
             })}
@@ -109,16 +121,28 @@ const Ranking = () => {
               </tr>
             </thead>
             <tbody>
-              {ranking.slice(3).map((user, idx) => {
-                let displayName = user.fullName;
-                if (!displayName && user.email) {
-                  displayName = user.email.replace(/@gmail\.com$/, '');
+              {ranking.slice(3).map((rankUser, idx) => {
+                let displayName = rankUser.fullName;
+                if (!displayName && rankUser.email) {
+                  displayName = rankUser.email.replace(/@gmail\.com$/, '');
                 }
+                
+                // Kiểm tra xem có phải user hiện tại không
+                const currentUserId = user?.userId || user?.id;
+                const isCurrentUser = currentUserId && currentUserId.toString() === rankUser.memberId?.toString();
+                
                 return (
-                  <tr key={user.memberId}>
+                  <tr key={rankUser.memberId} style={isCurrentUser ? { backgroundColor: '#f0f8ff', fontWeight: 'bold' } : {}}>
                     <td>{idx + 4}</td>
-                    <td>{displayName}</td>
-                    <td>{user.totalScore}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div>{displayName}</div>
+                      {isCurrentUser && (
+                        <div style={{ fontSize: '0.8rem', color: '#2e7dff', fontWeight: 'bold', marginTop: '2px' }}>
+                          (Bạn)
+                        </div>
+                      )}
+                    </td>
+                    <td>{rankUser.totalScore}</td>
                   </tr>
                 );
               })}

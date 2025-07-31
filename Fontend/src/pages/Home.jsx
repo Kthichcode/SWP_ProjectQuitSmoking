@@ -44,7 +44,7 @@ function Home() {
   useEffect(() => {
     setLoadingRanking(true);
     setRankingError('');
-    fetch('/api/member-badge/ranking')
+    fetch('http://localhost:5175/api/member-badge/ranking')
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success' && Array.isArray(data.data)) {
@@ -194,86 +194,149 @@ function Home() {
         ) : rankingError ? (
           <div style={{ color: 'red', textAlign: 'center', margin: '40px 0', fontWeight: 600 }}>{rankingError}</div>
         ) : (
-          <div className="ranking-list" style={{ display: 'flex', gap: '32px', justifyContent: 'center', marginBottom: 24 }}>
-            {ranking.slice(0, 3).map((user, i) => {
-              let displayName = user.fullName;
-              if (!displayName && user.email) {
-                displayName = user.email.replace(/@gmail\.com$/, '');
+          <div className="home-ranking-list" style={{ 
+            display: 'flex', 
+            gap: '40px', 
+            justifyContent: 'center', 
+            alignItems: 'flex-start',
+            flexWrap: 'nowrap',
+            marginBottom: 24,
+            width: '100%',
+            maxWidth: '1000px',
+            margin: '0 auto 24px auto',
+            padding: '0 40px',
+            boxSizing: 'border-box'
+          }}>
+            {ranking.slice(0, 3).map((rankUser, idx) => {
+              // Xử lý tên hiển thị giống Ranking.jsx
+              let displayName = rankUser.fullName;
+              if (!displayName && rankUser.email) {
+                displayName = rankUser.email.replace(/@gmail\.com$/, '');
               }
-              let topLabel = '';
-              let topIcon = '';
-              let cardBg = '#fff';
-              let border = '1px solid #eee';
-              let shadow = '0 2px 12px rgba(44,62,80,0.08)';
-              let nameColor = '#222';
-              let scoreColor = '#2e7dff';
-              if (i === 0) {
-                topLabel = 'Top 1'; topIcon = '🥇';
-                cardBg = 'linear-gradient(135deg, #fffbe6 60%, #ffeaa7 100%)';
-                border = '2px solid #f39c12';
-                shadow = '0 4px 24px rgba(243,156,18,0.15)';
-                nameColor = '#f39c12';
-                scoreColor = '#d35400';
-              } else if (i === 1) {
-                topLabel = 'Top 2'; topIcon = '🥈';
-                cardBg = 'linear-gradient(135deg, #f0f4f8 60%, #d6e4ff 100%)';
-                border = '2px solid #2e7dff';
-                shadow = '0 4px 24px rgba(46,125,255,0.12)';
-                nameColor = '#2e7dff';
-                scoreColor = '#1565c0';
-              } else if (i === 2) {
-                topLabel = 'Top 3'; topIcon = '🥉';
-                cardBg = 'linear-gradient(135deg, #fff0f0 60%, #ffb3b3 100%)';
-                border = '2px solid #e67e22';
-                shadow = '0 4px 24px rgba(230,126,34,0.12)';
-                nameColor = '#e67e22';
-                scoreColor = '#b9770e';
-              }
+              
+              // Kiểm tra xem có phải user hiện tại không
+              const currentUserId = user?.userId || user?.id;
+              const isCurrentUser = currentUserId && currentUserId.toString() === rankUser.memberId?.toString();
+              
               return (
                 <div
-                  className={`rank-card${i === 0 ? ' top' : ''}`}
-                  key={user.memberId}
+                  key={rankUser.memberId}
+                  className={`home-userCard top${idx + 1}`}
                   style={{
-                    background: cardBg,
-                    border,
-                    boxShadow: shadow,
-                    borderRadius: 18,
-                    padding: '24px 32px',
-                    minWidth: 180,
+                    background: idx === 0 ? 'linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%)' : 
+                               idx === 1 ? 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)' : 
+                               'linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%)',
+                    border: idx === 0 ? '2px solid #ffc107' : 
+                           idx === 1 ? '2px solid #2196f3' : 
+                           '2px solid #d1aaff',
+                    borderRadius: '16px',
+                    padding: '60px',
+                    textAlign: 'center',
+                    width: '220px',
+                    height: '320px',
+                    flex: '0 0 220px',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    animation: idx < 3 ? `pulse-glow-${idx + 1} 2s infinite` : 'none',
+                    transform: 'translateY(0)',
+                    boxSizing: 'border-box',
                     display: 'flex',
                     flexDirection: 'column',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
-                    position: 'relative',
-                    transition: 'transform 0.2s',
-                    fontFamily: 'inherit',
+                    boxShadow: idx === 0 ? '0 4px 20px rgba(255, 193, 7, 0.2)' : 
+                              idx === 1 ? '0 4px 20px rgba(33, 150, 243, 0.2)' : 
+                              '0 4px 20px rgba(255, 152, 0, 0.2)'
                   }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-8px)';
+                    e.currentTarget.style.boxShadow = idx === 0 ? '0 12px 32px rgba(255, 193, 7, 0.3)' : 
+                                                    idx === 1 ? '0 12px 32px rgba(33, 150, 243, 0.3)' : 
+                                                    '0 12px 32px rgba(255, 152, 0, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                  }}
+                  onClick={() => navigate('/ranking')}
                 >
-                  {topLabel && (
-                    <div style={{
-                      fontWeight: 800,
-                      color: nameColor,
-                      fontSize: '1.3rem',
-                      marginBottom: 8,
-                      letterSpacing: 1,
-                      textShadow: '0 2px 8px rgba(0,0,0,0.08)'
-                    }}>{topIcon} {topLabel}</div>
-                  )}
-                  <h4 style={{
-                    fontWeight: 700,
-                    color: nameColor,
-                    fontSize: '1.15rem',
-                    margin: 0,
-                    marginBottom: 6,
-                    textAlign: 'center',
-                    textShadow: '0 1px 4px rgba(0,0,0,0.07)'
-                  }}>{displayName}</h4>
-                  <strong style={{
-                    color: scoreColor,
-                    fontSize: '1.1rem',
-                    fontWeight: 700,
-                    marginTop: 2,
-                    letterSpacing: 1
-                  }}>{user.totalScore} điểm</strong>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '1' }}>
+                    <div className="emoji" style={{ fontSize: '40px', marginBottom: '8px' }}>
+                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}
+                    </div>
+                    {rankUser.avatarUrl ? (
+                      <img 
+                        src={rankUser.avatarUrl} 
+                        alt="avatar" 
+                        style={{ 
+                          width: 48, 
+                          height: 48, 
+                          borderRadius: '50%', 
+                          objectFit: 'cover', 
+                          marginBottom: 8,
+                          border: '2px solid #fff',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                        }} 
+                      />
+                    ) : (
+                      <div 
+                        className="avatar-placeholder" 
+                        style={{ 
+                          width: 48, 
+                          height: 48, 
+                          borderRadius: '50%', 
+                          background: idx === 0 ? '#ffc107' : idx === 1 ? '#2196f3' : '#ff9800', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          fontSize: 20, 
+                          fontWeight: 'bold',
+                          color: '#fff',
+                          marginBottom: 8,
+                          border: '2px solid #fff',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                        }}
+                      >
+                        {(displayName || 'U')[0].toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '80px', justifyContent: 'center' }}>
+                    <h3 style={{ 
+                      margin: '0 0 4px 0', 
+                      fontSize: '1rem', 
+                      fontWeight: '600',
+                      color: idx === 0 ? '#f57c00' : idx === 1 ? '#1976d2' : '#e65100',
+                      lineHeight: '1.2',
+                      textAlign: 'center',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: '180px'
+                    }}>
+                      {displayName}
+                    </h3>
+                    {isCurrentUser && (
+                      <div style={{ 
+                        fontSize: '0.8rem', 
+                        color: '#2e7dff', 
+                        fontWeight: 'bold', 
+                        marginBottom: '4px' 
+                      }}>
+                        (Bạn)
+                      </div>
+                    )}
+                    <p style={{ 
+                      margin: '4px 0 0', 
+                      fontSize: '0.9rem', 
+                      color: idx === 0 ? '#e65100' : idx === 1 ? '#0d47a1' : '#bf360c',
+                      fontWeight: '500'
+                    }}>
+                      Điểm: {rankUser.totalScore}
+                    </p>
+                  </div>
                 </div>
               );
             })}

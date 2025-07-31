@@ -137,6 +137,7 @@ const getStageDotColor = (status) => {
       if (savedSelectionId) {
         setSelectionId(parseInt(savedSelectionId));
       } else {
+        // Không có selectionId, fetch từ API
         fetchSelectionIdOfCurrentUser();
       }
     }
@@ -151,11 +152,17 @@ const getStageDotColor = (status) => {
           setSelectionId(res.data.data);
           localStorage.setItem(getSelectionStorageKey(currentUserId), res.data.data.toString());
         } else {
-          await createDummyMessage();
+          // Chưa chọn coach, set loading = false để hiện modal chưa chọn coach
+          setLoadingCoach(false);
         }
+      } else {
+        // API response không thành công, có thể chưa chọn coach
+        setLoadingCoach(false);
       }
     } catch (error) {
       console.error("Error fetching selectionId of current user:", error);
+      // Có lỗi khi gọi API, có thể chưa chọn coach
+      setLoadingCoach(false);
     }
   };
   useEffect(() => {
@@ -681,6 +688,8 @@ const getStageDotColor = (status) => {
       </>
     );
   }
+
+  
 
   if (loadingCoach) {
     return (
