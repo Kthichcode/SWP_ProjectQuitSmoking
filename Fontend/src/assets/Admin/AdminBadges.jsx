@@ -46,6 +46,9 @@ const AdminBadges = () => {
 
   // Regex: chỉ cho phép chữ, số, khoảng trắng
   const validText = value => /^[a-zA-Z0-9\sÀ-ỹ]+$/.test(value);
+  
+  // Regex cho mô tả: chỉ cho phép chữ, số, khoảng trắng, dấu phẩy, dấu chấm
+  const validDescription = value => /^[a-zA-Z0-9\sÀ-ỹ,.]+$/.test(value);
 
   const validateField = (name, value, typeValue) => {
     switch (name) {
@@ -58,7 +61,7 @@ const AdminBadges = () => {
       case 'description':
         if (!value || value.trim() === '') return 'Mô tả không được bỏ trống.';
         if (value.length < 5) return 'Mô tả phải có ít nhất 5 ký tự.';
-        if (!validText(value)) return 'Mô tả không được chứa ký tự đặc biệt.';
+        if (!validDescription(value)) return 'Mô tả không được chứa ký tự đặc biệt.';
         return '';
       case 'type':
         if (!value || value === '') return 'Bạn chưa chọn loại huy hiệu.';

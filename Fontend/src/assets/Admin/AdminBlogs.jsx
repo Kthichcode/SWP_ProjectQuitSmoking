@@ -240,7 +240,7 @@ function AdminBlogs() {
             {errors.content && <div style={{ color: 'red', fontSize: 13, marginTop: 2, textAlign: 'left' }}>{errors.content}</div>}
           </div>
           <div>
-            <label htmlFor="admin-blogs-category">Danh mục</label>
+            <label htmlFor="admin-blogs-category">Thể loại</label>
             <select
               id="admin-blogs-category"
               name="categoryId"
@@ -249,7 +249,7 @@ function AdminBlogs() {
               className="admin-blogs-select"
             >
             {errors.categoryId && <div style={{ color: 'red', fontSize: 13, marginTop: 2, textAlign: 'left' }}>{errors.categoryId}</div>}
-              <option value="">-- Chọn danh mục --</option>
+              <option value="">-- Chọn thể loại --</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}

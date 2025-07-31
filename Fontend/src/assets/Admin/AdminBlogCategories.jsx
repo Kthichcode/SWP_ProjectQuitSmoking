@@ -12,6 +12,11 @@ const AdminBlogCategories = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleteError, setDeleteError] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successModalMessage, setSuccessModalMessage] = useState('');
 
   // API endpoints
   const API_BASE_URL = 'http://localhost:8080/api/blog-categories';
@@ -61,23 +66,36 @@ const AdminBlogCategories = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa thể loại này?')) {
-      try {
-        const token = localStorage.getItem('token');
-        await axios.delete(`${API_BASE_URL}/categories/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        fetchCategories(); // Reload list
-        setSuccessMessage('Xóa thể loại thành công!');
-        setErrorMessage('');
-      } catch (error) {
-        console.error('Error deleting category:', error);
-        setErrorMessage('Lỗi khi xóa thể loại');
-        setSuccessMessage('');
-      }
+    setDeleteId(id);
+    setDeleteError('');
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_BASE_URL}/categories/${deleteId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setShowDeleteModal(false);
+      setDeleteId(null);
+      setDeleteError('');
+      fetchCategories(); // Reload list
+      setSuccessModalMessage('Xóa thể loại thành công!');
+      setShowSuccessModal(true);
+      setErrorMessage('');
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      setDeleteError('Lỗi khi xóa thể loại. Có thể thể loại này đang được sử dụng.');
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setDeleteId(null);
+    setDeleteError('');
   };
 
   const handleSubmit = async (e) => {
@@ -110,7 +128,8 @@ const AdminBlogCategories = () => {
       if (response.data.status === 'success') {
         setShowModal(false);
         fetchCategories();
-        setSuccessMessage(modalMode === 'create' ? 'Tạo thể loại thành công!' : 'Cập nhật thể loại thành công!');
+        setSuccessModalMessage(modalMode === 'create' ? 'Tạo thể loại thành công!' : 'Cập nhật thể loại thành công!');
+        setShowSuccessModal(true);
         setErrorMessage('');
       } else {
         setError(response.data.message || 'Có lỗi xảy ra');
@@ -232,6 +251,263 @@ const AdminBlogCategories = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,0,0,0.4)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backdropFilter: 'blur(4px)',
+        }}>
+          <div style={{
+            background: 'linear-gradient(145deg, #ffffff, #fef7f7)',
+            borderRadius: 20,
+            boxShadow: '0 20px 60px rgba(239,68,68,0.2), 0 8px 32px rgba(0,0,0,0.1)',
+            padding: '40px 50px',
+            minWidth: 380,
+            maxWidth: 500,
+            textAlign: 'center',
+            border: '1px solid rgba(239,68,68,0.2)',
+            position: 'relative',
+            transform: 'scale(1)',
+            animation: 'deleteModalIn 0.3s ease-out',
+          }}>
+            {/* Warning Icon */}
+            <div style={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(145deg, #ef4444, #dc2626)',
+              margin: '0 auto 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 24px rgba(239,68,68,0.3)',
+            }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            
+            {/* Title and Message */}
+            <div style={{
+              color: '#1f2937',
+              fontSize: 20,
+              fontWeight: 600,
+              marginBottom: 8,
+              lineHeight: 1.3,
+            }}>
+              {deleteError ? 'Không thể xóa' : 'Xác nhận xóa'}
+            </div>
+            <div style={{
+              color: deleteError ? '#e11d48' : '#6b7280',
+              fontSize: 16,
+              fontWeight: 500,
+              lineHeight: 1.4,
+              marginBottom: 32,
+              minHeight: 24,
+            }}>
+              {deleteError ? deleteError : 'Bạn có chắc chắn muốn xóa thể loại này? Hành động này không thể hoàn tác.'}
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 16,
+            }}>
+              <button
+                onClick={cancelDelete}
+                style={{
+                  background: '#6b7280',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '12px 24px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontSize: 16,
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(107,114,128,0.2)',
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#4b5563';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = '#6b7280';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                onClick={confirmDelete}
+                style={{
+                  background: deleteError ? '#d1d5db' : 'linear-gradient(145deg, #ef4444, #dc2626)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '12px 24px',
+                  fontWeight: 600,
+                  cursor: deleteError ? 'not-allowed' : 'pointer',
+                  fontSize: 16,
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
+                  opacity: deleteError ? 0.6 : 1,
+                }}
+                disabled={!!deleteError}
+                onMouseEnter={e => {
+                  if (!deleteError) {
+                    e.target.style.transform = 'translateY(-1px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(239,68,68,0.4)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!deleteError) {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 2px 8px rgba(239,68,68,0.3)';
+                  }
+                }}
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,0,0,0.4)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backdropFilter: 'blur(4px)',
+        }}>
+          <div style={{
+            background: 'linear-gradient(145deg, #ffffff, #f8fffe)',
+            borderRadius: 20,
+            boxShadow: '0 20px 60px rgba(34,197,94,0.2), 0 8px 32px rgba(0,0,0,0.1)',
+            padding: '40px 50px',
+            minWidth: 380,
+            maxWidth: 500,
+            textAlign: 'center',
+            border: '1px solid rgba(34,197,94,0.2)',
+            position: 'relative',
+            transform: 'scale(1)',
+            animation: 'successModalIn 0.3s ease-out',
+          }}>
+            {/* Close Button */}
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              style={{
+                position: 'absolute',
+                top: 15,
+                right: 20,
+                background: 'rgba(136,136,136,0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: 32,
+                height: 32,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 18,
+                color: '#666',
+                cursor: 'pointer',
+                fontWeight: 600,
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(136,136,136,0.2)';
+                e.target.style.color = '#333';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(136,136,136,0.1)';
+                e.target.style.color = '#666';
+              }}
+              aria-label="Đóng thông báo"
+            >×</button>
+            
+            {/* Success Icon */}
+            <div style={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(145deg, #22c55e, #16a34a)',
+              margin: '0 auto 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 24px rgba(34,197,94,0.3)',
+            }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                <path d="M9 12l2 2 4-4" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="12" r="9" stroke="#ffffff" strokeWidth="2"/>
+              </svg>
+            </div>
+            
+            {/* Success Message */}
+            <div style={{
+              color: '#1f2937',
+              fontSize: 20,
+              fontWeight: 600,
+              marginBottom: 8,
+              lineHeight: 1.3,
+            }}>
+              Thành công!
+            </div>
+            <div style={{
+              color: '#6b7280',
+              fontSize: 16,
+              fontWeight: 500,
+              lineHeight: 1.4,
+            }}>
+              {successModalMessage}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes deleteModalIn {
+          from {
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        
+        @keyframes successModalIn {
+          from {
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };
