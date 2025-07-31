@@ -118,6 +118,11 @@ function Login() {
         username: newUsername,
       });
 
+      if (res.data.status === 'error') {
+        setErrorMessage(res.data.message || 'Đã có lỗi xảy ra.');
+        return;
+      }
+
       const token = res.data.data.token;
       localStorage.setItem('token', token);
       login(token);
@@ -133,8 +138,8 @@ function Login() {
         navigate('/home', { replace: true });
       }
     } catch (err) {
-      console.error(err);
-      setErrorMessage(err?.response?.data?.message || 'Đã có lỗi xảy ra.');
+      const msg = err?.response?.data?.message;
+      setErrorMessage(msg || 'Đã có lỗi xảy ra.');
     }
   };
   const handleLoginSubmit = async (e) => {
@@ -165,8 +170,7 @@ function Login() {
         await checkInitialInfoAndNavigate(token);
       } else {
         navigate('/home', { replace: true });
-      }
-      // Không setErrorMessage('') ở đây để không ghi đè message lỗi
+      }    
     } catch (error) {
       console.error("Login failed", error);
       if (error.response && (error.response.status === 401 || error.response.status === 400)) {
@@ -206,7 +210,6 @@ function Login() {
 
   return (
       <section className="login-section">
-        {/* Modal hiển thị lỗi */}
         {showErrorModal && errorMessage && (
           <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'#0008',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center'}}>
             <div style={{background:'#fff',padding:32,borderRadius:12,minWidth:300,boxShadow:'0 2px 16px #0003',textAlign:'center'}}>
