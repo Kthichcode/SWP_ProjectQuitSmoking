@@ -188,7 +188,7 @@ function CoachProfile() {
             <div style={{ flex: 1 }}>
               <div className="coach-profile-title">{coach.qualification || 'Coach'} {coach.fullName}</div>
               <div className="coach-profile-rating-row">
-                <span className="coach-profile-rating">⭐ {coach.rating || 'N/A'} ({coach.reviews || 0} đánh giá)</span>
+                
                 <span className="coach-profile-exp">{coach.yearsOfExperience || 'N/A'} năm kinh nghiệm</span>
                 <span className="coach-profile-status online">Có sẵn</span>
               </div>
@@ -199,7 +199,7 @@ function CoachProfile() {
               </div>
               <div className="coach-profile-desc">{coach.bio || 'Chuyên gia tư vấn cai thuốc lá với nhiều năm kinh nghiệm'}</div>
               <div style={{marginTop: 10, color: 'black', fontSize: 15}}>
-                <b>Email:</b> {coach.email || 'N/A'} &nbsp;|&nbsp; <b>Username:</b> {coach.username || 'N/A'}
+                <b>Email:</b> {coach.email || 'N/A'}
               </div>
             </div>
           </div>
@@ -231,9 +231,7 @@ function CoachProfile() {
                 <div className="coach-profile-info-block">
                   <div className="coach-profile-info-block-title">Thông tin coach</div>
                   <div><strong>Kinh nghiệm:</strong> {coach.yearsOfExperience || 'N/A'} năm</div>
-                  <div style={{ marginTop: 8 }}>
-                    <strong>Đánh giá:</strong> {coach.rating || 'N/A'}/5 ⭐
-                  </div>
+                  
                   <div style={{ marginTop: 8 }}>
                     <span style={{ color: '#0ea5e9', fontWeight: 600 }}>Phản hồi nhanh chóng và chuyên nghiệp</span>
                   </div>
@@ -271,7 +269,7 @@ function CoachProfile() {
               <div style={{fontSize: 16}}>
                 <b>Liên hệ trực tiếp:</b>
                 <div>Email: <a href={`mailto:${coach.email || ''}`}>{coach.email || 'N/A'}</a></div>
-                <div>Username: {coach.username || 'N/A'}</div>
+                
                 <div style={{marginTop: 10, color: '#666'}}>
                   Sau khi chọn coach, bạn có thể nhắn tin trực tiếp trong trang tiến trình cai thuốc.
                 </div>

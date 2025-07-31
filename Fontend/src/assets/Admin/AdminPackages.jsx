@@ -196,7 +196,10 @@ function AdminPackages() {
     newErrors.name = validateField('name', currentPackage.name);
     newErrors.price = validateField('price', currentPackage.price);
     newErrors.description = validateField('description', currentPackage.description);
-    newErrors.releaseDate = validateField('releaseDate', currentPackage.releaseDate);
+    // Only validate releaseDate for add mode, skip for edit mode
+    if (modalType === 'add') {
+      newErrors.releaseDate = validateField('releaseDate', currentPackage.releaseDate);
+    }
     newErrors.endDate = validateField('endDate', currentPackage.endDate);
     
     // Remove empty error messages
@@ -665,7 +668,7 @@ function AdminPackages() {
                     <DatePicker
                       selected={currentPackage.releaseDate ? parseDateString(currentPackage.releaseDate) : null}
                       onChange={(date) => {
-                        if (date) {
+                        if (date && modalType === 'add') {
                           setCurrentPackage(prev => ({ ...prev, releaseDate: formatDateString(date) }));
                           let errorMsg = validateField('releaseDate', formatDateString(date));
                           setErrors(prev => ({ ...prev, releaseDate: errorMsg }));
@@ -674,9 +677,15 @@ function AdminPackages() {
                       dateFormat="dd/MM/yyyy"
                       className="admin-package-input"
                       locale={vi}
-                      minDate={new Date()}
+                      minDate={modalType === 'add' ? new Date() : undefined}
                       id="releaseDate"
                       placeholderText="dd/MM/yyyy"
+                      readOnly={modalType === 'edit'}
+                      disabled={modalType === 'edit'}
+                      style={{
+                        backgroundColor: modalType === 'edit' ? '#f5f5f5' : '#fff',
+                        cursor: modalType === 'edit' ? 'not-allowed' : 'pointer'
+                      }}
                     />
                     <span style={{ minHeight: 18, display: 'block' }}>{errors.releaseDate && <span style={{ color: '#e11d48', fontSize: 13 }}>{errors.releaseDate}</span>}</span>
                   </div>

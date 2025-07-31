@@ -293,8 +293,7 @@ function CoachPayment() {
                 <div className="coach-payment-info">
                   <div className="coach-payment-name">{coach.fullName}</div>
                   <div className="coach-payment-specialization">{coach.specialization}</div>
-                  <div className="coach-payment-rating">Đánh giá: {coach.rating || 0} ⭐</div>
-                  <div className="coach-payment-success">Tỷ lệ thành công: {coach.successRate || 0}%</div>
+                  
                   
                   <div className="coach-payment-btns-row">
                     <button
