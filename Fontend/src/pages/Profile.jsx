@@ -18,6 +18,7 @@ const Profile = () => {
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [badges, setBadges] = useState();
   const [successMsg, setSuccessMsg] = useState('');
+  const [totalScore, setTotalScore] = useState();
 
   const parseDateString = (dateStr) => {
     if (!dateStr) return null;
@@ -63,6 +64,19 @@ const Profile = () => {
         }
       })
       .catch(() => setBadges([]));
+
+    // Lấy tổng điểm cá nhân
+    axios.get(`/api/member-badge/total-score/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => {
+        if (res.data?.status === 'success') {
+          setTotalScore(res.data.data);
+        } else {
+          setTotalScore(undefined);
+        }
+      })
+      .catch(() => setTotalScore(undefined));
   }, [authUser, user]);
 
   const validateFullName = (name) => {
@@ -397,7 +411,17 @@ const Profile = () => {
         {tab === "overview" && (
           <div className="profile-content-row">
             <div className="profile-info-card">
-              <div className="profile-info-title">Thông tin cá nhân</div>
+              <div className="profile-info-title" style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <span>Thông tin cá nhân</span>
+                <span className="profile-total-score-ui">
+                  <span style={{display:'inline-flex',alignItems:'center',gap:6}}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{verticalAlign:'middle'}}><circle cx="12" cy="12" r="10" fill="#22c55e"/><text x="12" y="16" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#fff">★</text></svg>
+                    <span style={{fontWeight:700,fontSize:18,background:'linear-gradient(90deg,#22c55e 40%,#16a34a 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>
+                      {totalScore !== undefined ? totalScore : <span style={{color:'#888'}}>Đang tải...</span>}
+                    </span>
+                  </span>
+                </span>
+              </div>
               <div className="profile-info-list">
                 {loadingProfile ? <div>Đang tải...</div> : user ? <>
                   <div><span className="icon-user" /> <b>Username:</b> {user.username}</div>
@@ -408,8 +432,10 @@ const Profile = () => {
                   <div><span className="icon-user" /> <b>Giới tính:</b> {user.gender === 'MALE' ? 'Nam' : user.gender === 'FEMALE' ? 'Nữ' : user.gender === 'OTHER' ? 'Khác' : <span style={{color:'#888'}}>Chưa cập nhật</span>}</div>
                   <div><span className="icon-home" /> <b>Địa chỉ:</b> {user.address || <span style={{color:'#888'}}>Chưa cập nhật</span>}</div>
                   <div className="profile-badges-card" style={{ marginTop: 18 }}>
-                    <div className="profile-info-title" style={{ color: '#1976d2' }}>Huy hiệu cá nhân</div>
-                     <div className="profile-badges-list" style={{
+                    <div>
+                      <div className="profile-info-title" style={{ color: '#1976d2' }}>Huy hiệu cá nhân</div>
+                    </div>
+                    <div className="profile-badges-list" style={{
                       display: 'grid',
                       gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
                       gap: '18px 10px',
