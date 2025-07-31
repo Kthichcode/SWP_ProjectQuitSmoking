@@ -37,6 +37,8 @@ function Progress() {
   const [stages, setStages] = useState([]);
   const [expandedStage, setExpandedStage] = useState(null);
   const [loadingCoach, setLoadingCoach] = useState(true);
+  const [retryingStage, setRetryingStage] = useState(null);
+  const [notification, setNotification] = useState(null);
   const getStageStatusLabel = (status) => {
   switch (status) {
     case 'completed':
@@ -46,6 +48,7 @@ function Progress() {
     case 'inactive':
       return 'Đang tạm dừng';
     case 'pending':
+      return 'Đang chờ';
     case null:
     case undefined:
       return 'Chưa bắt đầu';
@@ -515,6 +518,48 @@ const getStageDotColor = (status) => {
     return stages.some(stage => (stage.progressPercentage ?? 0) === 100 || stage.status === 'completed');
   };
 
+  const showNotification = (message, type = 'info', duration = 4000) => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), duration);
+  };
+
+  const handleRetryStage = async (stageId) => {
+    try {
+      setRetryingStage(stageId);
+      const response = await axiosInstance.post(`/api/quitplan/quit-plan-stages/${stageId}/retry-request`);
+      
+      console.log('Retry response:', response.data);
+      
+      // Check multiple possible success indicators
+      if (response.data?.status === 'success' || 
+          response.status === 200 || 
+          response.data?.message?.includes('được gửi đến huấn luyện viên') ||
+          response.data?.message?.includes('sent to coach')) {
+        
+        // Refresh stages data
+        const res = await axiosInstance.get('/api/quitplan/stages/my');
+        if (Array.isArray(res.data)) {
+          setStages(res.data);
+        } else if (res.data?.status === 'success' && Array.isArray(res.data.data)) {
+          setStages(res.data.data);
+        }
+        
+        // Use the actual message from API or fallback message
+        const successMessage = response.data?.message || 'Yêu cầu làm lại đã được gửi thành công!';
+        showNotification(successMessage, 'success', 5000);
+      } else {
+        console.error('Unexpected response structure:', response.data);
+        showNotification('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại.', 'error');
+      }
+    } catch (error) {
+      console.error('Error retrying stage:', error);
+      console.error('Error response:', error.response?.data);
+      showNotification('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại.', 'error');
+    } finally {
+      setRetryingStage(null);
+    }
+  };
+
   const checkExistingReview = async () => {
     try {
       const coachId = selectedCoach?.coachId || selectedCoach?.userId || selectedCoach?.id;
@@ -586,7 +631,7 @@ const getStageDotColor = (status) => {
     const currentCoachId = selectedCoach?.coachId || selectedCoach?.userId || selectedCoach?.id;
 
     if (!currentCoachId) {
-      alert('Không thể xác định coach để gửi tin nhắn. Vui lòng thử lại.');
+      showNotification('Không thể xác định coach để gửi tin nhắn. Vui lòng thử lại.', 'error');
       return;
     }
 
@@ -636,7 +681,7 @@ const getStageDotColor = (status) => {
     } catch {
       setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id));
       setNewMessage(originalMessage);
-      alert('Không thể gửi tin nhắn lúc này. Vui lòng thử lại sau.');
+      showNotification('Không thể gửi tin nhắn lúc này. Vui lòng thử lại sau.', 'error');
     }
   };
 
@@ -884,6 +929,41 @@ const getStageDotColor = (status) => {
                                 <span style={{ fontWeight: 500 }}>Lời khuyên của Coach:</span>
                                 <div style={{ background: '#eaf6ff', padding: 10, borderRadius: 6, marginTop: 4, fontStyle: 'italic', color: '#2d5fa7' }}>{stage.advice}</div>
                               </div>
+                              {stage.status === 'cancelled' && (
+                                <div style={{ marginTop: 16, textAlign: 'center' }}>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRetryStage(stage.stageId);
+                                    }}
+                                    disabled={retryingStage === stage.stageId}
+                                    style={{
+                                      background: retryingStage === stage.stageId ? '#ccc' : '#ff9800',
+                                      color: '#fff',
+                                      border: 'none',
+                                      borderRadius: 8,
+                                      padding: '10px 20px',
+                                      fontSize: 14,
+                                      fontWeight: 600,
+                                      cursor: retryingStage === stage.stageId ? 'not-allowed' : 'pointer',
+                                      transition: 'background 0.2s',
+                                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      if (retryingStage !== stage.stageId) {
+                                        e.target.style.background = '#f57c00';
+                                      }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      if (retryingStage !== stage.stageId) {
+                                        e.target.style.background = '#ff9800';
+                                      }
+                                    }}
+                                  >
+                                    {retryingStage === stage.stageId ? '🔄 Đang gửi...' : '🔄 Gửi yêu cầu làm lại'}
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
@@ -987,6 +1067,76 @@ const getStageDotColor = (status) => {
         ratingMessage={ratingMessage}
         ratingType={ratingType}
       />
+
+      {/* Notification Toast */}
+      {notification && (
+        <div style={{
+          position: 'fixed',
+          top: 20,
+          right: 20,
+          zIndex: 10000,
+          minWidth: 300,
+          maxWidth: 500,
+          background: notification.type === 'success' ? 'linear-gradient(135deg, #4caf50, #45a049)' : 
+                     notification.type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' : 
+                     'linear-gradient(135deg, #2196f3, #1976d2)',
+          color: '#fff',
+          padding: '16px 20px',
+          borderRadius: 12,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          animation: 'slideInRight 0.3s ease-out',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 12
+        }}>
+          
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>
+              {notification.type === 'success' ? 'Thành công!' : 
+               notification.type === 'error' ? 'Lỗi!' : 
+               'Thông báo'}
+            </div>
+            <div style={{ 
+              fontSize: 14, 
+              lineHeight: 1.4, 
+              whiteSpace: 'pre-line',
+              opacity: 0.95 
+            }}>
+              {notification.message}
+            </div>
+          </div>
+          <button 
+            onClick={() => setNotification(null)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#fff',
+              fontSize: 18,
+              cursor: 'pointer',
+              padding: 4,
+              opacity: 0.8,
+              borderRadius: 4
+            }}
+            onMouseEnter={(e) => e.target.style.opacity = 1}
+            onMouseLeave={(e) => e.target.style.opacity = 0.8}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes slideInRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </>
   );
 }

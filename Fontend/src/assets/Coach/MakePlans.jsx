@@ -26,8 +26,11 @@ function MakePlans() {
   const [stageForm, setStageForm] = useState({ startDate: '', endDate: '', targetCigaretteCount: '', advice: '' });
   const [stageUpdateLoading, setStageUpdateLoading] = useState(false);
   const [stageUpdateError, setStageUpdateError] = useState('');
+  const [resetStageLoading, setResetStageLoading] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  // State cho message box
+  const [messageBox, setMessageBox] = useState(null);
   // State cho khai báo hàng ngày
   const [dailyLogs, setDailyLogs] = useState([]);
   const [dailyLogsLoading, setDailyLogsLoading] = useState(false);
@@ -142,6 +145,77 @@ function MakePlans() {
     }
   };
 
+  // Reset stage function
+  const handleResetStage = async (stageId) => {
+    showMessageBox(
+      'Bạn có chắc muốn reset giai đoạn này?',
+      'warning',
+      async () => {
+        hideMessageBox();
+        setResetStageLoading(true);
+        setStageUpdateError('');
+        
+        try {
+          await axiosInstance.post(`http://localhost:5175/api/quitplan/coach/reset-stage/${stageId}`);
+          showNotification('Reset giai đoạn thành công!', 'success');
+          
+          // Refresh plans data after reset
+          try {
+            const res = await axiosInstance.get('http://localhost:5175/api/quitplan/coach');
+            let plans = [];
+            if (res.data && Array.isArray(res.data.data)) {
+              plans = res.data.data;
+            }
+            const grouped = {};
+            plans.forEach(plan => {
+              if (!grouped[plan.memberId]) grouped[plan.memberId] = [];
+              grouped[plan.memberId].push(plan);
+            });
+            setPlansByMember(grouped);
+          } catch (err) {
+            console.error('Error refreshing plans after reset:', err);
+          }
+        } catch (err) {
+          showNotification('Reset giai đoạn thất bại!', 'error');
+        } finally {
+          setResetStageLoading(false);
+        }
+      },
+      () => hideMessageBox()
+    );
+  };
+
+  // Message box functions
+  const showMessageBox = (message, type = 'info', onConfirm = null, onCancel = null) => {
+    setMessageBox({
+      message,
+      type,
+      onConfirm,
+      onCancel,
+      isConfirm: onConfirm !== null
+    });
+  };
+
+  const hideMessageBox = () => {
+    setMessageBox(null);
+  };
+
+  const showNotification = (message, type = 'success') => {
+    setMessageBox({
+      message,
+      type,
+      onConfirm: null,
+      onCancel: null,
+      isConfirm: false,
+      autoClose: true
+    });
+    
+    // Auto close after 3 seconds
+    setTimeout(() => {
+      setMessageBox(null);
+    }, 3000);
+  };
+
   return (
     <div className="makeplans-container">
       <h2>Kế hoạch cai thuốc cho khách hàng</h2>     
@@ -222,7 +296,7 @@ function MakePlans() {
                 totalStages: Number(createPlanForm.totalStages),
                 goal: createPlanForm.goal
               });
-              setCreatePlanError('Tạo kế hoạch thành công!');
+              showNotification('Tạo kế hoạch thành công!', 'success');
               setCreatePlanForm({ memberId: '', reasonToQuit: '', totalStages: 3, goal: '' });
               
               try {
@@ -241,7 +315,7 @@ function MakePlans() {
             
               }
             } catch (err) {
-              setCreatePlanError('Tạo kế hoạch thất bại!');
+              showNotification('Tạo kế hoạch thất bại!', 'error');
             } finally {
               setCreatePlanLoading(false);
             }
@@ -409,6 +483,29 @@ function MakePlans() {
                               {plan.stages.map(stage => (
                                 <li key={stage.stageId} style={{marginBottom:6, display:'flex', alignItems:'center', gap:8}}>
                                   <span style={{fontWeight:500}}>Giai đoạn {stage.stageNumber}</span>
+                                  {/* Hiển thị status nếu có */}
+                                  {stage.status && (
+                                    <span style={{
+                                      marginLeft:8, 
+                                      fontWeight:600, 
+                                      fontSize:'0.95rem', 
+                                      borderRadius:6, 
+                                      padding:'2px 8px',
+                                      background: stage.status === 'cancelled' ? '#ffebee' : 
+                                                  stage.status === 'active' ? '#e3f2fd' : 
+                                                 stage.status === 'completed' ? '#e8f5e9' : 
+                                                 stage.status === 'pending' ? '#e3f2fd' : '#f5f5f5',
+                                      color: stage.status === 'cancelled' ? '#d32f2f' : 
+                                            stage.status === 'active' ? '#0c6ddbff' :
+                                            stage.status === 'completed' ? '#388e3c' : 
+                                            stage.status === 'pending' ? '#64645fff' : '#666'
+                                    }}>
+                                      {stage.status === 'cancelled' ? 'Đã thất bại' : 
+                                        stage.status === 'active' ? 'Đang thực hiện' :
+                                       stage.status === 'completed' ? 'Hoàn thành' : 
+                                       stage.status === 'pending' ? 'Đang chờ' : stage.status}
+                                    </span>
+                                  )}
                                   {/* Hiển thị phần trăm tiến độ nếu có */}
                                   {typeof stage.progressPercentage === 'number' && (
                                     <span style={{marginLeft:8, color:'#1976d2', fontWeight:600, fontSize:'0.98rem', background:'#e3eefd', borderRadius:6, padding:'2px 10px'}}>
@@ -451,24 +548,52 @@ function MakePlans() {
                                     >Cập nhật</button>
                                   )}
                                   <button style={{marginLeft:8,padding:'2px 10px',borderRadius:6,border:'1px solid #e53935',background:'#fff',color:'#e53935',fontWeight:600,cursor:'pointer',fontSize:'0.96rem'}} onClick={async () => {
-                                    if (!window.confirm('Bạn có chắc muốn xóa giai đoạn này?')) return;
-                                    setStageUpdateError('');
-                                    try {
-                                      await axiosInstance.delete(`http://localhost:5175/api/quitplan/stage/${stage.stageId}`);
-                                      setStageUpdateError('Đã xóa giai đoạn!');
-                                      setPlansByMember(prev => {
-                                        const memberId = selectedClient.memberId || selectedClient.id;
-                                        const plans = prev[memberId] ? prev[memberId].map(plan => ({
-                                          ...plan,
-                                          stages: plan.stages.filter(s => s.stageId !== stage.stageId)
-                                        })) : [];
-                                        return { ...prev, [memberId]: plans };
-                                      });
-                                      setEditingStage(null);
-                                    } catch (err) {
-                                      setStageUpdateError('Xóa thất bại!');
-                                    }
+                                    showMessageBox(
+                                      'Bạn có chắc muốn xóa giai đoạn này?',
+                                      'warning',
+                                      async () => {
+                                        hideMessageBox();
+                                        setStageUpdateError('');
+                                        try {
+                                          await axiosInstance.delete(`http://localhost:5175/api/quitplan/stage/${stage.stageId}`);
+                                          showNotification('Đã xóa giai đoạn!', 'success');
+                                          setPlansByMember(prev => {
+                                            const memberId = selectedClient.memberId || selectedClient.id;
+                                            const plans = prev[memberId] ? prev[memberId].map(plan => ({
+                                              ...plan,
+                                              stages: plan.stages.filter(s => s.stageId !== stage.stageId)
+                                            })) : [];
+                                            return { ...prev, [memberId]: plans };
+                                          });
+                                          setEditingStage(null);
+                                        } catch (err) {
+                                          showNotification('Xóa thất bại!', 'error');
+                                        }
+                                      },
+                                      () => hideMessageBox()
+                                    );
                                   }}>Xóa</button>
+                                  {/* Reset button - only show for cancelled stages */}
+                                  {stage.status === 'cancelled' && (
+                                    <button 
+                                      style={{
+                                        marginLeft:8,
+                                        padding:'2px 10px',
+                                        borderRadius:6,
+                                        border:'1px solid #ff9800',
+                                        background:'#fff',
+                                        color:'#ff9800',
+                                        fontWeight:600,
+                                        cursor: resetStageLoading ? 'not-allowed' : 'pointer',
+                                        fontSize:'0.96rem',
+                                        opacity: resetStageLoading ? 0.6 : 1
+                                      }} 
+                                      disabled={resetStageLoading}
+                                      onClick={() => handleResetStage(stage.stageId)}
+                                    >
+                                      {resetStageLoading ? 'Đang reset...' : '🔄 Reset'}
+                                    </button>
+                                  )}
                                 </li>
                               ))}
                             </ul>
@@ -563,7 +688,7 @@ function MakePlans() {
                                             targetCigaretteCount: Number(stageForm.targetCigaretteCount),
                                             advice: stageForm.advice
                                           });
-                                          setStageUpdateError('Cập nhật thành công!');
+                                          showNotification('Cập nhật thành công!', 'success');
                                         } else {
                                           const res = await axiosInstance.post(`http://localhost:5175/api/quitplan/${editingStage.quitPlanId}/stage`, {
                                             stageNumber: editingStage.stageNumber,
@@ -584,14 +709,14 @@ function MakePlans() {
                                               }) : [];
                                               return { ...prev, [memberId]: plans };
                                             });
-                                            setStageUpdateError('Thêm giai đoạn mới thành công!');
+                                            showNotification('Thêm giai đoạn mới thành công!', 'success');
                                           } else {
                                             setStageUpdateError('Thêm giai đoạn mới thất bại!');
                                           }
                                         }
                                         setEditingStage(null);
                                       } catch (err) {
-                                        setStageUpdateError(editingStage.stageId ? 'Cập nhật thất bại!' : 'Thêm giai đoạn mới thất bại!');
+                                        showNotification(editingStage.stageId ? 'Cập nhật thất bại!' : 'Thêm giai đoạn mới thất bại!', 'error');
                                       } finally {
                                         setStageUpdateLoading(false);
                                       }
@@ -618,6 +743,176 @@ function MakePlans() {
           )}
         </div>
       </div>
+
+      {/* Message Box */}
+      {messageBox && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          animation: 'fadeIn 0.2s ease-out'
+        }}>
+          <div style={{
+            background: messageBox.type === 'success' ? 'linear-gradient(135deg, #4caf50, #45a049)' :
+                       messageBox.type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' :
+                       messageBox.type === 'warning' ? 'linear-gradient(135deg, #ff9800, #f57c00)' :
+                       'linear-gradient(135deg, #2196f3, #1976d2)',
+            color: '#fff',
+            padding: '24px 32px',
+            borderRadius: 12,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+            maxWidth: 450,
+            width: '90%',
+            textAlign: 'center',
+            position: 'relative',
+            transform: 'scale(0.9)',
+            animation: 'slideIn 0.3s ease-out forwards'
+          }}>
+            <div style={{
+              fontSize: '18px',
+              fontWeight: 600,
+              marginBottom: messageBox.isConfirm ? 20 : 16,
+              lineHeight: 1.4
+            }}>
+              {messageBox.message}
+            </div>
+            
+            {messageBox.isConfirm ? (
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                <button
+                  onClick={messageBox.onConfirm}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    color: '#fff',
+                    border: '2px solid rgba(255, 255, 255, 0.3)',
+                    borderRadius: 8,
+                    padding: '10px 20px',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    backdropFilter: 'blur(10px)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                    e.target.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                    e.target.style.transform = 'translateY(0)';
+                  }}
+                >
+                  Xác nhận
+                </button>
+                <button
+                  onClick={messageBox.onCancel}
+                  style={{
+                    background: 'rgba(0, 0, 0, 0.2)',
+                    color: '#fff',
+                    border: '2px solid rgba(0, 0, 0, 0.3)',
+                    borderRadius: 8,
+                    padding: '10px 20px',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = 'rgba(0, 0, 0, 0.3)';
+                    e.target.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'rgba(0, 0, 0, 0.2)';
+                    e.target.style.transform = 'translateY(0)';
+                  }}
+                >
+                  Hủy
+                </button>
+              </div>
+            ) : !messageBox.autoClose && (
+              <button
+                onClick={hideMessageBox}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  color: '#fff',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  borderRadius: 8,
+                  padding: '8px 16px',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backdropFilter: 'blur(10px)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                Đóng
+              </button>
+            )}
+            
+            {!messageBox.isConfirm && !messageBox.autoClose && (
+              <button
+                onClick={hideMessageBox}
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 12,
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  fontSize: 20,
+                  cursor: 'pointer',
+                  padding: 4,
+                  borderRadius: 4,
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.color = '#fff';
+                  e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = 'rgba(255, 255, 255, 0.8)';
+                  e.target.style.background = 'none';
+                }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+          from { 
+            transform: scale(0.9) translateY(-20px);
+            opacity: 0;
+          }
+          to { 
+            transform: scale(1) translateY(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 }
