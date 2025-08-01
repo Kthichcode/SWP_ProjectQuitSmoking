@@ -21,7 +21,21 @@ const cravingLevels = [
 ];
 
 const DailyDeclarationForm = () => {
-  const [date, setDate] = useState(new Date());
+   const [date, setDate] = useState(new Date());
+  // function getVNDate() {
+  //   const now = new Date();
+  //   const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  //   const vnTime = new Date(utc + 7 * 60 * 60000);
+  //   return vnTime;
+  // }
+
+  // const [date, setDate] = useState(getVNDate());
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setDate(getVNDate());
+  //   }, 1000);
+  //   return () => clearInterval(interval);
+  // }, []);
   const [smoked, setSmoked] = useState('Không');
   const [cigarettes, setCigarettes] = useState(0);
   const [craving, setCraving] = useState('LOW');
@@ -70,6 +84,7 @@ const DailyDeclarationForm = () => {
     try {
       const token = localStorage.getItem('token');
       const formattedDate = date.toISOString().split('T')[0];
+      // const formattedDate = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
       const res = await axios.post('http://localhost:5175/api/smoking-logs', {
         smoked: smoked === 'Có',
         smokeCount: smoked === 'Có' ? Number(cigarettes) : 0,
@@ -130,7 +145,14 @@ const DailyDeclarationForm = () => {
                 dateFormat="yyyy-MM-dd"
                 className="date-picker"
                 required
-              />
+              /> 
+               {/* <input
+                type="text"
+                value={date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0')}
+                readOnly
+                className="date-display"
+                style={{ background: '#f5f5f5', border: 'none', color: '#333', fontWeight: 'bold' }}
+              /> */}
             </div>
             <div>
               <label>Bạn có hút thuốc không?</label>
